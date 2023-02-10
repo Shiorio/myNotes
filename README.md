@@ -1,2 +1,2 @@
 # myNotes
-My notes
+My web frontend study notes
