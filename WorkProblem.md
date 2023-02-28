@@ -8794,3 +8794,26 @@ samsaatamusic@hotmail.co.uk
 samsaata@silkinnovation.com.np
 
 79898989@qq.com
+
+### 80.价格补0 小数点后保持有两位小数
+
+```js
+function priceFilter(num) {
+	var f = parseFloat(num); // 解析一个字符串，返回一个浮点数；
+	var s = f.toString(); // 把一个逻辑值转换为字符串，并返回结果；
+	var rs = s.indexOf('.'); // 返回某个指定的字符串值在字符串中首次出现的位置；如果字符串值没有出现，返回-1；
+
+	// 没有小数点时：
+	if (rs < 0) {
+		rs = s.length;
+		s += '.';
+	}
+	while (s.length <= rs + 2) {
+		s += '0';
+	}
+
+	return s
+}
+
+```
+
