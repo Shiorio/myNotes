@@ -8817,3 +8817,128 @@ function priceFilter(num) {
 
 ```
 
+### 81.js原生请求及封装
+
+#### 81.1 使用XMLHttpRequest
+
+```js
+//创建Xhr对象
+var xhr = new XMLHttpRequest()
+//调用open函数
+xhr.open('GET','url地址')
+//调用send函数
+xhr.send()
+//监听onreadystatechange事件
+xhr.onreadystatechange = function() {
+    if(xhr.readystate === 4 && xhr.status === 200) {
+        console.log(xhr.responseText)
+    }
+}
+```
+
+```js
+// post请求
+ //创建xhr对象
+ var xhr = new XMLHttpRequest()
+ //调用open函数
+ xhr.open('POST','url地址')
+ //设置Content-Type属性
+ xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+ //调用send函数
+ const data = JSON.stringify({
+     name:'123'
+ })
+ xhr.send(data)  
+ //监听onreadystatechange事件
+ xhr.onreadystatechange = function () {
+     if(xhr.readyState === 4 && xhr.status === 200) {
+         console.log(xhr.responseText);
+     }
+ }
+```
+
+#### 81.2 简单封装
+
+```js
+ function http(){
+    var xhr = new XMLHttpRequest()
+    var baseUrl =  '基本地址'
+    return{
+       request:(method,url,data,success,err)=>{
+        xhr.open(method,baseUrl+url)
+       
+        if (method=='GET'){
+            xhr.send()  
+        } else {
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+            xhr.send(data) 
+        }
+        xhr.onreadystatechange = function () {
+            if(xhr.readyState === 4 && xhr.status === 200) {
+                console.log(xhr.responseText);
+                success(xhr.responseText)
+            }else{
+                err()
+            }
+        }
+       }
+    }
+ }
+ //调用
+ var myHttp = http()
+ let data = {}
+ myHttp.request('post','/form',data,function(res){
+
+ },function(){
+
+ })
+```
+
+#### 81.3 实践
+
+`http.js`
+
+```js
+function http(){
+    var xhr = new XMLHttpRequest()
+    var baseUrl =  'http://sarlisi-vip.jp/api' // 基本地址
+    return{
+       request:(method,url,data,success,err)=>{
+        xhr.open(method,baseUrl + url)
+       
+        if (method=='GET'){
+            xhr.send()  
+        } else {
+            // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+            xhr.setRequestHeader('Content-Type', 'application/json')
+            xhr.send(JSON.stringify(data)) 
+        }
+        xhr.onreadystatechange = function () {
+            if(xhr.readyState === 4 && xhr.status === 200) {
+                console.log(xhr.responseText);
+                success(xhr.responseText)
+            }else{
+                err()
+            }
+        }
+       }
+    }
+ }
+```
+
+`supplyChain.html`中引入http.js
+
+```html
+<script src="./js/http.js"></script>
+<script src="./js/supplyChain/supplyChain.js"></script>
+```
+
+`supplyChain.js`中使用
+
+```js
+var myHttp = http()
+myHttp.request('post', '/tAfterSale/afterSaleMessage', params, function(res) {
+    location.reload()	// 强制刷新
+})
+```
+
