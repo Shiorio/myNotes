@@ -8942,3 +8942,476 @@ myHttp.request('post', '/tAfterSale/afterSaleMessage', params, function(res) {
 })
 ```
 
+### 82.js原生幻灯片效果
+
+#### 82.1效果
+
+![image-20230713093754027](https://gitee.com/v876774538/my-img/raw/master/image-20230713093754027.png)
+
+#### 82.2 html
+
+```html
+<div class="slideshow">
+  <div class="slideshow-wrap"></div>
+  <div class="slideshow-sliders"></div>
+</div>
+```
+
+#### 82.3 js
+
+```js
+window.addEventListener("load", function() {
+	// 图片组
+    var imgs = [
+        './images/index/image17-1.jpg',
+        './images/index/image1.png',
+        './images/index/image2.png',
+    ]
+
+    for (var i = 0; i < imgs.length; i++) {
+        var img = new Image();
+        img.src = imgs[i];
+        img.className = 'slideshow-img'
+        document.querySelector('.slideshow-wrap').appendChild(img);
+    }    
+
+    var currentImgIndex = 0;    // 当前显示的图片索引
+    // 添加索引滑块
+    for (var i = 0 ; i < imgs.length; i++) {
+        var div = document.createElement('div');
+        div.className = 'slideshow-slider';
+        div.id = i
+        document.querySelector('.slideshow-sliders').appendChild(div);
+    }
+
+    var imgElements = document.querySelector('.slideshow-wrap').querySelectorAll('.slideshow-img');
+    var sliderElements = document.querySelector('.slideshow-sliders').querySelectorAll('.slideshow-slider')
+
+    // 显示当前索引的图片 索引高亮
+    function showCurrentImg() {
+        for (var i = 0; i < imgElements.length; i++) {
+            imgElements[i].classList.remove('show')
+            sliderElements[i].classList.remove('active')
+        }
+        imgElements[currentImgIndex].classList.add('show')
+        sliderElements[currentImgIndex].classList.add('active')
+    }
+    showCurrentImg();
+
+    // 切换到下一张图片
+    function showNextImg() {
+        currentImgIndex = (currentImgIndex + 1) % imgs.length
+        showCurrentImg();
+    }
+
+    // 点击滑块切换
+    for(var i =0; i < sliderElements.length; i++) {
+        sliderElements[i].addEventListener('click', (sliderElement) => {
+            console.log('sliderElement',sliderElement)
+            currentImgIndex = sliderElement.target.id
+            showCurrentImg();
+        })
+    }
+
+    var timer   // 定时器
+    // 自动切换
+    function autoplay() {
+        timer = setInterval(() => {
+            showNextImg()
+        }, 5000)
+    }
+
+    // 停止自动切换
+    function stopplay() {
+        clearInterval(timer)
+    }
+
+    autoplay();
+
+    // 鼠标悬浮停止自动切换
+    var slideshowElement = document.querySelector('.slideshow')
+    slideshowElement.addEventListener('mouseover', () => {
+        console.log('mouseover')
+        stopplay();
+    })
+    slideshowElement.addEventListener('mouseleave', () => {
+        console.log('mouseleave')
+        autoplay();
+    })
+
+})
+
+```
+
+#### 82.4 css
+
+```css
+.slideshow {
+    .slideshow-wrap {
+        width: 5.89rem;
+        height: 8.33rem;
+        overflow: hidden;
+        position: relative;
+
+        .slideshow-img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: opacity 1s;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .show {
+            opacity: 1;
+        }
+    }
+
+    .slideshow-sliders {
+        margin-top: 0.18rem;
+        display: flex;
+
+        .slideshow-slider {
+            width: 0.28rem;
+            height: 0.04rem;
+            border-radius: 0.02rem;
+            margin-right: 0.09rem;
+            background: #DEDEDE;
+            cursor: pointer;
+        }
+
+        .active {
+            background: #3E9AC8;
+        }
+    }
+}
+```
+
+### 83.js原生系列左右点击箭头查看更多
+
+#### 83.1 效果
+
+![image-20230713094418048](C:\Users\pc01\AppData\Roaming\Typora\typora-user-images\image-20230713094418048.png)
+
+#### 83.2 html
+
+```html
+  <div class="panle4">
+    <div class="top"></div>
+    <div class="bottom"></div>
+    <div class="box">
+        <div class="title">
+          News
+        </div>
+        <div class="des">
+          <span>SANTIME</span>
+          <span class="line">|</span>
+          <span>for Beauty & Life</span>
+        </div>
+        <div class="arrow">
+          <img class="image22 disabled" src="./images/index/image22-disabled.png" alt="">
+          <img class="image22 image23" src="./images/index/image23.png" alt="">
+        </div>
+        <div class="wrap">
+          <div class="content">
+            <div class="img-box">
+              <img class="img18" src="./images/index/image18.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image19.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image20.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image21.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image21.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image21.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+```
+
+关键结构：
+
+![image-20230713094651710](C:\Users\pc01\AppData\Roaming\Typora\typora-user-images\image-20230713094651710.png)
+
+#### 83.3 js
+
+```js
+window.addEventListener("load", function() {
+    // 资讯列表切换效果
+    var panle4 = document.querySelector('.panle4')
+    var wrap = panle4.querySelector('.wrap')
+    var wrapWidth = wrap.offsetWidth
+    var imgBoxs = wrap.querySelectorAll('.img-box')
+
+    var lastImgBoxIndex = 4
+    var imgBoxWidth = 375
+    if (imgBoxs && imgBoxs.length != 0) {
+        imgBoxWidth = imgBoxs[0].offsetWidth
+        lastImgBoxIndex = parseInt(wrapWidth / imgBoxWidth) // 当前页最后一个imgBox的index
+        var imgBoxsNum = lastImgBoxIndex // 一页可展示的imgBox的数量
+        console.log('lastImgBoxIndex', lastImgBoxIndex)
+    }
+    // 切换按钮点击事件
+    var arrows = panle4.querySelector('.arrow').querySelectorAll('.image22')
+    if (arrows && arrows.length != 0) {
+        var arrowLeft = arrows[0]
+        var arrowRight = arrows[1]
+        console.log(arrowLeft, arrowRight)
+        arrowLeft.addEventListener('click', () => {
+            leftTranslation();
+        })
+        arrowRight.addEventListener('click', () => {
+            rightTranslation();
+        })
+    }
+    var content = wrap.querySelector('.content')
+    var translate = 0
+    // 左移
+    function leftTranslation() {
+        if (lastImgBoxIndex > imgBoxsNum) {
+            lastImgBoxIndex--
+            translate = translate + (imgBoxWidth / 100 + 0.51)
+            // 内容平移一个img-box + 盒子外边距的距离
+            content.style.transform = "translateX(" + translate + "rem)";
+        }
+        arrowDisabled();
+    }
+    // 右移
+    function rightTranslation() {
+        if (imgBoxs && lastImgBoxIndex < imgBoxs.length) {
+            lastImgBoxIndex++
+            translate = translate - (imgBoxWidth / 100 + 0.51)
+            // 内容平移一个img-box + 盒子外边距的距离
+            content.style.transform = "translateX(" + translate + "rem)";
+        }
+        arrowDisabled();
+    }
+    // 箭头按钮判断（控制样式及是否可点击）
+    function arrowDisabled() {
+        if (lastImgBoxIndex <= imgBoxsNum) {
+            arrowLeft.src = './images/index/image22-disabled.png'
+            arrowLeft.classList.add('disabled')
+        }
+        else {
+            arrowLeft.src = './images/index/image22.png'
+            arrowLeft.classList.remove('disabled')
+        }
+        if (lastImgBoxIndex >= imgBoxs.length) {
+            arrowRight.src = './images/index/image23-disabled.png'
+            arrowRight.classList.add('disabled')
+        }
+        else {
+            arrowRight.src = './images/index/image23.png'
+            arrowRight.classList.remove('disabled')
+        }
+    }
+})
+```
+
+#### 83.4 css
+
+```css
+.panle4 {
+  position: relative;
+  width: 100%;
+
+  .top {
+    width: 100%;
+    height: 4.12rem;
+    background-color: #F5F5F5;
+  }
+
+  .bottom {
+    width: 100%;
+    height: 4.11rem;
+    background-color: #fff;
+  }
+
+  .box {
+    position: absolute;
+    right: 0;
+    top: 1.09rem;
+
+    .title {
+      font-family: FuturaLT;
+      font-weight: 300;
+      color: #333;
+      font-size: .8rem;
+      // margin-bottom: .44rem;
+    }
+  
+    .des {
+      font-family: Mplus1;
+      font-weight: 400;
+      font-size: .18rem;
+      color: #404040;
+      margin-bottom: .05rem;
+      display: flex;
+      align-items: center;
+      .line {
+        color: #808080;
+        margin: 0 .24rem;
+      }
+    }
+
+    .arrow {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: .25rem;
+
+      .image22 {
+        width: .36rem;
+        height: .36rem;
+        cursor: pointer;
+      }
+
+      .image23 {
+        margin-left: .31rem;
+        margin-right: .67rem;
+        cursor: pointer;
+        
+      }
+
+      .disabled {
+        cursor: default;
+      }
+    }
+
+    .wrap {
+      max-width: 16.6rem;
+      overflow: hidden;
+    }
+
+    .content {
+      display: flex;
+      height: 4rem;
+      transition: transform 0.2s ease 0s;
+
+      .img-box {
+        margin-left: .51rem;
+        width: 3.75rem;
+        .img18 {
+          width: 3.75rem;
+          height: 2.41rem;
+        }
+
+        .middle {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: .34rem;
+          margin-bottom: .23rem;
+          font-family: FuturaLT;
+          font-size: 0.3rem;
+          font-weight: 300;
+          color: #333333;
+
+          .more {
+            font-size: 0.18rem;
+            text-align: center;
+            line-height: .27rem;
+            padding: 0 0.11rem;
+            box-sizing: border-box;
+            height: .27rem;
+            border: .01rem solid #999;
+          }
+        }
+
+        .bottom {
+          font-size: .18rem;
+          font-weight: 400;
+          font-family: Mplus1;
+        }
+
+      }
+
+      .img-box:first-child {
+        margin-left: 0;
+      }
+
+      .img-box:hover {
+
+        .more {
+          border: .01rem solid #3E9AC8;
+          color: #3E9AC8;
+        }
+      }
+    }
+  }
+}
+```
+
