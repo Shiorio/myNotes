@@ -9090,7 +9090,7 @@ window.addEventListener("load", function() {
 
 #### 83.1 效果
 
-![image-20230713094418048](C:\Users\pc01\AppData\Roaming\Typora\typora-user-images\image-20230713094418048.png)
+![image-20230713094418048](https://gitee.com/v876774538/my-img/raw/master/image-20230713094418048.png)
 
 #### 83.2 html
 
@@ -9205,7 +9205,7 @@ window.addEventListener("load", function() {
 
 关键结构：
 
-![image-20230713094651710](C:\Users\pc01\AppData\Roaming\Typora\typora-user-images\image-20230713094651710.png)
+![image-20230713094651710](https://gitee.com/v876774538/my-img/raw/master/image-20230713094651710.png)
 
 #### 83.3 js
 
