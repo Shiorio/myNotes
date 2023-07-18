@@ -221,3 +221,168 @@ ps -ef|grep nginx
 ./nginx -s reload
 ```
 
+## 四、nginx.conf配置文件
+
+### 1.位置
+
+`/usr/local/nginx/conf/nginx.conf`
+
+### 2.配置文件中的内容
+
+#### 2.1 全局块
+
+> 配置服务器整体运行的配置指令。
+
+从配置文件到events块之间的内容，主要会设置一些影响nginx服务器整体运行的配置指令：包括**配置运行Nginx服务器的用户（组）**、**允许生成的worker process数**、**进程PID存放路径**、**日志存放路径和类型**，以及**配置文件的引入**等。
+
+![img](https://gitee.com/v876774538/my-img/raw/master/1455597-20191029102802614-510328292.png)
+
+```nginx
+worker_processes	1;
+```
+
+这是Nginx服务器并发处理服务的关键配置。`worker_processes`的值越大，可以支持的并发处理量也越多，但是会受到硬件、软件等设备的制约。
+
+#### 2.2 events块
+
+> 影响Nginx服务器与用户的网络连接。
+
+events块设计的指令主要影响Nginx服务器与用户的网络连接。常用的设置包括**是否开启对多work process下的网络连接进行序列化**，**是否允许同时接收多个网络连接**，**选取哪种事件驱动模型来处理连接请求**，**每个work process可以同时支持的最大连接数**等。
+
+![img](https://gitee.com/v876774538/my-img/raw/master/1455597-20191029102827884-232471630.png)
+
+```nginx
+worker_connections	1024;
+```
+
+表示每个 work process 支持的最大连接数为 1024。
+
+#### 2.3 http块
+
+> 代理、缓存和日志定义等绝大多数功能和第三方模块的配置。
+
+![img](https://gitee.com/v876774538/my-img/raw/master/1455597-20191029102837788-914776640.png)
+
+1. http全局块
+
+   http全局块配置的指令包括文件引入、MIME-TYPE定义、日志自定义、连接超时时间、单链接请求数上限等。
+
+   ![img](https://gitee.com/v876774538/my-img/raw/master/1455597-20191029102851922-1592334025.png)
+
+2. server块
+
+   与虚拟主机密切相关。从用户角度看，虚拟主机和一台独立的硬件主机是完全一样的，该技术的产生是为了节省互联网服务器硬件成本。
+
+   **每个http块可以包含多个server块，而每个server块就相当于一个虚拟主机。**
+
+   ![image-20230718164943968](https://gitee.com/v876774538/my-img/raw/master/image-20230718164943968.png)
+
+   ```nginx
+   listen		80;			// 监听的端口号为80
+   server_name	localhost;	// 主机名称
+   ```
+
+3. 全局server块
+
+   本虚拟机主机的监听配置和本虚拟主机的名称或IP配置。
+
+4. location块
+
+   一个server块可以配置多个location块。
+
+   主要作用是基于Nginx服务器接收到的请求字符串（如，`server_name/uri-string`），对虚拟主机名称（或IP别名）之外的字符串（`/uri-string`）进行匹配，**对特定的请求进行处理**。地址定向、数据缓存和应答控制等功能还有许多第三方模块的配置也在这里进行。
+
+### 3.实例
+
+![image-20230718165530091](https://gitee.com/v876774538/my-img/raw/master/image-20230718165530091.png)
+
+```nginx
+server {
+        listen       80;
+        server_name  zjz.syy333.com;
+        rewrite ^(.*) https://$server_name$1 permanent;
+    }
+
+ server {
+        listen       443;
+        server_name  zjz.syy333.com;
+        access_log  /www/server/panel/logs/zjz.syy333.com.log;
+        ssl_certificate   /www/server/panel/vhost/cert/zjz.syy333.com.pem;
+        ssl_certificate_key  /www/server/panel/vhost/cert/zjz.syy333.com.key;
+        ssl_session_timeout 5m;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_prefer_server_ciphers on;
+
+
+        location /{
+            proxy_pass   http://127.0.0.1:9000/;
+	#    try_files $uri $uri/ /index.html;
+        #    index  index.html index.html;
+        }
+        
+        location /admin {
+            alias  /usr/local/sarlisi/admin/;
+            index  index.html index.htm;
+        }
+        
+        location /main/ {
+            proxy_pass  http://127.0.0.1:8088/;
+        }
+        
+        location /api/ {
+            proxy_pass  http://127.0.0.1:7010/;
+        }
+        
+        location /file {
+                alias /usr/local/sarlisi/file/;
+        }
+
+        #charset koi8-r;
+
+        #location / {
+        #    alias  /usr/local/sarlisicare/;
+        #    index  index.html index.htm;
+        #}
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        #error_page   500 502 503 504  /50x.html;
+        #location = /50x.html {
+        #    root   html;
+        #}
+
+        }    
+    
+```
+
+# Nginx反向代理
+
+## 一、实现效果
+
+打开浏览器，在浏览器地址栏输入地址 `www.123.com`，跳转到 liunx 系统 tomcat 主页。
+
+## 二、准备工作
+
+1. Linux系统安装tomcat，使用默认端口8080
+
+   - tomcat安装包解压
+   - 进入/bin目录中，`./startup.sh`启动tomcat服务器
+
+2. 对外开放访问的端口
+
+   ```shell
+   firewall-cmd --add-port=8080/tcp --permanent
+   firewall-cmd -reload
+   
+   // 查看已经开放的端口号
+   firewall-cmd --list-all
+   ```
+
+3. 在windows系统中通过浏览器访问tomcat服务器
+
+## 三、访问过程分析
+
+![img](https://img2018.cnblogs.com/blog/1455597/201910/1455597-20191029103129000-1647870419.png)

@@ -5671,7 +5671,7 @@ export default {
 
 ### 54.vue 拖拽插件 可拖放排序
 
-#### 54.1 安装依赖插件
+#### 54.1 安装依赖插件npm
 
 ```
 npm i -S vuedraggable
