@@ -893,5 +893,271 @@ fs.open('./hello.txt', 'w', (err, fd) => {
    })
    ```
 
+
+### 6.练习-考试成绩整理
+
+1. 导入需要的fs文件系统模块
+
+   ```js
+   const fs = require('fs')
+   ```
+
+2. 使用`fs.readFile()`方法，读取素材目录下的`成绩.txt`文件
+
+3. 判断文件是否读取失败
+
+   ```js
+   fs.readFile('../素材/成绩.txt', 'utf-8', function(err, dataStr) {
+   	// 文件读取失败
+       if (err) {
+           return console.log('读取文件失败！' + err.message)
+       }
+       // 文件读取成功
+       console.log('读取文件成功！' + dataStr)
+   })
+   ```
+
+   ![image-20230801155318435](C:\Users\pc01\AppData\Roaming\Typora\typora-user-images\image-20230801155318435.png)
+
+4. 文件读取成功后，处理成绩数据
+
+5. 将处理完成的成绩数据，调用`fs.writeFile()`方法，写入到新文件`成绩-ok.txt`中
+
+   ```js
+   fs.readFile('../素材/成绩.txt', 'utf-8', function(err, dataStr) {
+   	// 文件读取失败
+       if (err) {
+           return console.log('读取文件失败！' + err.message)
+       }
+       // 文件读取成功
+       console.log('读取文件成功！' + dataStr)
+       
+       // 处理成绩数据
+       const arrOld = dataStr.split(' ')
+       const arrNew = []
+       arrOld.forEach((item) => {
+           arrNew.push(item.replace('=', '：'))
+       })
+       const newStr = arrNew.join('\r\n')
+       
+       // 写入新文件
+       fs.writeFile('./files/成绩-ok.txt', newStr, function(err) {
+           if (err) {
+               return console.log('成绩写入失败！' + err.message)
+           }
+           console.log('成绩写入成功！')
+       })
+   })
+   ```
+
+### 7.路径动态拼接
+
+在使用fs模块操作文件时，如果提供的操作路径是以`./`或`../`开头的**相对路径**时，很容易出现路径动态拼接错误的问题：
+
+因为代码在运行的时候，会**以执行node命令时所处的目录，动态拼接出被操作文件的完整路径**。
+
+![image-20230801162635303](https://gitee.com/v876774538/my-img/raw/master/image-20230801162635303.png)
+
+```js
+const fs = require('fs')
+
+// 出现路径拼接错误的问题，是因为提供了./或../开头的相对路径
+fs.readFile('./files/1.txt', 'utf-8', function(err, dataStr) {
+	if (err) {
+		return console.log('读取文件失败！' + err.message)
+	}
+	console.log('读取文件成功！ ' + dataStr)
+})
+```
+
+1. 解决方案1：提供绝对路径
+
+   ```js
+   // 单个\表示转义
+   fs.readFile('C:\\Users\\escood\\Desktop\\Node.js基础\\day1\\code\\files\\1.txt', 'utf-8', function(err, dataStr) {
+   	if (err) {
+   		return console.log('读取文件失败！' + err.message)
+   	}
+   	console.log('读取文件成功！ ' + dataStr)
+   })
+   ```
+
+   移植性非常差，不利于维护。
+
+2. 解决方案2：`__dirname` 表示当前文件所处的目录
+
+   ```js
+   const fs = require('fs')
    
+   fs.readFile(__dirname + '/files/1.txt', 'utf-8', function(err, dataStr) {
+   	if (err) {
+   		return console.log('读取文件失败！' + err.message)
+   	}
+   	console.log('读取文件成功！ ' + dataStr)
+   })
+   ```
+
+## 八、path路径模块
+
+### 1.概述
+
+> **path模块**是Node.js官方提供的用来**处理路径**的模块，它提供了一系列的方法和属性，用来满足用户对路径处理的需求。
+
+例如：
+
+- `path.join()`方法，用来将多个路径片段拼接成一个完整的路径字符串
+- `path.basename()`用来从路径字符串中，将文件名解析出来
+
+在javascript代码中，使用path模块来处理路径，需要使用如下方法导入它：
+
+```js
+const path = require('path')
+```
+
+### 2.路径拼接
+
+1. `path.join()`语法格式
+
+   使用`path.join()`方法，可以把多个路径片段拼接为完整的路径字符串，语法格式如下：
+
+   ```js
+   path.join([...paths])
+   ```
+
+   - ...paths<string> 路径片段的序列
+   - 返回值：<string>
+
+2. 示例
+
+   ```js
+   const fs = require('fs')
+   const path = require('path')
+   
+   fs.readFile(path.join(__dirname, '/files/1.txt'), 'utf-8', function(err, dataStr) {
+   	if (err) {
+   		return console.log('读取文件失败！' + err.message)
+   	}
+   	console.log('读取文件成功！ ' + dataStr)
+   })
+   ```
+
+   ```js
+   const path = require('path')
+   
+   // 注意： ../会抵消前面的路径
+   const pathStr = path.join('/a', '/b/c', '../', './d', 'e')
+   console.log(pathStr)	// \a\b\d\e
+   
+   const pathStr = path.join('/a', '/b/c', '../../', './d', 'e')
+   console.log(pathStr)	// \a\d\e
+   ```
+
+### 3.获取路径中的文件名
+
+1. `path.basename()`的语法格式
+
+   使用`path.basename()`方法，可以获取路径中的最后一部分，经常通过这个方法获取路径中的文件名，语法格式如下：
+
+   ```js
+   path.basename(path[, ext])
+   ```
+
+   - path<string> 表示一个路径的字符串
+   - ext<string> 可选参数，表示文件的扩展名
+   - 返回值：<string> 表示路径中的最后一部分
+
+2. 示例
+
+   ```js
+   const fpath = '/a/b/c/index.html'
+   
+   var fullName = path.basename(fpath)
+   console.log(fullName)	// index.html
+   
+   var nameWithoutExt = path.basename(fpath, '.html')
+   console.log(nameWithoutExt)	// index
+   ```
+
+### 4.获取路径中的文件扩展名
+
+1. `path.extname()`的语法格式
+
+   使用`path.extname()`方法，可以获取路径中的扩展名的部分，语法格式如下：
+
+   ```js
+   path.extname(path)
+   ```
+
+   - path<string> 必选参数，表示一个路径的字符串
+   - 返回值<string> 返回得到的扩展名字符串
+
+2. 示例
+
+   ```js
+   const fpath = '/a/b/c/index.html'
+   
+   const fext = path.extname(path)
+   console.log(fext)	// .html
+   ```
+
+## 九、http模块
+
+### 1.概述
+
+> 回顾：什么是**客户端**？什么是**服务器**？
+>
+> 在网络节点中，**负责消费资源**的电脑，叫做**客户端**；**负责对外提供网络资源**的电脑，叫做**服务器**。
+
+> `http模块`是Node.js官方提供的、用来创建Web服务器的模块。
+>
+> 通过http模块提供的`http.createServer()`方法，就能方便地把一台普通的电脑，变成一台Web服务器，对外提供Web资源服务。
+
+如果要使用http模块来创建Web服务器，我们首先需要导入它：
+
+```js
+const http = require('http')
+```
+
+### 2.作用
+
+服务器和普通电脑的区别在于：服务器上安装了Web服务器软件，例如：IIS、Apache等。通过安装这些服务器软件，就能把一台普通的电脑变成一台Web服务器。
+
+在Node.js中，我们不需要使用这些第三方Web服务器软件，而是基于Node.js提供的http模块，通过几行简单的代码，就能轻松地手写一个而服务器软件，对外提供Web服务。
+
+### 3.服务器相关的概念
+
+#### 3.1 IP地址
+
+IP地址是互联网上每台计算机的唯一地址。
+
+IP地址的格式：通常用“点分十进制”表示成(`a.b.c.d`)的形式，其中，a b c d都是0~255之间的十进制整数：如，192.168.1.1。
+
+注意：
+
+- 互联网中每台Web服务器，都有自己的IP地址：例如可以在Windows终端中运行`ping www.baidu.com`命令，查看百度服务器的IP地址；
+- 在开发期间，自己的电脑即时一台服务器，也是一个客户端。为了方便测试，可以在自己的浏览器中输入`127.0.0.1`（localhost，本机回送地址）这个IP地址，就能把自己的电脑当做服务器进行访问了。
+
+#### 3.2 域名和域名服务器
+
+1. 域名
+
+   尽管IP地址能够唯一地标记网络上的计算机，但IP地址是一长串数字，**不直观**也**不便于记忆**，于是人们又发明了另一套**字符型的地址方案**，即所谓的**域名(Domain Name)地址**。
+
+2. 域名服务器
+
+   IP地址和域名存在对应的关系，这份**对应关系**存放在一种叫做**域名服务器(DNS, Domain name server)**的电脑中。使用者只需通过好记的域名访问对应的服务器即可，对应的转换工作由域名服务器实现。因此，域名服务器就是提供IP地址和域名之间转换服务的服务器。
+
+#### 3.3 端口号
+
+计算机中的端口号，就好比现实生活中的门牌号。
+
+在一台电脑中，可以运行成百上千个Web服务，每个Web服务都对应一个**唯一**的端口号。
+
+![image-20230801175705601](https://gitee.com/v876774538/my-img/raw/master/image-20230801175705601.png)
+
+
+
+注：在实际应用中，URL中的**80端口可以被省略**。
+
+### 4.创建最基本的Web服务器
 
