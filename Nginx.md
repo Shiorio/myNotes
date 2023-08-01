@@ -188,7 +188,7 @@ https://lnmp.org/nginx.html
 
 注：使用nginx操作命令需要进入nginx的目录 `cd /usr/local/nginx/sbin`
 
-### 1. 查看nginx版本号
+### 1.查看nginx版本号
 
 ```shell
 ./nginx -v
@@ -220,6 +220,20 @@ ps -ef|grep nginx
 ```shell
 ./nginx -s reload
 ```
+
+### 5.查看nginx运行状态
+
+```shell
+./nginx -t
+```
+
+### 6.查看nginx配置文件位置
+
+```shell
+sudo find / -name nginx.conf
+```
+
+
 
 ## 四、nginx.conf配置文件
 
@@ -292,7 +306,7 @@ worker_connections	1024;
 
    主要作用是基于Nginx服务器接收到的请求字符串（如，`server_name/uri-string`），对虚拟主机名称（或IP别名）之外的字符串（`/uri-string`）进行匹配，**对特定的请求进行处理**。地址定向、数据缓存和应答控制等功能还有许多第三方模块的配置也在这里进行。
 
-### 3.实例
+### 3.实例1
 
 ![image-20230718165530091](https://gitee.com/v876774538/my-img/raw/master/image-20230718165530091.png)
 
@@ -358,31 +372,51 @@ server {
     
 ```
 
-# Nginx反向代理
+### 4.实例2
 
-## 一、实现效果
+![image-20230801135852109](https://gitee.com/v876774538/my-img/raw/master/image-20230801135852109.png)
 
-打开浏览器，在浏览器地址栏输入地址 `www.123.com`，跳转到 liunx 系统 tomcat 主页。
+```nginx
+server {
+        listen       80;
+        server_name  santime.co.jp www.santime.co.jp;
+        rewrite ^ https://$http_host$request_uri? permanent;
+        
+        location /{
+           alias   /usr/local/santime/santimeJapen/;
+           add_header Access-Control-Allow-Origin *;
+           add_header Access-Control-Allow-Headers X-Requested-With;
+           add_header Access-Control-Allow-Methods GET,POST,OPTIONS;
+           index  index.html index.htm;
+        }
+}
 
-## 二、准备工作
+server {
+		listen		443 ssl;
+		server_name	santime.co.jp www.santime.co.jp;
+		
+		ssl_certificate   /usr/local/webserver/nginx/conf/cert/santime.co.jp_chain.crt;
+        ssl_certificate_key  /usr/local/webserver/nginx/conf/cert/santime.co.jp_key.key;
+        
+        ssl_session_cache    shared:SSL:1m;
+        ssl_session_timeout  5m;
+        ssl_ciphers  HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers  on;
+        
+        location /{
+           alias   /usr/local/santime/santimeJapen/;
+           add_header Access-Control-Allow-Origin *;
+           add_header Access-Control-Allow-Headers X-Requested-With;
+           add_header Access-Control-Allow-Methods GET,POST,OPTIONS;
+           index  index.html index.htm;
+        }
+        
+        location /api/ {
+            proxy_pass  http://127.0.0.1:7010/;
+        }
+}
 
-1. Linux系统安装tomcat，使用默认端口8080
+```
 
-   - tomcat安装包解压
-   - 进入/bin目录中，`./startup.sh`启动tomcat服务器
 
-2. 对外开放访问的端口
 
-   ```shell
-   firewall-cmd --add-port=8080/tcp --permanent
-   firewall-cmd -reload
-   
-   // 查看已经开放的端口号
-   firewall-cmd --list-all
-   ```
-
-3. 在windows系统中通过浏览器访问tomcat服务器
-
-## 三、访问过程分析
-
-![img](https://img2018.cnblogs.com/blog/1455597/201910/1455597-20191029103129000-1647870419.png)
