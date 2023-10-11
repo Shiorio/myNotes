@@ -10628,6 +10628,8 @@ ondragstart="return false"
 
 ### 87.APP应用更新（应用外更新、热更新）
 
+> 小云秘书项目：http://syy333.dynv6.net:20080/xshb/xshbAPP.git
+
 `config.js`存放版本名、更新地址等全局变量
 
 ```js
@@ -10918,6 +10920,8 @@ export default {
 ```
 
 ### 88.uni-app 支付密码输入弹窗/验证码输入页面
+
+> 杉通宝公众号项目：http://syy333.dynv6.net:20080/syy/shantongbao-exchange.git
 
 #### 88.1 支付密码输入弹窗
 
@@ -12141,6 +12145,8 @@ export default {
 
 ### 89.日期范围选择弹窗
 
+> 杉通宝公众号项目：http://syy333.dynv6.net:20080/syy/shantongbao-exchange.git
+
 #### 89.1 效果
 
 未选择时显示【全部】；选择某日时显示具体日期，如【2023-10-11】；选择日期范围显示【区间】；按月份选择则显示具体月份，如【2023-10】
@@ -13245,3 +13251,53 @@ export const getIndexOfArray = (value,array)=>{
 </style>
 ```
 
+### 90.html大屏适配 rem+font-size
+
+> SANTIME项目：http://syy333.dynv6.net:20080/syy/santime.git
+
+```js
+<script>
+    (function (win) {
+        var tid;
+
+        function refreshRem() {
+            let designSize = 1920; // 设计图尺寸
+            let html = document.documentElement;
+            let wW = html.clientWidth; // 窗口宽度
+            let rem = (wW * 100) / designSize;
+            document.documentElement.style.fontSize = rem + "px";
+        }
+
+        win.addEventListener(
+            "resize",
+            function () {
+                clearTimeout(tid);
+                tid = setTimeout(refreshRem, 300);
+            },
+            false
+        );
+        win.addEventListener(
+            "pageshow",
+            function (e) {
+                if (e.persisted) {
+                    clearTimeout(tid);
+                    tid = setTimeout(refreshRem, 300);
+                }
+            },
+            false
+        );
+
+        refreshRem();
+    })(window);
+
+    $(function () {
+        $("#foot").load("foot.html");
+    });
+</script>
+```
+
+![image-20231011164950570](https://gitee.com/v876774538/my-img/raw/master/image-20231011164950570.png)
+
+
+
+可参考：https://blog.csdn.net/Liushiliu104/article/details/129372083?spm=1001.2100.3001.7377&utm_medium=distribute.pc_feed_blog_category.none-task-blog-classify_tag-8-129372083-null-null.nonecase&depth_1-utm_source=distribute.pc_feed_blog_category.none-task-blog-classify_tag-8-129372083-null-null.nonecase
