@@ -13251,7 +13251,11 @@ export const getIndexOfArray = (value,array)=>{
 </style>
 ```
 
-### 90.html大屏适配 rem+font-size
+### 90.大屏适配
+
+参考：https://blog.csdn.net/Liushiliu104/article/details/129372083?spm=1001.2100.3001.7377&utm_medium=distribute.pc_feed_blog_category.none-task-blog-classify_tag-8-129372083-null-null.nonecase&depth_1-utm_source=distribute.pc_feed_blog_category.none-task-blog-classify_tag-8-129372083-null-null.nonecase
+
+#### 90.1 rem+font-size
 
 > SANTIME项目：http://syy333.dynv6.net:20080/syy/santime.git
 
@@ -13298,6 +13302,784 @@ export const getIndexOfArray = (value,array)=>{
 
 ![image-20231011164950570](https://gitee.com/v876774538/my-img/raw/master/image-20231011164950570.png)
 
+#### 90.2 scale缩放
 
+三益友官网：http://syy333.dynv6.net:20080/zhangzl/syy.git master分支
 
-可参考：https://blog.csdn.net/Liushiliu104/article/details/129372083?spm=1001.2100.3001.7377&utm_medium=distribute.pc_feed_blog_category.none-task-blog-classify_tag-8-129372083-null-null.nonecase&depth_1-utm_source=distribute.pc_feed_blog_category.none-task-blog-classify_tag-8-129372083-null-null.nonecase
+```js
+window.onload = function() {
+  setScale();
+}
+window.onresize = function () {
+  setScale();
+};
+function setScale() {
+  // 设计稿：1920 * 1080
+  // 1.设计稿尺寸
+  let targetWidth = 1920;
+  // 2.拿到当前设备（浏览器）的宽度
+  // document.documentElement  获取html的宽度
+  let currentWidth = document.documentElement.clientWidth || document.body.clientWidth;
+  // 3.计算缩放比率(屏幕过宽，根据高度计算缩放比例)
+  let scaleRatio = currentWidth / targetWidth;
+  // 4.开始缩放网页
+  // 宽度>1920 顶部中心缩放
+  if (currentWidth > targetWidth) {
+    document.body.style = `transform: scale(${scaleRatio}); transform-origin: top center;`;
+  }
+  // 宽度<1920 顶部靠左缩放
+  else {
+    document.body.style = `transform: scale(${scaleRatio}); transform-origin: top left;`;
+  }
+}
+```
+
+注意：`transform`会导致`position:fixed`失效，故只能使用`position:absolute`，采用将滚动距离赋值给绝对定位的元素的方法。
+
+```js
+handleScroll() {
+  var scrollTop =
+    window.pageYOffset ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop;
+  // let top = this.selectIndex == 0 ? 670 : 502;
+  let top = document.documentElement.querySelector(".header").offsetHeight + document.documentElement.querySelector(".header").offsetTop;
+  var headerElement = document.documentElement.querySelector(".header1");
+  if (scrollTop >= top) {
+    if (!this.show) {
+      this.show = true;
+      this.show1 = true;
+    }
+    headerElement.style = `top: ${scrollTop / this.scaleRatio}px`;
+  } else {
+    if (this.show) {
+      this.show1 = false;
+      setTimeout(() => {
+        this.show = false;
+      }, 400);
+    }
+  }
+},
+```
+
+完整代码：
+
+```vue
+<template>
+  <div class="index">
+    <div
+      class="main1"
+      :style="{ height: selectIndex == 0 ? '670px' : '502px' }"
+    >
+      <div style="height: 25px"></div>
+      <div class="header" id="header">
+        <div class="left">
+          <img
+            @click="goPath({ path: '/home' })"
+            src="@/assets/img/logo1.png"
+            alt=""
+          />
+        </div>
+        <div class="right">
+          <ul>
+            <li
+              class="li"
+              v-for="(item, index) in menuList"
+              :key="index"
+              @click="selectMenu(index)"
+            >
+              <div :class="selectIndex == index ? 'active' : ''">
+                {{ item.name }}
+              </div>
+            </li>
+            <div class="kailong" v-show="selectIndex == 2"></div>
+            <div class="program" v-show="selectIndex == 2">
+              <div
+                :class="paySelectIndex == 0 ? 'programActive' : ''"
+                @click="paySelect(0)"
+              >
+                金融支付
+              </div>
+              <div
+                :class="paySelectIndex == 1 ? 'programActive' : ''"
+                @click="paySelect(1)"
+              >
+                互联网
+              </div>
+              <div
+                :class="paySelectIndex == 2 ? 'programActive' : ''"
+                @click="paySelect(2)"
+              >
+                跨境 / 进出口
+              </div>
+            </div>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="header header1"
+        :class="show1 ? 'slideUp' : 'slideDown'"
+        v-show="show"
+      >
+        <div class="left">
+          <img
+            @click="goPath({ path: '/home' })"
+            src="@/assets/img/logo2.png"
+            alt=""
+          />
+        </div>
+        <div class="right">
+          <ul>
+            <li
+              v-for="(item, index) in menuList"
+              :key="index"
+              @click="selectMenu(index)"
+            >
+              <div :class="selectIndex == index ? 'active' : ''">
+                {{ item.name }}
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <img class="homeBg" :src="menuList[selectIndex].img" alt="" />
+      <div class="title" :style="{ top: selectIndex == 0 ? '258px' : '220px' }">
+        {{ menuList[selectIndex].title }}
+      </div>
+      <div class="des" :style="{ top: selectIndex == 0 ? '377px' : '320px' }">
+        {{ menuList[selectIndex].des }}
+      </div>
+      <img
+        class="select"
+        src="@/assets/img/select.png"
+        alt=""
+        v-show="selectIndex == 0"
+      />
+    </div>
+    <router-view />
+    <div class="foot">
+      <div class="content">
+        <div class="foot1">
+          <div><img src="@/assets/img/footLogo.png" alt="" /></div>
+          <div><span @click="goPath({ path: '/aboutUs' })">关于我们</span></div>
+          <div><span @click="goPath({ path: '/new' })">新闻资讯</span></div>
+          <div>
+            <span @click="goPath({ path: '/contactUs' })">联系我们</span>
+          </div>
+        </div>
+        <div class="foot2" style="margin-top: 20px">
+          <div style="color: #333333"><span>关注我们</span></div>
+          <div>
+            <span @click="goPath({ path: '/solutionPay' })">解决方案</span>
+          </div>
+          <div>
+            <span @click="goPath({ path: '/new', query: { type: 0 } })"
+              >公司资讯</span
+            >
+          </div>
+          <div>你更喜欢电子邮件吗?</div>
+        </div>
+        <div class="foot2">
+          <div>实时动态与招聘信息</div>
+          <div><span @click="goPath({ path: '/aboutUs' })">关于我们</span></div>
+          <div>
+            <span @click="goPath({ path: '/new', query: { type: 1 } })"
+              >活动资讯</span
+            >
+          </div>
+          <div>
+            <a href="mailto:linying@syy333.com" style="color: #8f90a5"
+              >linying@syy333.com</a
+            >
+          </div>
+        </div>
+        <div class="foot2">
+          <div style="position: relative">
+            <img class="weixin" src="@/assets/img/weixin.png" alt="" />
+            <img
+              class="erweima"
+              src="@/assets/img/contactUs/erweima1.png"
+              alt=""
+            />
+          </div>
+          <div><span @click="goPath({ path: '/joinUs' })">加入我们</span></div>
+        </div>
+      </div>
+      <a href="https://beian.miit.gov.cn/" target="_blank" class="bah">
+        ©三益友（福州）信息技术有限公司
+        <img src="@/assets/img/bah.png" alt="" />闽ICP备案2020021055号
+      </a>
+    </div>
+  </div>
+</template>
+
+<script>
+/**
+ *
+ * @Author zzl
+ * @Date 2020/11/18 15:34.
+ */
+import homeBg1 from "@/assets/img/homeBg.png";
+import homeBg2 from "@/assets/img/homeBg2.png";
+
+export default {
+  components: {},
+  props: {},
+  data() {
+    return {
+      show: false,
+      show1: false,
+      show2: false,
+      selectIndex: 0,
+      paySelectIndex: 0,
+      menuList: [
+        {
+          name: "首 页",
+          title: "面向电商互联网服务提供商",
+          des: "业务多元化 | 服务定制化 | 市场全球化",
+          img: homeBg1,
+        },
+        {
+          name: "关于我们",
+          title: "关于我们",
+          des: "态度正确、能力非凡、品质高尚、追求极致",
+          img: homeBg2,
+        },
+        {
+          name: "解决方案",
+          title: "金融支付",
+          des: "便携高效 安全支付 全方位个性服务",
+          img: homeBg2,
+        },
+        {
+          name: "新闻资讯",
+          title: "新闻资讯",
+          des: "我们一起去创造、发现更对",
+          img: homeBg2,
+        },
+        {
+          name: "加入我们",
+          title: "加入我们",
+          des: "我们在一起，就会了不起",
+          img: homeBg2,
+        },
+        {
+          name: "联系我们",
+          title: "联系我们",
+          des: "一起去发现更多",
+          img: homeBg2,
+        },
+      ],
+      scaleRatio: 1, // 缩放比率
+    };
+  },
+  computed: {},
+  mounted() {
+    switch (this.$route.path) {
+      case "/home":
+        this.selectIndex = 0;
+        break;
+      case "/aboutUs":
+        this.selectIndex = 1;
+        break;
+      case "/solutionPay":
+        this.selectIndex = 2;
+        this.paySelectIndex = 0;
+        break;
+      case "/internet":
+        this.selectIndex = 2;
+        this.paySelectIndex = 1;
+        break;
+      case "/outbound":
+        this.selectIndex = 2;
+        this.paySelectIndex = 2;
+        break;
+      case "/new":
+        this.selectIndex = 3;
+        break;
+      case "/newDetail":
+        this.selectIndex = 3;
+        break;
+      case "/joinUs":
+        this.selectIndex = 4;
+        break;
+      case "/contactUs":
+        this.selectIndex = 5;
+        break;
+    }
+
+    // 设置缩放
+    window.onload = () => {
+      this.scaleRatio = setScale();
+    };
+    window.onresize = () => {
+      this.scaleRatio = setScale();
+    };
+
+    function setScale() {
+      // 设计稿：1920 * 1080
+      // 1.设计稿尺寸
+      let targetWidth = 1920;
+      // 2.拿到当前设备（浏览器）的宽度
+      // document.documentElement  获取html的宽度
+      let currentWidth =
+        document.documentElement.clientWidth || document.body.clientWidth;
+      // 3.计算缩放比率(屏幕过宽，根据高度计算缩放比例)
+      let scaleRatio = currentWidth / targetWidth;
+      // 4.开始缩放网页
+      // 宽度>1920 顶部中心缩放
+      if (currentWidth > targetWidth) {
+        document.body.style = `transform: scale(${scaleRatio}); transform-origin: top center;`;
+      }
+      // 宽度<1920 顶部靠左缩放
+      else {
+        document.body.style = `transform: scale(${scaleRatio}); transform-origin: top left;`;
+      }
+      return scaleRatio;
+    }
+
+    window.addEventListener("scroll", this.handleScroll);
+  },
+  methods: {
+    mouseenter(index) {
+      if (index == 2) {
+        this.show2 = true;
+      }
+    },
+    mouseleave(index) {
+      if (index == 2) {
+        setTimeout(() => {
+          this.show2 = false;
+        }, 1000);
+      }
+    },
+    goPath(obj) {
+      this.$router.push(obj);
+      window.scrollTo(0, 0);
+    },
+    handleScroll() {
+      var scrollTop =
+        window.pageYOffset ||
+        document.documentElement.scrollTop ||
+        document.body.scrollTop;
+      // let top = this.selectIndex == 0 ? 670 : 502;
+      let top = document.documentElement.querySelector(".header").offsetHeight + document.documentElement.querySelector(".header").offsetTop;
+      var headerElement = document.documentElement.querySelector(".header1");
+      if (scrollTop >= top) {
+        if (!this.show) {
+          this.show = true;
+          this.show1 = true;
+        }
+        headerElement.style = `top: ${scrollTop / this.scaleRatio}px`;
+      } else {
+        if (this.show) {
+          this.show1 = false;
+          setTimeout(() => {
+            this.show = false;
+          }, 400);
+        }
+      }
+    },
+    paySelect(index) {
+      window.scrollTo(0, 0);
+      this.paySelectIndex = index;
+      switch (index) {
+        case 0:
+          this.$router.push({ path: "/solutionPay" });
+          this.menuList[this.selectIndex].title = "金融支付";
+          this.menuList[this.selectIndex].des =
+            "便携高效 安全支付 全方位个性服务";
+          break;
+        case 1:
+          this.$router.push({ path: "/internet" });
+          this.menuList[this.selectIndex].title = "互联网";
+          this.menuList[this.selectIndex].des = "大数据，打通国际物流";
+          break;
+        case 2:
+          this.$router.push({ path: "/outbound" });
+          this.menuList[this.selectIndex].title = "跨境/进出口";
+          this.menuList[this.selectIndex].des =
+            "降低成本，打造一站式便捷跨境物流";
+          break;
+      }
+    },
+    selectMenu(index) {
+      window.scrollTo(0, 0);
+      this.selectIndex = index;
+      switch (index) {
+        case 0:
+          this.$router.push({ path: "/home" });
+          break;
+        case 1:
+          this.$router.push({ path: "/aboutUs" });
+          break;
+        case 2:
+          this.$router.push({ path: "/solutionPay" });
+          this.paySelectIndex = 0;
+          break;
+        case 3:
+          this.$router.push({ path: "/new" });
+          break;
+        case 4:
+          this.$router.push({ path: "/joinUs" });
+          break;
+        case 5:
+          this.$router.push({ path: "/contactUs" });
+          break;
+      }
+    },
+  },
+  watch: {
+    ["$route.path"]: function (val) {
+      switch (val) {
+        case "/home":
+          this.selectIndex = 0;
+          break;
+        case "/aboutUs":
+          this.selectIndex = 1;
+          break;
+        case "/solutionPay":
+          this.selectIndex = 2;
+          this.paySelectIndex = 0;
+          break;
+        case "/internet":
+          this.selectIndex = 2;
+          this.paySelectIndex = 1;
+          break;
+        case "/outbound":
+          this.selectIndex = 2;
+          this.paySelectIndex = 2;
+          break;
+        case "/new":
+          this.selectIndex = 3;
+          break;
+        case "/newDetail":
+          this.selectIndex = 3;
+          break;
+        case "/joinUs":
+          this.selectIndex = 4;
+          break;
+        case "/contactUs":
+          this.selectIndex = 5;
+          break;
+      }
+    },
+  },
+  filters: {},
+  beforeDestroy() {},
+};
+</script>
+
+<style lang="less" scoped>
+.slideUp {
+  animation-name: slideUp;
+  -webkit-animation-name: slideUp;
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.slideDown {
+  animation-name: slideDown;
+  -webkit-animation-name: slideDown;
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+.index {
+  width: 100%;
+  min-width: 1920px;
+  /*height: 100%;*/
+
+  .main1 {
+    width: 100%;
+    height: 670px;
+    position: relative;
+
+    .homeBg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .title {
+      position: absolute;
+      top: 258px;
+      width: 100%;
+      font-size: 62px;
+      font-family: Source Han Sans CN;
+      font-weight: 400;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .des {
+      position: absolute;
+      top: 377px;
+      width: 100%;
+      font-size: 28px;
+      font-family: Source Han Sans CN;
+      font-weight: 400;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .select {
+      width: 55px;
+      height: 55px;
+      position: absolute;
+      top: 551px;
+      left: calc(50% - 27px);
+    }
+  }
+
+  .header {
+    width: 100%;
+    min-width: 1920px;
+    height: 50px;
+    line-height: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 0 6%;
+    box-sizing: border-box;
+
+    .left {
+      font-size: 30px;
+      font-family: HuXiaoBo-NanShen;
+      font-weight: 400;
+      cursor: pointer;
+      img {
+        display: block;
+      }
+    }
+
+    .right {
+      position: relative;
+      .li:nth-child(3):hover .program {
+        display: block;
+      }
+      .kailong {
+        width: 0;
+        height: 0;
+        border-right: 20px solid transparent;
+        border-left: 20px solid transparent;
+        border-bottom: 20px solid white;
+        position: absolute;
+        top: 85px;
+        left: 246px;
+      }
+
+      .programActive {
+        color: #fe3b35;
+      }
+
+      .program {
+        position: absolute;
+        top: 100px;
+        left: 56px;
+        width: 420px;
+        height: 45px;
+        line-height: 45px;
+        background: #ffffff;
+        border-radius: 5px;
+        font-size: 18px;
+        font-family: Source Han Sans CN;
+        font-weight: 300;
+        color: #232330;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        cursor: pointer;
+      }
+    }
+
+    .right ul {
+      font-size: 20px;
+      font-family: Source Han Sans CN;
+      font-weight: 500;
+      display: inline-flex;
+
+      li {
+        list-style: none;
+        padding-left: 20px;
+        padding-right: 20px;
+        cursor: pointer;
+        box-sizing: content-box;
+        /*font-weight: bold;*/
+      }
+
+      li .active:after {
+        content: "";
+        display: block;
+        bottom: 0;
+        width: 100%;
+        height: 5px;
+        background: #fe3b35;
+        transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+        left: 0;
+        right: 0;
+        margin: auto;
+      }
+
+      li div:after {
+        content: "";
+        display: block;
+        bottom: 0;
+        width: 0%;
+        height: 5px;
+        background: #fe3b35;
+        transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+        left: 0;
+        right: 0;
+        margin: auto;
+        color: #fe3b35;
+      }
+
+      li div:hover:after {
+        width: 100%;
+      }
+
+      li div:hover {
+        color: #fe3b35;
+      }
+
+      .active {
+        color: #fe3b35;
+        /*font-weight: bold;*/
+        /*border-bottom: 5px solid #FE3B35;*/
+      }
+    }
+  }
+
+  .header1 {
+    width: 100%;
+    min-width: 1920px;
+    color: #333333;
+    height: 80px;
+    z-index: 999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 25px 6%;
+    background: #fff;
+    animation-duration: 0.5s;
+    /* Safari and Chrome */
+    -webkit-animation-duration: 0.5s;
+    box-shadow: 0px 5px 10px 0px rgba(35, 35, 48, 0.05);
+  }
+
+  .foot {
+    width: 100%;
+    height: 390px;
+    background: url("~@/assets/img/footBg.png") no-repeat;
+    background-size: 100% 100%;
+
+    .content {
+      width: 100%;
+      min-width: 1920px;
+      margin: 0 auto;
+      padding: 67px 10% 0;
+
+      .foot1 {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        font-size: 20px;
+        font-family: Source Han Sans CN;
+        font-weight: 400;
+        color: #333333;
+        line-height: 77px;
+        img {
+          width: 188px;
+          height: 77px;
+          display: block;
+        }
+
+        div {
+          width: 25%;
+          span {
+            cursor: pointer;
+          }
+        }
+      }
+
+      .foot2 {
+        font-size: 16px;
+        font-family: Source Han Sans CN;
+        font-weight: 400;
+        color: #8f90a5;
+        line-height: 36px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        div {
+          width: 25%;
+          span {
+            cursor: pointer;
+          }
+        }
+
+        .weixin {
+          margin-top: 10px;
+          margin-left: -10px;
+          cursor: pointer;
+        }
+
+        .erweima {
+          position: absolute;
+          bottom: 0;
+          left: 70px;
+          width: 150px;
+          display: none;
+        }
+
+        .weixin:hover + .erweima {
+          display: block;
+        }
+      }
+    }
+
+    .bah {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      color: #8997a4;
+      font-size: 16px;
+      font-family: Source Han Sans CN;
+      font-weight: 400;
+
+      img {
+        margin-left: 66px;
+        margin-right: 23px;
+      }
+    }
+  }
+}
+</style>
+```
+
