@@ -1634,9 +1634,455 @@ Node.js 中的第三方模块又叫做包。
 
 #### 3.2 npm
 
-全球最大的包共享平台 https://www.npmjs.com/
+全球最大的包共享平台 https://www.npmjs.com/，我们可以从这个网站上**搜索**到需要的包；
 
-#### 
+另外`npm, Inc.`公司提供了一个地址为https://registry.npmjs.org/的服务器，来对外共享所有的包，我们可以从这个服务器上**下载**自己所需要的包。
+
+1. 下载包
+
+   使用包管理工具（`Node Package Manager`，简称npm包管理工具，Node.js自带），从https://registry.npmjs.org/服务器把所需要的包下载到本地使用。
+
+   我们可以在终端执行`npm -v`命令，来查看电脑上安装的npm包管理工具的版本号。
+
+2. npm体验：格式化时间的两种做法
+
+   - 格式化时间的传统做法：
+
+     1）创建格式化时间的自定义模块
+
+     `dateFormat.js`
+
+     2）定义格式化时间的方法
+
+     3）创建补零函数
+
+     4）从自定义模块中导出格式化时间的函数
+
+     ```js
+     // dateFormat.js
+     // 创建格式化时间函数
+     function dateFormat(dtStr) {
+     	const dt = new Date()
+         const y = dt.getFullYear()
+         const m = padZero(dt.getMonth() + 1)
+         const d = padZero(dt.getDate())
+         
+         const hh = padZero(dt.getHours())
+         const mm = padZero(dt.getMinutes())
+         const ss = padZero(dt.getSeconds())
+         
+         return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
+     }
+     
+     // 创建补0函数
+     function padZero(n) {
+     	return n > 9 ? n : '0'+ n;
+     }
+     
+     // 导出格式化时间函数
+     module.exports = {
+     	dateFormat
+     }
+     ```
+
+     5）导入格式化时间的自定义模块
+
+     ```js
+     // 导入自定义格式化时间模块
+     const TIME = require('./dateFormate')
+     const dt = new Date()
+     // 调用格式化时间函数
+     const newDT = TIME.dateFormat(dt)
+     console.log(newDT)
+     ```
+
+   - `moment`包
+
+     1）使用npm包管理工具，在项目中安装格式化时间包`moment`
+
+     2）使用`require()`导入格式化时间的包
+
+     3）参考`moment`的官方API文档对时间进行格式化https://momentjs.com/docs/#/use-it/
+
+     ```js
+     const moment = require('moment')
+     
+     // moment() 获取当前时间
+     // format() 对时间进行格式化
+     const dt = moment().format('YYYY-MM-DD HH:mm:ss')
+     
+     console.log(dt)
+     ```
+
+3. 项目中安装包
+
+   ```shell
+   npm install 包的完整名称
+   ```
+
+   简写：
+
+   ```shell
+   npm i 包的完整名称
+   ```
+
+4. 初次装包后多了哪些文件
+
+   - `node_modules`文件夹：存放所有已安装到项目中的包。`require()`导入第三方包时，就是从这个目录中查找并加载包；
+
+   - `package-lock.json`配置文件：记录`node_modules`目录下的每一个包的下载信息，例如包的名字、版本号、下载地址等。
+
+     ![image-20231016150234312](https://gitee.com/v876774538/my-img/raw/master/image-20231016150234312.png)
+
+     注意：二者由npm包管理工具自动维护，不要手动修改。
+
+5. 安装指定版本的包
+
+   默认情况下，使用`npm install`命令安装包会自动安装最新版本的包。
+
+   如果需要安装指定版本的包，可以在包名之后，通过`@`符号指定具体版本：
+
+   ```shell
+   npm i moment@2.22.2
+   ```
+
+6. 包的语义化版本规范
+
+   包的版本号是以**“点分十进制”**的形式进行定义的。总共有三维数字，例如`2.24.0`。
+
+   - 第1位数字：代表`大版本`；
+
+   - 第2位数字：代表`功能版本`；
+
+   - 第3位数字：代表`Bug修复版本`。
+
+   > 版本号提升规则：只要前面的版本号增长，后面的版本号就**归零**。
+
+7. 包管理配置文件`package.json`
+
+   npm规定，在`项目根目录`中，必须提供一个叫做`package.json`的包管理配置文件，用来记录与项目有关的一些配置信息。例如：
+
+   - 项目的名称、版本号、描述；
+   - 项目中使用的包；
+   - 声明哪些包仅在`开发期间`使用，哪些包在`开发`和`部署`时都需要使用。
+
+   **多人协作问题：**
+
+   ![image-20231016153101714](https://gitee.com/v876774538/my-img/raw/master/image-20231016153101714.png)
+
+   在共享代码时剔除`node_modules`目录（将`node_modules`文件添加到`.gitignore`git忽略文件中），**根据`package.json`配置文件记录的安装包使用`npm install`或`npm i`一次性安装所有的依赖包**，从而方便团队成员之间共享项目源代码。
+
+   **快速创建`package.json`文件：**
+
+   ```shell
+   npm init -y
+   ```
+
+   注意：
+
+   - 上述命令只能在英文目录下成功运行。项目文件夹名称一定要使用英文命名，且不能出现空格；
+   - 运行`npm install`命令安装包时，npm包管理工具会自动把包的名称及版本号记录到`package.json`中。
+
+   **`dependencies`节点：** 专门用来记录我们使用`npm install`命令安装了那些包。
+
+   ![image-20231016154017546](https://gitee.com/v876774538/my-img/raw/master/image-20231016154017546.png)
+
+   **`devDependencies`节点：** 如果某些包**只在项目开发阶段使用**，则建议把这些包记录到`devDependencies`节点中。
+
+   ```shell
+   npm i 包名 -D
+   
+   // 完整形式
+   npm install 包名 --save-dev
+   ```
+
+8. 卸载项目中的包
+
+   ```shell
+   npm uninstall 包名
+   ```
+
+   注意：`npm uninstall`命令执行成功后，会将卸载的包自动从`package.json`的`dependencies`中移除掉。
+
+9. 解决下包速度慢的问题：
+
+   - 淘宝npm镜像服务器
+
+     ![image-20231016155248274](https://gitee.com/v876774538/my-img/raw/master/image-20231016155248274.png)
+
+     淘宝在国内搭建了一个服务器，专门把国外官方服务器上的包同步到国内服务器，然后在国内提供下包的服务，从而极大地提高了下包的速度。
+
+     扩展：**镜像(Mirroring)** 是一种文件存储形式，一个磁盘上的数据在另一个磁盘上存在一个完全相同的副本，即为镜像。
+
+   - 切换npm的下包镜像源
+
+     下包的镜像源，指下包的服务器地址。
+
+     ```shell
+     # 查看当前的下包镜像源
+     npm config get registry
+     
+     # 将下包的镜像源切换为淘宝镜像源
+     npm config set registry=https://registry.npm.taobao.org/
+     # 检查镜像源是否下载成功
+     npm config get registry
+     ```
+
+   - nrm（非必须）
+
+     `nrm`工具提供了终端命令，可以快速查看和切换下包的镜像源。
+
+     ```shell
+     # 通过npm包管理器将nrm安装为全局可用的工具
+     npm i nrm -g
+     # 查看所有可用的镜像源
+     nrm ls
+     # 将下包的镜像源切换为taobao镜像
+     nrm use taobao
+     ```
+
+#### 3.3 包的分类
+
+1. 项目包：被安装到项目的`node_module`目录的包，都属于项目包
+
+   - 开发依赖包（记录在`devDependencies`节点，仅在开发期间使用）
+   - 核心依赖包（记录在`dependencies`节点，在开发及上线之后都会使用）
+
+   ```shell
+   npm i 包名 -D	# 开发依赖包
+   npm i 包名	# 核心依赖包
+   ```
+
+2. 全局包：在执行`npm install`命令时，如果提供了`-g`参数，则会把包安装为`全局包`
+
+   全局包默认会被安装到`C:\Users\用户目录\AppData\Roaming\npm\node_modules`目录下。
+
+   ![image-20231016161522003](https://gitee.com/v876774538/my-img/raw/master/image-20231016161522003.png)
+
+   ```shell
+   npm i 包名 -g			# 全局安装
+   npm uninstall 包名 -g	 # 卸载全局包
+   ```
+
+3. i5ting_toc：一个可以把`md`文档转为`html`页面的小工具，使用步骤如下
+
+   ```shell
+   # 安装
+   npm install -g i5ting_toc
+   # 调用
+   i5ting_toc -f 要转换的md文件路径 -o
+   ```
+
+   ![image-20231016164049750](https://gitee.com/v876774538/my-img/raw/master/image-20231016164049750.png)
+
+#### 3.4 规范的包结构
+
+1. 包必须以`单独的目录`存在
+
+   ![image-20231016164249132](https://gitee.com/v876774538/my-img/raw/master/image-20231016164249132.png)
+
+2. 包的顶级目录下必须包含`package.json`这个包管理配置文件
+
+   ![image-20231016164354812](https://gitee.com/v876774538/my-img/raw/master/image-20231016164354812.png)
+
+3. `package.json`中必须包含`name`，`version`，`main`三个属性，分别代表包的名字、版本号、包的入口
+
+#### 3.5 开发属于自己的包
+
+1. 需要实现的功能
+
+   - 格式化日期
+   - 转义HTML中的特殊字符
+   - 还原HTML中的特殊字符
+
+2. 初始化包的基础结构
+
+   - 新建`itheima-tools`文件夹，作为**包的根目录**
+
+   - 在`itheima-tools`文件夹中，新建以下文件：
+
+     - `package.json`包管理配置文件
+     - `index.js`包的入口文件
+     - `src目录`将不同功能进行模块化拆分，放到src目录下
+     - `README.md`包的说明文档
+
+     ![image-20231016172732963](https://gitee.com/v876774538/my-img/raw/master/image-20231016172732963.png)
+
+3. 初始化`package.json`
+
+   ```json
+   {
+   	"name": "itheima-tools",
+       "version": "1.0.0",
+       "main": "index.js",
+       "description": "提供了格式化时间、HTML Escape的功能",
+       "keywords": ["itheima", "dateFormat", "escape"],
+       "license": "ISC"
+   }
+   ```
+
+   - name：包名
+
+   - version：包的版本
+
+   - main：指定包的入口文件路径
+
+   - desciption：包的剪短的描述信息
+
+     ![image-20231016170520010](https://gitee.com/v876774538/my-img/raw/master/image-20231016170520010.png)
+
+   - keywords：数组，每一项都是字符串，搜索关键字
+
+   - license：许可协议，https://www.jianshu.com/p/86251523e898
+
+     ![image-20231016170740409](https://gitee.com/v876774538/my-img/raw/master/image-20231016170740409.png)
+
+4. 在`src/dateFormat.js`中定义格式化时间的方法
+
+   ```js
+   // 创建格式化时间函数
+   function dateFormat(dtStr) {
+   	const dt = new Date()
+       const y = dt.getFullYear()
+       const m = padZero(dt.getMonth() + 1)
+       const d = padZero(dt.getDate())
+       
+       const hh = padZero(dt.getHours())
+       const mm = padZero(dt.getMinutes())
+       const ss = padZero(dt.getSeconds())
+       
+       return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
+   }
+   
+   // 创建补0函数
+   function padZero(n) {
+   	return n > 9 ? n : '0'+ n;
+   }
+   
+   // 导出格式化时间函数
+   module.exports = {
+   	dateFormat
+   }
+   ```
+
+5. 在`src/htmlEscape.js`中定义转义及还原HTML的方法
+
+   ```js
+   // 定义转义HTML字符串函数
+   function htmlEscape(htmlStr) {
+       return htmlStr.replace(/<|>|"|&/g, (match) => {
+           switch(match) {
+               case '<':
+                   return '&lt;'
+               case '>':
+                   return '&gt;'
+               case '"':
+                   return '&quot;'
+               case '&':
+                   return '&amp;'
+           }
+       })
+   }
+   
+   // 定义还原HTML字符串函数
+   function htmlUnEscape(htmlStr) {
+       return htmlStr.replace(/&lt;|&gt;|&quot;|&amp;/g, (match) => {
+           switch(match) {
+               case '&lt;':
+                   return '<'
+               case '&gt;':
+                   return '>'
+               case '&quot;':
+                   return '"'
+               case '&amp;':
+                   return '&'
+           }
+       })
+   }
+   
+   module.exports = {
+       htmlEscape,
+       htmlUnEscape
+   }
+   ```
+
+6. `index.js`引入
+
+   ```js
+   const date = require('./src/dateFormat')
+   const escape = require('./src/htmlEscape')
+   
+   // 向外暴露需要的成员
+   // ...展开运算符
+   module.exports = {
+       ...date,
+       ...escape
+   }
+   ```
+
+7. 编写包的说明文档`README.md`
+
+   将包的使用说明，以markdown的格式写出来，方便用户参考。
+
+   ```markdown
+   ## 安装
+   npm install itheima-tools
+   
+   ## 导入
+   const itheima = require('itheima-tools')
+   
+   ## 格式化时间
+   const dtStr = itheima.dateFormat(new Date())
+   console.log(dtStr)
+   
+   ## 转义HTML
+   const htmlStr = '<h1 title="abc">这是h1标签<span>123&nbsp;</span></h1>'
+   const str = itheima.htmlEscape(htmlStr)
+   console.log(str)
+   
+   ## 还原HTML
+   const str2 = itheima.htmlUnEscape(str)
+   console.log(str2)
+   
+   ## 开源协议
+   ISC
+   ```
+
+8. 发布包
+
+   - 注册npm账号https://www.npmjs.com/
+
+   - 登录
+
+     ```shell
+     npm login
+     ```
+
+     注意：在运行`npm login`之前，**必须把下包的服务器地址切换为npm的官方服务器！**
+
+   - 发布包
+
+     切换到包的根目录，运行`npm publish`命令，即可将包发布到npm上（注意：`包名不能雷同`）。
+
+     ```shell
+     npm publish
+     ```
+
+     ![image-20231016175446360](https://gitee.com/v876774538/my-img/raw/master/image-20231016175446360.png)
+
+   - 删除包
+
+     运行`npm unpublish 包名 --force`，即可从npm删除已发布的包。
+
+     ```shell
+     npm unpublish 包名 --force
+     ```
+
+     注意：
+
+     - 只能删除`72小时内`发布的包
+     - 通过该命令删除的包，在`24小时内`不允许重复发布
+     - 发布包时要慎重，尽量不往npm上发布无意义的包
 
 ### 4.模块的加载机制
 
