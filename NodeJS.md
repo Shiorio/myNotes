@@ -2086,5 +2086,762 @@ Node.js 中的第三方模块又叫做包。
 
 ### 4.模块的加载机制
 
+#### 4.1 优先从缓存中加载
 
+**模块在第一次加载后会被缓存**。
+
+这也就意味着多次调用`require()`并不会导致模块代码被重复执行。
+
+不论是内置模块、用户自定义模块还是第三方模块，它们都会优先从缓存中加载，从而**提高模块的加载效率**。
+
+#### 4.2 内置模块的加载机制
+
+内置模块是由Node.js官方提供的模块，**内置模块的加载优先级最高**。
+
+例如，`require('fs')`始终返回内置的fs模块，即使在`node_modules`目录下有名字相同的其他fs包。
+
+#### 4.3 自定义模块的加载机制
+
+使用`require()`加载自定义模块时，必须指定以`./`或`../`开头的**路径标识符**。在加载自定义模块时，如果没有指定，NodeJs会把它当做`内置模块`或`第三方模块`进行加载。
+
+注意：在使用`require()`导入自定义模块时，如果省略了文件的扩展名，则Node.js会按顺序分别尝试加载以下的文件：
+
+1. 按照`确切的文件名`进行加载
+2. 补全`.js`扩展名进行加载
+3. 补全`.json`扩展名进行加载
+4. 补全`.node`扩展名进行加载
+5. 加载失败，终端报错
+
+#### 4.4 第三方模块的加载机制
+
+如果传递给`require()`的模块标识符不是一个内置模块，也没有以`./`或`../`开头，则Node.js会从当前模块的父目录开始，尝试**从`/node_modules`文件夹中加载第三方模块**。
+
+如果没有找到对应的第三方模块，则移动到上一层父目录中，进行加载，直到文件系统的根目录。
+
+![image-20231017103954937](https://gitee.com/v876774538/my-img/raw/master/image-20231017103954937.png)
+
+#### 4.5 目录作为模块
+
+当目录作为模块标识符，传递给`require()`进行加载的时候，有三种加载方式：
+
+1. 在被加载的目录下查找一个叫做`package.json`的文件，并寻找`main`属性，作为`require()`加载的入口
+2. 若目录中**没有**`package.json`文件，或`main`**入口不存在/无法解析**，则Node.js会视图加载目录下的`index.js`文件
+3. 若以上两步均失败，Node.js会在终端打印错误信息，报告模块缺失：`Error: Cannot find module 'xxx'`
+
+## 十一、Express
+
+### 1.初识Express
+
+#### 1.1 Express简介
+
+1. 概述
+
+   > 官方概念：Express是基于Node.js平台，快速、开放、极简的**Web开发框架**。
+
+   Express的作用和Node.js内置的http模块类似，是专门**用来创建Web服务器**的。**本质上就是npm上的第三方包，提供了快速创建Web服务器的方法**（Express是基于内置的http模块进一步封装而来的）。
+
+   Express中文官网：http://www.expressjs.com.cn/
+
+2. 作用
+
+   - `Web网站服务器`：专门对外提供Web网页资源的服务器；
+   - `API接口服务器`：专门对外提供API接口的服务器
+
+#### 1.2 使用
+
+1. 安装
+
+   在项目所处的目录中，运行如下终端命令：
+
+   ```shell
+   npm install express --save
+   ```
+
+2. 创建基本的web服务器
+
+   ```js
+   // 1.导入express
+   const express = require('express')
+   // 2.创建web服务器
+   const app = express()
+   // 3.调用app.listen(端口号, 启动成功后的回调函数) 启动服务器
+   app.listen('80', () => {
+   	console.log('express server running at http://127.0.0.1')
+   })
+   ```
+
+3. 监听`GET请求`
+
+   通过`get()`方法，可以监听客户端的GET请求。具体语法格式如下：
+
+   ```js
+   app.get('请求URL', function(req, res) {
+   	// 处理函数
+   })
+   ```
+
+   - 参数1：客户端请求的URL地址
+   - 参数2：请求对应的处理函数
+     - req：请求对象，包含与请求相关的属性与方法；
+     - res：响应对象，包含与响应相关的属性与方法
+
+4. 监听`POST请求`
+
+   通过`post()`方法，可以监听客户端的POST请求。具体语法格式如下：
+
+   ```js
+   app.post('请求URL', function(req, res) {
+   	// 处理函数
+   })
+   ```
+
+   - 参数1：客户端请求的URL地址
+   - 参数2：请求对应的处理函数
+     - req：请求对象，包含与请求相关的属性与方法；
+     - res：响应对象，包含与响应相关的属性与方法
+
+5. 把内容`响应`给客户端
+
+   通过调用`res.send()`方法，可以把处理好的内容，发送给客户端：
+
+   ```js
+   app.get('/user', (req, res) => {
+   	// 调用Express提供的res.send()方法，向客户端响应一个JSON对象
+   	res.send({
+   		name: 'zs',
+   		age: 20,
+   		gender: '男'
+   	})
+   })
+   
+   app.post('/user', (req, res) => {
+       // 向客户端发送文本内容
+       res.send('请求成功')
+   })
+   ```
+
+6. 获取URL中携带的查询参数
+
+   通过`req.query`对象，可以访问到客户端通过`查询字符串`的形式，发送到服务器的参数：
+
+   ```js
+   app.get('/', (req, res) => {
+   	// req.query 默认是一个空对象
+   	// 客户端使用 ?name=zs&age=20 这种url携带字符串的形式，发送到服务器的参数，可以通过req.query对象访问到，如：
+   	// req.query.name req.query.age
+   	console.log(req.query)
+   })
+   ```
+
+7. 获取URL中的动态参数
+
+   通过`req.params`对象，可以访问到URL中通过`:`匹配到的动态参数：
+
+   ```js
+   // URL地址中，可以通过:参数名的形式，匹配动态参数值
+   app.get('/user/:id/:name', (req, res) => {
+   	// req.params 默认是一个空对象
+   	// 里面存放通过:动态匹配到的参数值
+   	console.log(req.params)
+       res.send(req.params)
+   })
+   ```
+
+   ![image-20231017135912998](https://gitee.com/v876774538/my-img/raw/master/image-20231017135912998.png)
+
+#### 1.3 托管静态资源
+
+1. `express.static()`
+
+   通过`express.static()`创建一个**静态资源服务器**。例如，通过如下代码就可以将public目录下的图片、CSS文件、JavaScript文件对外开放访问：
+
+   ```js
+   // 指定静态资源目录
+   app.use(express.static('public'))
+   ```
+
+   现在，我们就可以访问public目录中的所有文件了：
+
+   http://localhost:3000/images/bg.jpg
+
+   http://localhost:3000/css/style.css
+
+   http://localhost:3000/js/login.js
+
+   Express**在指定的静态目录中查找文件**，并对外提供资源的访问路径。因此，存放静态文件的目录名(public)并不会出现在URL中。
+
+   ```js
+   const express = require('express')
+   cosnt app = express()
+   
+   // 调用express.static()快速地对外提供静态资源
+   app.use(express.static(path.join(__dirname, '../public')))
+   
+   app.listen(80, () => {
+   	console.log('express server running at http://127.0.0.1')
+   })
+   ```
+
+2. 托管多个静态资源目录
+
+   希望脱光多个静态资源目录，多次调用`express.static()`函数即可：
+
+   ```js
+   app.use(express.static('public'))
+   app.use(express.static('files'))
+   ```
+
+   访问静态资源文件时，`express.static()`会**根据目录的添加顺序查找所需的文件**。
+
+3. 挂载路径前缀
+
+   ```js
+   app.use('/public', express.static('public'))
+   ```
+
+   现在，我们就可以通过带有`/public`前缀的地址来访问public目录中的文件了：
+
+   http://localhost:3000/public/images/bg.jpg
+
+   http://localhost:3000/public/css/style.css
+
+   http://localhost:3000/public/js/login.js
+
+#### 1.4 nodemon
+
+1. 概述
+
+   在编写调试Node.js项目的时候，若修改了项目的代码，需要频繁地手动close再重新启动，非常繁琐。
+
+   因此我们可以使用`nodemon`(https://www.npmjs.com/package/nodemon)工具，它能够**监听项目文件的变动**，当代码被修改后，**自动帮我们重启项目**。
+
+2. 安装
+
+   在终端中，运行如下命令，将nodemon安装为全局可用的工具：
+
+   ```shell
+   npm install -g nodemon
+   ```
+
+3. 使用
+
+   在基于Node.js编写网站应用的时候，传统方式是运行`node app.js`命令，来启动项目。
+
+   现在，我们可以将`node`命令替换为`nodemon`命令，使用`nodemon app.js`来启动项目。
+
+### 2.Express路由
+
+#### 2.1 概述
+
+1. 路由
+
+   在Express中，路由指的是**客户端的请求**与**服务器处理函数**之间的**映射关系**。
+
+   Express中的路由分为3部分组成，分别是`请求的类型`、`请求的URL地址`、`处理函数`。格式如下：
+
+   ```js
+   app.METHOD(PATH, HANDLER)
+   ```
+
+   ```js
+   app.get('/', function(req, res) {
+   	res.send('Hello World!')
+   })
+   
+   app.post('/', function(req, res) {
+   	res.send('Got a POST request')
+   })
+   ```
+
+2. 路由的匹配过程
+
+   每当一个请求到达服务器之后，需要先经过路由的匹配，只有匹配成果之后，才会调用对应的处理函数。
+
+   在匹配时，会按照路由的**先后顺序**进行匹配，如果`请求类型`和`请求的URL`同时匹配成功，则Express会将这次请求，转交给对应的function函数进行处理。
+
+   ![image-20231017145522979](https://gitee.com/v876774538/my-img/raw/master/image-20231017145522979.png)
+
+#### 2.2 使用
+
+1. 最简单的用法
+
+   在Express中使用路由最简单的方式，就是把路由挂载到app（服务器实例）上，实例代码如下：
+
+   ```js
+   const express = require('express')
+   const app = express()
+   
+   // 挂载路由
+   app.get('/', function(req, res) {
+   	res.send('Hello World!')
+   })
+   app.post('/', function(req, res) {
+   	res.send('Got a POST request')
+   })
+   
+   // 启动Web服务器
+   app.listen(80, () => {
+   	console.log('Server running at http://127.0.0.1')
+   })
+   ```
+
+2. 模块化路由
+
+   为了方便对路由进行**模块化管理**，Express不建议将路由直接挂载到app上，而是**将路由抽离为单独的模块**。
+
+   步骤：
+
+   - 创建路由模块对应的`.js`文件
+   - 调用`express.Router()`函数创建路由对象
+   - 向路由对象上挂载具体的路由
+   - 使用`module.exports`向外共享路由对象
+   - 使用`app.use()`函数注册路由模块
+
+   ```js
+   // /router/user.js
+   // 创建路由模块
+   
+   // 导入express
+   var express = require('express')
+   // 创建路由对象
+   var router = express.Router()
+   
+   // 挂载具体的路由
+   // 挂载获取用户列表的路由
+   router.get('/user/list', function(req, res) {
+       res.send('Get user list.')
+   })
+   // 挂载添加用户的路由
+   router.post('/user/add', function(req, res) {
+       res.send('Add new user.')
+   })
+   
+   module.exports = router	// 向外导出路由对象
+   ```
+
+   ```js
+   // index.js
+   const express = require('express')
+   const app = express()
+   
+   // 导入路由模块
+   const userRouter = require('./router/user.js')
+   
+   // 使用app.use()注册路由模块
+   app.use(userRouter)
+   
+   app.listen(80, () => {
+       console.log('http://127.0.0.1')
+   })
+   ```
+
+   注意：`app.use()`函数的作用，就是来注册全局中间件。
+
+3. 为路由模块添加前缀
+
+   类似于托管静态资源时，为静态资源统一挂载访问前缀一样，路由模块添加前缀的方式也非常简单：
+
+   ```js
+   app.use('/api', userRouter)
+   ```
+
+### 3.Express中间件
+
+#### 3.1 概述
+
+1. 中间件
+
+   中间件(Middleware)，特指**业务流程的中间处理环节**。
+
+2. 中间件的`调用流程`
+
+   当一个请求到达Express服务器之后，可以**连续调用多个中间件**，从而对这次请求进行**预处理**。
+
+   ![image-20231017155144725](https://gitee.com/v876774538/my-img/raw/master/image-20231017155144725.png)
+
+3. 中间件的`格式`
+
+   Express中间件，本质上就是一个`function处理函数`，格式如下：
+
+   ![image-20231017155333572](https://gitee.com/v876774538/my-img/raw/master/image-20231017155333572.png)
+
+   中间件的形参列表中，**必须包含`next`参数**；路由处理函数中只包含`req`和`res`。
+
+4. next函数的作用
+
+   `next`函数是实现多个中间件连续调用的关键，它表示把流转关系**转交**给下一个中间件或路由。
+
+   ![image-20231017160236332](https://gitee.com/v876774538/my-img/raw/master/image-20231017160236332.png)
+
+#### 3.2 使用
+
+1. 定义中间件函数
+
+   ```js
+   // 常量 mw 所指向的，就是一个中间件函数
+   const mw = function(req, res, next) {
+   	console.log('这是一个简单的中间件函数')
+   	next()
+   }
+   ```
+
+2. `全局生效`的中间件
+
+   客户端发起的**任何请求**，到达服务器之后，**都会触发**的中间件，叫做**全局生效的中间件**。
+
+   > 类似于`路由守卫`/`请求拦截器`。
+
+   通过调用`app.use(中间件函数)`，即可注册一个全局生效的中间件（**全局中间件**），实例代码如下：
+
+   ```js
+   const express = require('express')
+   const app = express()	// 实例化
+   
+   // 定义一个最简单的中间件函数
+   // 常量 mw 所指向的，就是一个中间件函数
+   const mw = function(req, res, next) {
+   	console.log('这是一个简单的中间件函数')
+   	next()
+   }
+   
+   // 全局生效的中间件
+   app.use(mw)
+   
+   app.get('/', (req, res) => {
+       res.send('Home page.')
+   })
+   
+   app.get('/user', (req, res) => {
+       res.send('User page.')
+   })
+   
+   app.listen(80, () => {
+       console.log('http://127.0.0.1')
+   })
+   ```
+
+   定义全局中间件的**简化形式**：
+
+   ```js
+   app.use(function (req, res, next) {
+   	console.log('这是一个简单的中间件函数')
+   	next()
+   })
+   ```
+
+3. 中间件的作用
+
+   多个中间件和路由之间，**共享同一份`req`和`res`**。
+
+   基于这样的特性，我们可以在**上游**的中间件中，**统一**为req或res对象**添加自定义的属性或方法**，供**下游**的中间件或路由进行使用。
+
+   ```js
+   const express = require('express')
+   const app = express()	// 实例化
+   
+   app.use(function (req, res, next) {
+   	// 获取请求到达服务器的时间
+   	const time = Date.now()
+   	req.startTime = time	// 为req对象挂载自定义属性 把时间共享给后面的所有路由
+   	next()
+   })
+   
+   app.get('/', (req, res) => {
+       res.send('Home page.' + req.startTime)
+   })
+   
+   app.get('/user', (req, res) => {
+       res.send('User page.' + req.startTime)
+   })
+   
+   app.listen(80, () => {
+       console.log('http://127.0.0.1')
+   })
+   ```
+
+4. 定义多个全局中间件
+
+   可以使用`app.use()`连续定义多个全局中间件。
+
+   客户端请求到达服务器之后，会**按照中间件定义的先后顺序**依次进行调用，示例代码如下：
+
+   ```js
+   const express = require('express')
+   const app = express()	// 实例化
+   
+   // 第一个全局中间件
+   app.use(function (req, res, next) {
+   	console.log('第1个全局中间件')
+   	next()
+   })
+   
+   // 第二个全局中间件
+   app.use(function (req, res, next) {
+   	console.log('第2个全局中间件')
+   	next()
+   })
+   
+   app.get('/', (req, res) => {
+       res.send('Home page.')
+   })
+   
+   app.get('/user', (req, res) => {
+       res.send('User page.')
+   })
+   
+   app.listen(80, () => {
+       console.log('http://127.0.0.1')
+   })
+   ```
+
+5. `局部生效`的中间件
+
+   不使用`app.use()`定义的中间件，称作局部生效的中间件（局部中间件），示例代码如下：
+
+   ```js
+   const mw1 = function(req, res, next) {
+   	console.log('这是中间件函数')
+   	next()
+   }
+   
+   // mw1 仅在当前路由中生效
+   app.get('/', mw1, function(req, res) {
+   	res.send('Home page')
+   })
+   
+   app.get('/user', (req, res) => {
+       res.send('User page.')
+   })
+   ```
+
+6. 定义多个局部中间件
+
+   可以在路由中，通过如下两种**等价**的方式，**使用多个局部中间件**：
+
+   ```js
+   app.get('/', mw1, mw2, (req, res) => {
+   	res.send('Home page.')
+   })
+   // 或
+   app.get('/', [mw1, mw2], (req, res) => {
+   	res.send('Home page.')
+   })
+   ```
+
+7. 中间件使用注意事项
+
+   - 一定要**在路由之前注册中间件**；
+   - 客户端发送过来的请求，可以连续调用多个中间件进行处理；
+   - 执行完中间件业务代码之后，**不要忘记调用`next()`函数**；
+   - 为了防止代码逻辑的混乱，在调用`next()`之后，不要再书写额外的代码；
+   - 连续调用多个中间件时，**多个中间件之间，共享`req`和`res`对象**；
+
+#### 3.3 中间件的分类
+
+为了方便大家理解和记忆中间件的使用，Express官方把常见的中间件用法，分成了5大类，分别是：
+
+1. `应用级别`的中间件
+
+   通过`app.use()`或`app.get()`或`app.post()`绑定到app实例上的中间件，都叫做应用级别的中间件。
+
+2. `路由级别`的中间件
+
+   绑定到`express.Router()`实例上的中间件，叫做路由级别的中间件。它的用法和应用级别中间件没有任何区别。只不过应用级别中间件是绑定到app实例上的，而**路由级别中间件是绑定到router实例上**：
+
+   ```js
+   var express = require('express')
+   var app = express()
+   var router = express.Router()
+   
+   // 路由级别的中间件
+   router.use(function(req, res, next) {
+       console.log('Time:', Date.now())
+       next()
+   })
+   
+   app.use('/', router)
+   ```
+
+3. `错误级别`的中间件
+
+   用于捕获整个项目中发生的异常错误，从而防止项目异常崩溃的问题。
+
+   格式：错误级别中间件的function处理函数中，必须有4个形参，分别是(`err`, req, res, next)
+
+   ```js
+   // 路由在前 错误级别中间件在后
+   app.get('/', function(req, res) {
+   	throw new Error('服务器发生错误')	// 抛出自定义错误
+   	res.send('Home page.')
+   })
+   
+   // 错误级别中间件
+   app.use(function(err, req, res, next)) {
+   	console.log('发生错误' + err.message)
+   	res.send('Error!' + err.message)
+   }
+   ```
+
+   注意：错误级别的中间件，**必须注册在所有路由之后**！
+
+4. `Express`内置的中间件
+
+   自4.16.0版本开始，Express内置了3个常用的中间件，极大地提高了Express项目的开发效率和体验：
+
+   - `express.static`快速托管静态资源的内置中间件，可以托管如HTML文件、图片、CSS样式等（无兼容性要求）
+   - `express.json`解析JSON格式的请求体数据（有兼容性要求，仅在4.16.0+版本可用）
+   - `express.urlencoded`解析URL-encoded格式的请求体数据（有兼容性，仅在4.16.0+版本中可用）
+
+   ```js
+   // 配置解析 application/json 格式数据的内置中间件
+   app.use(express.json())
+   
+   // 配置解析 application/x-www-form-urlencoded 格式数据的内置中间件
+   app.use(express.urlencoded({ extended: false }))
+   ```
+
+   ```js
+   const express = require('express')
+   const app = express()	// 实例化
+   
+   // 除了错误级别的中间件，其他中间件必须在路由之前进行配置
+   app.use(express.json())	// 中间件解析之后 将数据挂载到req.body
+   
+   app.use(express.urlencoded({ extended: false }))
+   
+   app.post('/user', (req, res) => {
+   	// 在服务器，可以使用req.body这个属性来接收客户端发送过来的请求体数据（JSON格式/url-encoded格式）
+   	// 默认情况下，如果不配置解析表单数据的中间件，则req.body默认=undefined
+   	console.log(req.body)
+       res.send('ok.')
+   })
+   
+   app.post('/book', (req, res) => {
+       console.log(req.body)
+       res.send('ok.')
+   })
+   
+   app.listen(80, () => {
+       console.log('http://127.0.0.1')
+   })
+   ```
+
+5. `第三方`的中间件
+
+   非Express官方内置的，而是由第三方开发出来的中间件，叫做第三方中间件。在项目中，大家可以按需下载并配置第三方中间件，从而提高项目的开发效率。
+
+   例如，在express@4.16.0版本之前，人们经常使用`body-parser`这个第三方中间件来解析请求体数据：
+
+   - 运行`npm install body-parser`安装中间件
+   - 使用`require`导入中间件
+   - 调用`app.use()`注册并使用中间件
+
+   ```js
+   const express = require('express')
+   const app = express()	// 实例化
+   
+   const parser = require('body-parser')
+   app.use(parser.urlencoded({ extended: false }))
+   
+   app.post('/user', (req, res) => {
+   	console.log(req.body)
+       res.send('ok.')
+   })
+   
+   app.listen(80, () => {
+       console.log('http://127.0.0.1')
+   })
+   ```
+
+#### 3.4 自定义中间件
+
+需求描述：
+
+手动模拟一个类似于express.urlencoded这样的中间件，来**解析POST提交到服务器的表单数据**。
+
+实现步骤：
+
+1. 定义中间件
+
+   ```js
+   app.use(function(req, res, next) {
+   	// 中间件业务逻辑
+   	...
+   })
+   ```
+
+2. 监听req的`data`事件
+
+   获取客户端发送到服务器的数据。
+
+   如果数据量较大，无法一次性发送完毕，则客户端会**将数据切割后分批发送到服务器**。所以data时间可能会触发多次，每次触发data事件时，**获取到数据只是完整数据的一部分，需要手动对接收到的数据进行拼接**。
+
+   ```js
+   // 定义变量 存储客户端发送过来的请求体数据
+   let str = ''
+   // 监听req对象的data事件
+   req.on('data', (chunk) => {
+   	// 拼接请求体数据 隐式转换为字符串
+   	str += chunk
+   })
+   ```
+
+3. 监听req的`end`事件
+
+   当请求体数据接收完毕之后，会自动触发req的end事件。
+
+   因此我们可以在req的end事件中，**拿到并处理完整的请求体数据**。
+
+   ```js
+   req.on('end', () => {
+   	// 打印完整的请求体数据
+   	console.log(str)
+       // 解析数据
+       ...
+   })
+   ```
+
+4. 使用`querystring`模块解析请求体数据
+
+   
+
+5. 将解析出来的数据对象挂载到`req.body`
+
+6. 将自定义中间件封装为模块
+
+```js
+const express = require('express')
+const app = express()	// 实例化
+
+// 解析表单数据全局中间件
+app.use(function(req, res, next) {
+	// 定义变量 存储客户端发送过来的请求体数据
+    let str = ''
+    // 监听req对象的data事件
+    req.on('data', (chunk) => {
+        // 拼接请求体数据 隐式转换为字符串
+        str += chunk
+    })
+    // 监听req对象的end事件
+    req.on('end', () => {
+        // 打印完整的请求体数据
+        console.log(str)
+        // 解析数据
+        .../////////////////////////////////////////////////////////////////////////////////////////////////////////
+    })
+})
+
+app.post('/user', (req, res) => {
+	console.log(req.body)
+    res.send('ok.')
+})
+
+app.listen(80, () => {
+    console.log('http://127.0.0.1')
+})
+```
+
+
+
+### 4.使用Express写接口
 
