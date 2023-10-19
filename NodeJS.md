@@ -3319,8 +3319,415 @@ module.exports = apiRouter
 
    ![image-20231018174906089](https://gitee.com/v876774538/my-img/raw/master/image-20231018174906089.png)
 
-3. 
+   黑马教程：https://www.bilibili.com/video/BV1a34y167AZ/?p=59&spm_id_from=333.880.my_history.page.click&vd_source=c4ed744f2963d241685bef44e5cbfc8b
 
-#### 5.3 在Express中操作MySQL
+#### 5.3 MySQL基本使用
 
-#### 5.4 前后端的身份认证
+1. Workbench的基本用法
+
+   - 连接数据库
+
+   ![image-20231019145050816](https://gitee.com/v876774538/my-img/raw/master/image-20231019145050816.png)
+
+   - MySQL Workbench主界面组成部分
+
+     ![image-20231019145245311](https://gitee.com/v876774538/my-img/raw/master/image-20231019145245311.png)
+
+     ![image-20231019145329321](https://gitee.com/v876774538/my-img/raw/master/image-20231019145329321.png)
+
+   ​	点击控制三个区域的显示隐藏。
+
+   - 创建数据库
+
+     ![image-20231019145502713](https://gitee.com/v876774538/my-img/raw/master/image-20231019145502713.png)
+
+   ​	注意：数据库名称不要使用中文及空格，间隔尽量使用`_`
+
+   - 创建数据表
+
+     ![image-20231019145808626](https://gitee.com/v876774538/my-img/raw/master/image-20231019145808626.png)
+
+     DataType数据类型：
+
+     - `int`整数
+     - `varchar(len)`字符串
+     - `tinyint(1)`布尔值
+
+     字段特殊标识：
+
+     - `PK`(Primary Key)主键、唯一标识
+     - `NN`(Not Null)值不允许为空
+     - `UQ`(Unique)值唯一
+     - `AI`(Auto Increment)值自动增长
+
+     > id设为PK、NN、AI。
+
+     ![image-20231019150728125](https://gitee.com/v876774538/my-img/raw/master/image-20231019150728125.png)
+
+   - 向表中写入数据
+
+     ![image-20231019150932405](https://gitee.com/v876774538/my-img/raw/master/image-20231019150932405.png)
+
+2. 使用SQL管理数据库
+
+   - SQL
+
+     SQL(Structured Query Language)是`结构化查询语言`，专门用来`访问和处理数据库`的**编程语言**。能够让我们**以编程的形式，操作数据库里的数据**。
+
+     - SQL是一门`数据库编程语言`
+     - 使用SQL语言编写的代码叫做`SQL语句`
+     - SQL语言只能在`关系型数据库`中使用
+
+   - 作用
+
+     对数据库进行增删改查，创建新数据库、表，创建存储过程、视图等。
+
+   - `SELECT`语句
+
+     `SELECT`语句用于从表中`查询`数据。执行的结果被存储在一个`结果表`（结果集）中，语法格式如下：
+
+     ```sql
+     -- 注释
+     -- 从 FROM 指定的【表】中，查询出【所有的】数据
+     -- * 表示【所有列】
+     SELECT * FROM 表名称
+     
+     -- 从 FROM 指定的【表】中，查询出指定【列名称（字段）】的数据
+     SELECT 列名称 FROM 表名称
+     ```
+
+     注意：SQL语句中的`关键字`对`大小写不敏感`。
+
+     ```sql
+     SELECT username, password FROM  users
+     ```
+
+     ![image-20231019153942266](https://gitee.com/v876774538/my-img/raw/master/image-20231019153942266.png)
+
+   - `INSERT INTO`语句
+
+     `INSERT INTO`语句用于向数据表中`插入`新的数据行。语法格式如下：
+
+     ```sql
+     -- 向指定的表中，插入如下几列数据，列的值通过 values 来一一指定
+     -- 注意：列合值要一一对应，多个列合多个值之间，使用英文逗号分隔
+     INSERT INTO 表名称 (列1, 列2, ...) VALUES （值1, 值2, ...）
+     ```
+
+     ```sql
+     -- 插入一条username为'Tony Stark'，password为'098123'的数据
+     INSERT INTO users (username, password) VALUES ('Tony Stark', '098123')
+     ```
+
+     ![image-20231019154419299](https://gitee.com/v876774538/my-img/raw/master/image-20231019154419299.png)
+
+   - `UPDATE`语句
+
+     `UPDATE`语句用于`修改`表中的数据。语法格式如下：
+
+     ```sql
+     -- UPDATE 指定更新的表
+     -- SET 指定列对应的新值
+     -- WHERE 指定更新的条件
+     UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值
+     ```
+
+     ```sql
+     -- 把users表中id为4的用户密码更新为888888
+     UPDATE users SET password = '888888' WHERE id = 4
+     ```
+
+     ```sql
+     -- 把users表中id为2的用户密码和用户状态，分别更新为admin123和1
+     UPDATE users SET password = 'admin123', status = 1 WHERE id = 2
+     ```
+
+   - `DELETE`语句
+
+     `DELETE`语句用于`删除`表中的行。语法格式如下：
+
+     ```sql
+     -- 从指定的表中，根据 WHERE 条件，删除对应的数据行
+     DELETE FROM 表名称 WHERE 列名称 = 值
+     ```
+
+     ```sql
+     -- 从users表中删除id为4的用户
+     DELETE FROM users WHERE id = 4
+     ```
+
+   - `WHERE`子句
+
+     `WHERE`子句用于`限定`选择的标准。在SELECT、UPDATE、DELETE语句中，皆可使用`WHERE`子句来限定选择的标准。
+
+     可以在WHERE子句中使用的**运算符**：
+
+     | 操作符  |     描述     |
+     | :------ | :----------: |
+     | =       |     等于     |
+     | <> / != |    不等于    |
+     | >       |     大于     |
+     | <       |     小于     |
+     | >=      |   大于等于   |
+     | <=      |   小于等于   |
+     | BETWEEN | 在某个范围内 |
+     | LIKE    | 搜索某种模式 |
+
+     ```sql
+     -- 查询 status 为1的所有用户信息
+     SELECT * FROM users WHERE status = 1
+     
+     -- 查询 id 大于 2 的所有用户
+     SELECT * FROM users WHERE id > 2
+     
+     -- 查询 username 不等于 admin 的所有用户
+     SELECT * FROM users WHERE username != 'admin'
+     ```
+
+   - `AND`和`OR`运算符
+
+     `AND`和`OR`运算符可以在WHERE子语句中**把两个或多个条件结合起来**。`AND`相当于且（js中的`&&`）；`OR`相当于或（js中的`||`）。
+
+     ```sql
+     -- 显示所有 status 等于0 且 id 小于3 的用户
+     SELECT * FROM users WHERE status = 0 AND id < 3
+     
+     -- 显示所有 status 等于1 或 username 为zs的用户
+     SELECT * FROM users WHERE status = 1 OR username = 'zs'
+     ```
+
+   - `ORDER BY`子句
+
+     `ORDER BY`语句用于**根据指定的列**对**结果集**进行`排序`。
+
+     `ORDER BY`语句默认按照`升序`对记录进行排序，升序关键字`ASC`；`降序`排列需要使用`DESC`关键字。
+
+     ```sql
+     -- 对users表中的数据按照status字段进行升序排序
+     SELECT * FROM users ORDER BY status
+     SELECT * FROM users ORDER BY status ASC
+     
+     -- 对users表中的数据按照id字段进行降序排序
+     SELECT * FROM users ORDER BY id DESC
+     ```
+
+     **多重排序**：
+
+     ```sql
+     -- 对users表中的数据 先按照status字段进行降序排序 再按照usersname的字母顺序进行升序排序
+     SELECT * FROM users ORDER BY status DESC, username ASC
+     ```
+
+   - `COUNT(*)`函数
+
+     `COUNT(*)`函数用于返回查询结果的`总数据条数`。语法格式如下：
+
+     ```sql
+     SELECT COUNT(*) FROM 表名称
+     ```
+
+     ```sql
+     -- 查询users表中status为0的总数据条数
+     SELECT COUNT(*) FROM users WHERE status = 0
+     ```
+
+   - `AS`关键字
+
+     使用`AS`关键字**给列设置别名**。示例如下：
+
+     ```sql
+     SELECT 列名 AS 别名 FROM 表名
+     ```
+
+     ```sql
+     -- 使用AS关键字为COUNT列起别名
+     SELECT COUNT(*) AS total FROM users WHERE status = 0
+     
+     -- username别名uname password别名upwd
+     SELECT username AS uname, password AS upwd FROM users
+     ```
+
+#### 5.4 在Express中操作MySQL
+
+1. 安装MySQL数据库第三方模块(`mysql`)
+
+   ```shell
+   npm install mysql
+   ```
+
+2. 通过mysql模块连接到MySQL数据库
+
+   **`配置`mysql模块**：
+
+   ```js
+   // 导入mysql模块
+   const mysql = require('mysql')
+   // 建立MySQL数据库连接
+   const db = mysql.createPool({
+   	host: '127.0.0.1',	// 数据库IP地址
+   	user: 'root',		// 登录数据库的账号
+   	password: 'admin123',// 登录数据库的密码
+   	database: 'my_db_01',// 指定操作的数据库
+   })
+   ```
+
+3. 通过mysql模块执行SQL语句
+
+   **测试mysql模块能否正常工作**：
+
+   ```js
+   // 调用query()函数，指定要执行的SQL语句
+   db.query('SELECT 1', (err, res) => {
+   	if (err) {
+   		console.log(err.message)
+   		return false
+   	}
+   	console.log(res)	// 打印[ RowDataPacket { '1': 1 } ]的结果，就证明数据库连接正常
+   })
+   ```
+
+4. 查询数据
+
+   ```js
+   // 查询users表中的所有数据
+   db.query('SELECT * FROM users', (err, res) => {
+   	// 查询失败
+   	if (err) {
+   		console.log(err.message)
+   		return false
+   	}
+   	// 查询成功
+   	console.log(res)
+   })
+   ```
+
+   ![image-20231019171702422](https://gitee.com/v876774538/my-img/raw/master/image-20231019171702422.png)
+
+5. 插入数据
+
+   ```js
+   // 向users表中新增数据，其中username为'Spider-Man'，password为'pcc321'
+   // 定义要插入的数据
+   const user = {
+       username: 'Spider-Man',
+       password: 'pcc321'
+   }
+   // 待执行的sql语句
+   // ?表示占位符
+   const sqlStr = 'INSERT INTO users (username, password) VALUES (?, ?)'
+   // 使用数组的形式依次为?占位符指定具体的值
+   db.query(sqlStr, [user.username, user.password], (err, res) => {
+       if (err) return console.log(err.message)
+       // affectedRows 受影响的行数
+       if (res.affectedRows == 1) {
+           console.log('插入数据成功')
+       }
+   })
+   ```
+
+   向表新增数据时，如果`数据对象的每个属性`和`数据表的字段`**一一对应**，可以通过如下方式**快速插入数据**：
+
+   ```js
+   // 向users表中新增数据，其中username为'Spider-Man'，password为'pcc321'
+   // 定义要插入的数据
+   const user = {
+       username: 'Spider-Man',
+       password: 'pcc321'
+   }
+   // 待执行的sql语句
+   // ?表示占位符
+   const sqlStr = 'INSERT INTO users SET ?'
+   // 直接将数据对象当做占位符的值
+   db.query(sqlStr, user, (err, res) => {
+       if (err) return console.log(err.message)
+       // affectedRows 受影响的行数
+       if (res.affectedRows == 1) {
+           console.log('插入数据成功')
+       }
+   })
+   ```
+
+6. 更新数据
+
+   ```js
+   // 要更新的数据对象
+   const user = {
+   	id: 7,
+   	username: 'aaa',
+   	password: '000'
+   }
+   // 要执行的sql语句
+   const sqlStr = 'UPDATE users SET username = ?, passowrd = ? WHERE id = ?'
+   // 使用数组依次为占位符指定具体的值
+   db.query(sqlStr, [user.username, user.password, user.id], (err, res) => {
+       if (err) return console.log(err.message)
+       if (res.affectedRows == 1) {
+           console.log('更新数据成功')
+       }
+   })
+   ```
+
+   更新表数据时，如果`数据对象的每个属性`和`数据表的字段`**一一对应**，可以通过如下方式**快速更新数据**：
+
+   ```js
+   // 要更新的数据对象
+   const user = {
+   	id: 7,
+   	username: 'aaa',
+   	password: '000'
+   }
+   // 要执行的sql语句
+   const sqlStr = 'UPDATE users SET ? WHERE id = ?'
+   // 使用数组依次为占位符指定具体的值
+   db.query(sqlStr, [user, user.id], (err, res) => {
+       if (err) return console.log(err.message)
+       if (res.affectedRows == 1) {
+           console.log('更新数据成功')
+       }
+   })
+   ```
+
+7. 删除数据
+
+   ```js
+   // 要执行的SQL语句
+   const sqlStr = 'DELETE FROM users WHERE id = ?'
+   // 调用db.query()执行SQL语句的同时，为占位符指定具体的值
+   // 注意：若SQL语句中存在多个占位符，必须使用数组为每个占位符指定具体的值；如果仅有一个占位符，可以省略数组
+   db.query(sqlStr, 7, (err, res) => {
+   	if (err) return console.log(err.message)
+       if (res.affectedRows == 1) {
+           console.log('删除数据成功')
+       }
+   })
+   ```
+
+8. 标记删除
+
+   使用`DELETE`语句，会真正地把数据从表中删除（硬删除）。为了保险起见，推荐使用`标记删除`，来**模拟删除的动作**（软删除，便于恢复）。
+
+   所谓的标记删除，就是在表中设置类似于`status`这样的**状态字段**，用来**标记当前这条数据是否被删除**。
+
+   当用户执行了删除操作时，并不去执行`DELETE`语句直接将数据删除，而是执行`UPDATE`语句，将这条数据对应的`status`字段标记为删除即可。
+
+   ```js
+   db.query('UPDATE users SET status = 1 WHERE id = ?'， 6， (err, res) => {
+   	if (err) return console.log(err.message)
+       if (res.affectedRows == 1) {
+           console.log('删除数据成功')
+       }
+   })
+   ```
+
+#### 5.5 前后端的身份认证
+
+
+
+
+
+
+
+
+
+
+
