@@ -2420,7 +2420,7 @@ Node.js 中的第三方模块又叫做包。
    ```
 
    ```js
-   // index.js
+   // app.js
    const express = require('express')
    const app = express()
    
@@ -2803,45 +2803,524 @@ Node.js 中的第三方模块又叫做包。
 
 4. 使用`querystring`模块解析请求体数据
 
+   Node.js内置了一个`querystring`模块，专门**用来处理查询字符串**。通过模块提供的`parse()`函数，可以轻松把查询字符串解析为对象的格式。示例代码如下：
+
+   ```js
+   // 导入处理querystring的Node.js内置模块
+   const qs = require('querystring')
    
+   // 调用qs.parse()方法，把查询字符串解析为对象
+   const body = qs.parse(str)
+   ```
 
 5. 将解析出来的数据对象挂载到`req.body`
 
+   ```js
+   const express = require('express')
+   const app = express()	// 实例化
+   
+   // 解析表单数据全局中间件
+   app.use(function(req, res, next) {
+   	// 定义变量 存储客户端发送过来的请求体数据
+       let str = ''
+       // 监听req对象的data事件
+       req.on('data', (chunk) => {
+           // 拼接请求体数据 隐式转换为字符串
+           str += chunk
+       })
+       // 监听req对象的end事件
+       req.on('end', () => {
+           // 打印完整的请求体数据
+           console.log(str)
+           // 解析数据
+           const body = qs.parse(str)
+           console.log(body)
+           req.body = body
+           
+           next()	// 调用next()函数 执行后续的业务逻辑
+       })
+   })
+   
+   app.post('/user', (req, res) => {
+       // 共享req
+   	console.log(req.body)
+       res.send(req.body)
+   })
+   
+   app.listen(80, () => {
+       console.log('http://127.0.0.1')
+   })
+   ```
+
 6. 将自定义中间件封装为模块
 
-```js
-const express = require('express')
-const app = express()	// 实例化
+   ```js
+   // custom-body-parser.js
+   const qs = require('querystring')
+   function bodyParser(req, res, next) {
+       // 定义变量 存储客户端发送过来的请求体数据
+       let str = ''
+       // 监听req对象的data事件
+       req.on('data', (chunk) => {
+           // 拼接请求体数据 隐式转换为字符串
+           str += chunk
+       })
+       // 监听req对象的end事件
+       req.on('end', () => {
+           // 打印完整的请求体数据
+           console.log(str)
+           // 解析数据
+           const body = qs.parse(str)
+           console.log(body)
+           req.body = body
+           
+           next()	// 调用next()函数 执行后续的业务逻辑
+       })
+   }
+   
+   module.exports = bodyParser
+   ```
 
-// 解析表单数据全局中间件
-app.use(function(req, res, next) {
-	// 定义变量 存储客户端发送过来的请求体数据
-    let str = ''
-    // 监听req对象的data事件
-    req.on('data', (chunk) => {
-        // 拼接请求体数据 隐式转换为字符串
-        str += chunk
-    })
-    // 监听req对象的end事件
-    req.on('end', () => {
-        // 打印完整的请求体数据
-        console.log(str)
-        // 解析数据
-        .../////////////////////////////////////////////////////////////////////////////////////////////////////////
-    })
-})
-
-app.post('/user', (req, res) => {
-	console.log(req.body)
-    res.send('ok.')
-})
-
-app.listen(80, () => {
-    console.log('http://127.0.0.1')
-})
-```
-
-
+   ```js
+   // index.js
+   const express = require('express')
+   const app = express()	// 实例化
+   
+   // 导入自定义中间件模块
+   const myBodyParser = require('custom-body-parser')
+   // 注册自定义中间件模块
+   app.use(myBodyParser)
+   
+   app.post('/user', (req, res) => {
+       // 共享req
+   	console.log(req.body)
+       res.send(req.body)
+   })
+   
+   app.listen(80, () => {
+       console.log('http://127.0.0.1')
+   })
+   ```
 
 ### 4.使用Express写接口
 
+#### 4.1 搭建基本的服务器
+
+```js
+// app.js
+// 导入express模块
+const express = require('express')
+// 创建express服务器实例
+const app = express()
+
+// 调用app.listen方法，指定端口号并启动Web服务
+app.listen(80, () => {
+	console.log('Express server running at http://127.0.0.1')
+})
+```
+
+#### 4.2 创建API路由模块
+
+```js
+// apiRouter.js 路由模块
+const express = require('express')
+const apiRouter = express.Router()
+
+// 挂载对应的路由
+...
+
+module.exports = apiRouter
+```
+
+```js
+// app.js
+...
+
+// 导入注册路由模块
+const apiRouter = require('./apiRouter.js')
+app.use('/api', apiRouter)
+
+...
+```
+
+#### 4.3 编写GET接口
+
+```js
+apiRouter.get('/get', (req, res) => {
+	// 获取到客户端通过查询字符串发送到服务器的数据
+	const query = req.query
+	// 调用send()方法把数据响应给客户端
+	res.send({
+		status: 0,	// 0 成功 1 失败
+		msg: 'GET请求成功！',	// 状态描述
+		data: query,	// 响应给客户端的具体数据
+	})
+})
+```
+
+#### 4.4 编写POST接口
+
+```js
+apiRouter.post('/post', (req, res) => {
+	// 获取客户端通过请求体发送到服务器的URL-encoded数据
+	const body = req.body
+	// 调用send()方法把数据响应给客户端
+	res.send({
+		status: 0,	// 0 成功 1 失败
+		msg: 'POST请求成功！',	// 状态描述
+		data: body,	// 响应给客户端的具体数据
+	})
+})
+```
+
+注意：若要获取`URL-encoded`格式的请求数据，必须配置中间件`app.use(express.urlencoded({ extended: false }))`
+
+#### 4.5 CORS跨域资源共享
+
+1. 接口`跨域问题`
+
+   ```html
+   <button id="btnGET">GET</button>
+   <button id="btnPOST">POST</button>
+   ```
+
+   ```html
+   <script>
+   	$(function() {
+           // 1.测试GET接口
+           $('#btnGET').on('click', function() {
+               $.ajax({
+                   type: 'GET',
+                   url: 'http://127.0.0.1/api/get',
+                   data: {
+                       name: 'zs',
+                       age: 20
+                   },
+                   success: function(res) {
+                       console.log(res)
+                   }
+               })
+           })
+           // 2.测试POST接口
+           $('#btnPOST').on('click', function() {
+               $.ajax({
+                   type: 'POST',
+                   url: 'http://127.0.0.1/api/post',
+                   data: {
+                       bookname: '水浒传',
+                       author: '施耐庵'
+                   },
+                   success: function(res) {
+                       console.log(res)
+                   }
+               })
+           })
+       })
+   </script>
+   ```
+
+   ![image-20231018140532514](https://gitee.com/v876774538/my-img/raw/master/image-20231018140532514.png)
+
+2. 解决跨域问题的方案
+
+   - `CORS`（推荐）
+   - `JSONP`（有缺陷，只支持GET）
+
+3. 使用`CORS`中间件解决跨域问题
+
+   CORS是Express的一个第三方中间件。通过安装和配置CORS中间件，可以很方便地解决跨域问题。
+
+   - 运行`npm install cors`安装中间件
+   - 使用`const cors = require('cors')`导入中间件
+   - **在路由之前**，调用`app.use(cors())`配置中间件
+
+4. 什么是CORS
+
+   CORS(Cross-Origin Resource Sharing, 跨域资源共享)，是由一系列`HTTP响应头`通组成的，这些HTTP响应头**决定了浏览器是否阻止前端JS代码跨域获取资源**。
+
+   **浏览器**的**同源安全策略**默认会**阻止网页跨域获取资源**，但如果接口服务器配置了CORS相关的HTTP响应头，就可以**解除浏览器端的跨域访问限制**。
+
+   ![image-20231018141706410](https://gitee.com/v876774538/my-img/raw/master/image-20231018141706410.png)
+
+5. CORS注意事项
+
+   - CORS主要在`服务器端`进行配置。客户端浏览器无需做任何额外的配置即可请求开启了CORS的接口；
+   - CORS在浏览器中有兼容性要求。只支持XMLHttpRequest Level2的浏览器（例如：IE10+、Chrome4+、FireFox3.5+）
+
+6. CORS响应头
+
+   - `Access-Control-Allow-Origin`
+
+     响应头部可以携带一个`Access-Control-Allow-Origin`字段，其语法如下：
+
+     ```http
+     Access-Control-Allow-Origin: <origin> | *
+     ```
+
+     其中，origin参数的值指定了**允许访问该资源的外域URL**。
+
+     例如，指定允许来自http://itcast.cn的请求：
+
+     ```js
+     res.setHeader('Access-Control-Allow-Origin', 'http://itcast.cn')
+     ```
+
+     `*`通配符，表示允许来自任何域的请求：
+
+     ```js
+     res.setHeader('Access-Control-Allow-Origin', '*')
+     ```
+
+   - `Access-Control-Allow-Header`
+
+     默认情况下，CORS仅支持**客户端向服务器**发送如下的9个请求头：
+
+     > `Accept`、`Accept-Language`、`Content-Language`、`DPR`、`Downlink`、`Save-Data`、`Viewport-Width`、`Width`、`Content-Type`（值仅限于text/plain、multipart/form-data、application/x-www-form-urlencoded三者之一）
+
+     如果客户端向服务器发送了额外的请求头信息，则需要在服务器端通过`Access-Control-Allow-Header`**对额外的请求头进行声明**，否则请求将会失败！
+
+     ```js
+     // 多个请求头之间用英文逗号分隔
+     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Custom-Header')
+     ```
+
+   - `Access-Control-Allow-Methods`
+
+     默认情况下，**CORS仅支持客户端发起`GET`、`POST`、`HEAD`请求**。
+
+     如果客户端希望通过`PUT`、`DELETE`等方式请求服务器资源，需要在服务器端通过`Access-Control-Allow-Methods`来**指明实际请求所允许使用的HTTP方法**。
+
+     ```js
+     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, DELETE, HEAD')
+     
+     // 允许所有的HTTP请求方法
+     res.setHeader('Access-Control-Allow-Methods', '*')
+     ```
+
+7. CORS请求分类
+
+   **根据请求方式和请求头的不同**，可以将CORS请求分为两大类，分别是：
+
+   - 简单请求
+
+     同时满足以下两大条件的请求，就属于简单请求：
+
+     - `请求方式`：GET、POST、HEAD三者之一
+     - `HTTP头部信息`不超过以下几种字段：**无自定义头部字段**、Accept、Accept-Language、Content-Language、DPR、Downlink、Sava-Data、Viewport-Width、Width、Content-Type（值仅限于text/plain、multipart/form-data、application/x-www-form-urlencoded三者之一）
+
+   - 预检请求
+
+     > **在浏览器与服务器正式通信之前，浏览器会先发送OPTION请求进行预检**，以获知服务器是否允许该实际请求，所以这一次的OPTION请求成为预检请求。
+     >
+     > 服务器成功响应预检请求后，才会发送真正的请求，并携带真实数据。
+
+     只要符合以下任何一个条件的请求，都需要进行预检请求：
+
+     - 请求方式为GET、POST、HEAD之外的请求Method类型
+     - 请求头中包含自定义头部字段
+     - 向服务器发送了`application/json`格式的数据（Content-Type的值）
+
+   `简单请求`和`预检请求`之间的区别：
+
+   - 简单请求的客户端与服务器之间只会发生一次请求；
+
+   - 预检请求的客户端与服务器之间会发生两次请求：OPTION预检请求成功之后，才发起真正的请求。
+
+     ![image-20231018150553568](https://gitee.com/v876774538/my-img/raw/master/image-20231018150553568.png)
+
+#### 4.6 JSONP接口
+
+1. 概念
+
+   浏览器通过`<script>`标签的`src`属性，请求服务器上的数据，同时，服务器返回一个函数的调用。这种请求数据的方式成为JSONP。
+
+2. 特点
+
+   - JSONP不属于真正的Ajax请求，因为它没有使用`XMLHttpRequest`这个对象
+   - JSONP仅支持GET请求，不支持POST、PUT、DELETE等请求方式
+
+3. 创建JSONP接口的注意事项
+
+   **如果项目总能已经配置了CORS跨域资源共享，那么为了防止冲突，必须在配置CORS中间件之前声明JSONP的接口**，否则JSONP接口会被处理成开启了CORS的接口：
+
+   ```js
+   // 优先创建JSONP接口
+   app.get('/api/jsonp', (req, res) => {
+   	...
+   })
+   
+   // 再配置CORS中间件
+   app.use(cors())
+   
+   // 这是一个开启了CORS的接口
+   app.get('/api/get', (req, res) => {
+   
+   })
+   ```
+
+4. 实现JSONP接口的步骤
+
+   - 获取客户端发送的`回调函数的名字`
+   - 得到要通过JSONP形式`发送给客户端的数据`
+   - 根据前两步骤得到的数据，`拼接出一个函数调用的字符串`
+   - 把上一步拼接得到的字符串，响应给客户端的`<script>`标签进行解析执行
+
+   ```js
+   app.get('/api/jsonp', (req, res) => {
+   	// 获取客户端发送过来的回调函数的名字
+   	const funcName = req.query.callback	// 前端发起JSONP请求 会自动携带一个callback = jQueryXXXXX的参数 jQueryXXXXX是随机生成的一个回调函数名称
+   	// 得到要通过JSONP形式发送给客户端的数据
+   	const data = {
+   		name: 'zs',
+   		age: 22
+   	}
+   	// 根据前两步得到的数据，拼接出一个函数调用的字符串
+   	const scriptStr = `${funcName}(${JSON.stringify(data)})`
+   	// 把上一步拼接得到的字符串响应给客户端的<script>标签进行解析执行
+   	res.send(scriptStr)
+   })
+   ```
+
+5. 在网页中使用jQuery发起JSONP请求
+
+   调用`$.ajax()`函数，提供JSONP的配置选项，从而发起JSONP请求：
+
+   ```js
+   $('#btnJSONP').on('click', function() {
+   	$.ajax({
+   		method: 'GET',
+   		url: 'http://127.0.0.1/api/jsonp',
+   		dataType: 'jsonp',
+   		success: function(res) {
+   			console.log(res)
+   		}
+   	})
+   })
+   ```
+
+   ![image-20231018152505063](https://gitee.com/v876774538/my-img/raw/master/image-20231018152505063.png)
+
+#### 4.7 完整代码
+
+```js
+// app.js
+// 导入express模块
+const express = require('express')
+// 创建express服务器实例
+const app = express()
+
+// cors中间件 解决跨域问题
+const cors = require('cors')
+app.use(cors())
+
+// 配置解析表单数据的中间件
+app.use(express.urlencoded({ extended: false }))
+
+// 导入注册路由模块
+const apiRouter = require('./apiRouter.js')
+app.use('/api', apiRouter)
+
+// 调用app.listen方法，指定端口号并启动Web服务
+app.listen(80, () => {
+	console.log('Express server running at http://127.0.0.1')
+})
+```
+
+```js
+// apiRouter.js 路由模块
+const express = require('express')
+const apiRouter = express.Router()
+
+// 挂载对应的路由
+apiRouter.get('/get', (req, res) => {
+	// 获取到客户端通过查询字符串发送到服务器的数据
+	const query = req.query
+	// 调用send()方法把数据响应给客户端
+	res.send({
+		status: 0,	// 0 成功 1 失败
+		msg: 'GET请求成功！',	// 状态描述
+		data: query,	// 响应给客户端的具体数据
+	})
+})
+
+apiRouter.post('/post', (req, res) => {
+	// 获取客户端通过请求体发送到服务器的URL-encoded数据
+	const body = req.body
+	// 调用send()方法把数据响应给客户端
+	res.send({
+		status: 0,	// 0 成功 1 失败
+		msg: 'POST请求成功！',	// 状态描述
+		data: body,	// 响应给客户端的具体数据
+	})
+})
+
+module.exports = apiRouter
+```
+
+### 5.MySQL
+
+#### 5.1 数据库的基本概念
+
+1. 数据库
+
+   `数据库`(database)是用来**组织、存储和管理数据的仓库**。
+
+   当今世界是一个充满数据的互联网世界。数据的来源很多，比如出行记录、消费记录、浏览的网页、发送的消息等等。除了文本类型的数据，图像、声音都是数据。
+
+   为了方便管理互联网世界中的数据，`数据库管理系统`（简称：数据库）的概念应运而生。用户可以对数据库中的数据进行**新增、删除、更新、查询**（增删改查）等的操作。
+
+2. 常见数据库及分类
+
+   - `MySQL`数据库（目前使用范围最广、流行度最高的开源免费数据库）
+   - Oracle数据库（收费）
+   - SQL Server数据库（收费）
+   - Mongodb数据库
+
+   其中，MySQL、Oracle、SQL Server属于`传统型数据库`（关系型数据库/SQL数据库）；而Mongodb属于`新型数据库`（非关系型数据库/NoSQL数据库），它在一定程度上弥补了传统型数据库的缺陷。
+
+3. 传统型数据库的数据组织结构
+
+   传统型数据库的数据组织结构，与Excel中数据的组织结构类似。
+
+   - Excel数据组织结构
+
+     每个Excel中，数据的组织结构分别为`工作簿`、`工作表`、`数据行`、`列`这4大部分组成：
+
+     ![image-20231018163454709](https://gitee.com/v876774538/my-img/raw/master/image-20231018163454709.png)
+
+   - 传统型数据库的数据组织结构
+
+     在传统型数据库中，数据的组织结构分为`数据库(database)`、`数据表(table)`、`数据行(row)`、`字段(field)`组成。
+
+     ![image-20231018163633939](https://gitee.com/v876774538/my-img/raw/master/image-20231018163633939.png)
+
+   - 实际开发中库、表、行、字段的关系
+
+     在实际开发中，一般情况下，每个项目都对应**独立的数据库**。
+
+     不同的数据，要存储到数据库的不同**表**中，例如：用户数据存储到`users`表中，图书数据存储到`books`表中；
+
+     每个表中具体存储哪些信息，由**字段**来决定，例如：我们可以为`users`表设计`id`、`username`、`password`这3个字段；
+
+     表中的行，代表**每一条具体的数据**。
+
+#### 5.2 安装并配置MySQL
+
+1. 需要安装的软件
+
+   - `MySQL Server`：专门用来**提供数据存储和服务**的软件；
+   - `MySQL Workbench`：**可视化的MySQL管理工具**，通过它可以方便地操作存储在MySQL Server中的数据
+
+2. Windows环境下安装
+
+   运行`mysql-installer-comunity-8.0.19.0.msi`安装包，即可一次性将MySQL Server和MySQL Workbench安装到电脑上。
+
+   > 具体安装教程可参见 素材 -> MySQL for Windows -> 安装教程 - Windows系统安装MySql -> README.md
+
+   ![image-20231018174906089](https://gitee.com/v876774538/my-img/raw/master/image-20231018174906089.png)
+
+3. 
+
+#### 5.3 在Express中操作MySQL
+
+#### 5.4 前后端的身份认证
