@@ -3721,6 +3721,337 @@ module.exports = apiRouter
 
 #### 5.5 前后端的身份认证
 
+1. Web开发模式
+
+   - **基于`服务端渲染`的传统Web开发模式**
+
+     服务器发送给客户端的HTML页面，是**在服务器通过字符串拼接动态生成**的。客户端不需要使用Ajax这样的技术额外请求页面的数据。
+
+     ```js
+     app.get('/index.html', (req, res) => {
+         // 要渲染的数据
+     	const user = { name: 'zs ', age: 20 }
+         // 服务器端通过字符串拼接，动态生成的HTML内容
+     	const html = `<h1>姓名：${user.name}，年龄：${user.age}</h1>`
+         // 把生成好的页面内容响应给客户端，因此客户端拿到是带有真实数据的HTML页面
+     	res.send(html)
+     })
+     ```
+
+     优点：
+
+     - `前端耗时少`。服务器端负责动态生成HTML内容，浏览器只需要直接渲染页面即可，尤其是移动端，更省电。
+     - `有利于SEO`。因为服务端响应的是完整的HTML页面内容，所以爬虫更容易爬取信息，更利于SEO。
+
+     缺点：
+
+     - `占用服务器端资源`。服务器端完成HTML页面内容的拼接，如果请求较多，会对服务器造成一定的访问压力。
+     - 不利于前后端分离，`开发效率低`。使用服务器端渲染，无法进行前后端分工合作，尤其对于前端复杂度高的项目，不利于项目高效开发。
+
+   - **基于`前后端分离`的新型Web开发模式**
+
+     前后端分离的开发模式，依赖于Ajax技术的广泛应用。简而言之，就是**后端只负责提供API接口**，**前端使用Ajax调用接口**。
+
+     优点：
+
+     - `开发体验好`。前端专注于UI页面的开发，后端专注于api的开发，且前端有更多的选择性（可以使用Vue、React..等开发框架）。
+     - `用户体验好`。Ajax技术的广泛应用，极大地提高了用户的体验，可以轻松实现页面的局部刷新。
+     - `减轻了服务端的渲染压力`。因为页面最终是在每个用户的浏览器中生成的。
+
+     缺点：
+
+     - `不利于SEO`。因为完整的HTML页面需要在客户端动态拼接完成，所以爬虫无法爬取页面的有效信息。（解决方案：利用Vue、React等前端框架的`SSR, server side render`技术）
+
+   - **如何选择Web开发模式**
+
+     - 如`企业级网站`，`主要功能是展示`而没有复杂的交互，并且需要良好的SEO，这时我们就需要使用`服务器端渲染`；
+     - 而类似`后台管理项目`，`交互性较强`，不需要考虑SEO，就可以使用`前后端分离的开发模式`。
+     - 另外，为了**同时兼顾**首页的渲染速度和前后端分离的开发效率，一些网站采用了首屏服务器端渲染+其他页面前后端分离的开发模式。
+
+2. 身份认证
+
+   身份认证(Authentication)，又称身份验证、鉴权，是指通过一定的手段，完成对用户身份的确认。
+
+   在Web开发中，涉及到用户身份认证，例如：各大网站的`手机验证码登录`、`邮箱密码登录`、`二维码登录`等。
+
+3. 不同开发模式下的身份认证
+
+   - 服务端渲染推荐使用`Session认证机制`
+
+     - HTTP协议的无状态性
+
+       HTTP协议的无状态性，指的是客户端每次HTTP请求都是独立的，**连续多个请求之间没有直接的关系**，服务器**不会主动保留每次HTTP请求的状态**。
+
+       ![image-20231020143200847](https://gitee.com/v876774538/my-img/raw/master/image-20231020143200847.png)
+
+     - 如何突破HTTP无状态的限制
+
+       对于超市来说，为了方便收银员在进行结算时给VIP用户打折，超市可以为每个VIP用户发放会员卡。
+
+       ![image-20231020143532219](https://gitee.com/v876774538/my-img/raw/master/image-20231020143532219.png)
+
+       注意：现实生活中的`会员卡身份认证方式`，在Web开发中的专业术语叫做`Cookie`。
+
+     - `Cookie`
+
+       Cookie是存储在用户浏览器中的一段**不超过4KB的字符串**。它是由一个`名称`(Name)、一个`值`(Value)和其他几个用于控制Cookie`有效期`、`安全性`、`使用范围`的**可选属性**组成。
+
+       ![image-20231020144730119](https://gitee.com/v876774538/my-img/raw/master/image-20231020144730119.png)
+
+       **不同域名下的Cookie各自独立**，每当客户端发起请求时，会`自动`把`当前域名下`所有`未过期的Cookie`一同发送到服务器。
+
+       Cookie的几大特性：
+
+       - 自动发送
+       - 域名独立
+       - 过期时限
+       - 4KB限制
+
+     - `Cookie`在身份认证中的作用
+
+       客户端第一次请求服务器的时候，服务器通过**`响应头`的形式**，向客户端发送一个身份认证的Cookie，客户端会自动将Cookie保存在浏览器中。
+
+       随后，当客户端浏览器每次请求服务器的时候，浏览器会`自动`将身份认证相关的Cookie通过**`请求头`的形式**发送给服务器，服务器即可验明客户端的身份。
+
+       ![image-20231020160603682](https://gitee.com/v876774538/my-img/raw/master/image-20231020160603682.png)
+
+     - Cookie`不具有安全性`
+
+       Cokie是存储在浏览器中的，而且浏览器也提供了读写Cookie的API，因此**Cookie很容易被伪造**，不具有安全性。
+
+       因此不建议服务器将重要的隐私数据，通过Cookie的形式发送给浏览器（如用户的身份信息、密码等）。
+
+       ![image-20231020160846283](https://gitee.com/v876774538/my-img/raw/master/image-20231020160846283.png)
+
+     - `提高`身份认证的`安全性`
+
+       为了防止客户伪造会员卡，收银员在拿到客户出示的会员卡之后，可以**在收银台上进行刷卡认证**。只有收银机**确认存在的会员卡**，才能被正常使用。
+
+       这种`会员卡 + 刷卡认证`的设计理念，就是Session认证机制的精髓。
+
+     - `Session`工作原理
+
+       ![image-20231020161119364](https://gitee.com/v876774538/my-img/raw/master/image-20231020161119364.png)
+
+     - 在Express中使用Session认证
+
+       1. 安装`express-session`中间件
+
+          ```shell
+          npm install express-session
+          ```
+
+       2. 配置`express-session`中间件
+
+          ```js
+          // 导入session中间件
+          var session = require('express-session')
+          
+          // 配置Session中间件
+          app.use(session({
+          	secret: 'keyboard cat',	 // 属性的值可以为任意字符串
+          	resave: false,			// 固定写法
+          	saveUninitialized: true	 // 固定写法 
+          }))
+          ```
+
+       3. 向session中`存数据`
+
+          当express-session中间件配置成功后，可以通过`req.session`来访问和使用session对象，从而存储用户的关键信息：
+
+          ```js
+          // 登录接口
+          app.post('/api/login', (req, res) => {
+          	// 判断用户提交的登录信息是否正确
+          	if (req.body.username !== 'admin' || req.body.password !== '000000') {
+          		return res.send({ status: 1, msg: '登录失败' })
+          	}
+          	
+          	req.session.user = req.body	// 将用户的信息存储到Session中
+          	req.session.islogin = true	// 将用户的登录状态存储到session中
+          	
+          	res.send({ status: 0, msg: '登录成功' })
+          })
+          ```
+
+       4. 从session中`取数据`
+
+          可以直接从`req.session`对象上获取之前存储的数据：
+
+          ```js
+          // 获取用户姓名的接口
+          app.get('/api/username', (req, res) => {
+          	// 判断用户是否登录
+          	if (!req.session.islogin) {
+          		return res.send({ status: 1, msg: 'fail' })
+          	}
+          	
+          	res.send({ status: 0, msg: 'success', username: req.session.user.username })
+          })
+          ```
+
+       5. `清空`session
+
+          调用`req.session.destroy()`函数，即可清空服务器中保存的session信息：
+
+          ```js
+          // 退出登录接口
+          app.post('/api/logout', (req, res) => {
+          	// 清空当前客户端对应的session信息
+          	req.session.destroy()
+          	res.send({
+          		status: 0,
+          		msg: '退出登录成功'
+          	})
+          })
+          ```
+
+     - Session认证的`局限性`
+
+       Session认证机制需要配合Cookie才能实现。
+
+       由于**Cookie默认不支持跨域访问**，所以，当设计到前端跨域请求后端接口的时候，需要做很多额外的配置，才能实现跨域Session认证。
+
+       因此：
+
+       - 当前端请求后端接口`不存在跨域问题`的时候，`推荐使用Session`身份认证机制；
+       - 反之不推荐使用Session身份认证机制，而使用`JWT`认证机制。
+
+   - 前后端分离推荐使用`JWT认证机制`
+
+     JWT(JSON Web Token)是目前最流行的`跨域`认证解决方案。
+
+     - JWT`工作原理`
+
+       ![image-20231020163028394](https://gitee.com/v876774538/my-img/raw/master/image-20231020163028394.png)
+
+       用户的信息通过`Token`字符串的形式保存在客户端浏览器中，服务器通过`还原Token字符串`的形式来认证用户的身份。
+
+     - JWT`组成成分`
+
+       JWT通常由三部分组成，分别是`Header`（头部）、`Payload`（有效荷载）、`Signature`（签名）。
+
+       三者之间使用英文的`.`进行分隔，格式如下：
+
+       ```
+       Header.Payload.Signature
+       ```
+
+       JWT字符串示例：
+
+       ```
+       eyJhbGci0iJIUzI1NiIsInR5cCI6IkpxVc.yJpZCI6MSwidXNIcmShbwUi0iJhZG1pbiIsInBhc3N3b3JkIjoiIiwibmlja25hbwUiOilms6Xlt7Tlt7QiLCJlbFpbCI6Im5pYmFiYUBpdGNhc3QuY24iLCJ1c2Vyx3BpYyI6IiIsImlhdCI6MTU3O0AZNjY4MiwizXhwIjoxNTc4MDcyNjgyf2.twq7GqCxJPK-EA8LNrtMG041lKd233S9KBL3XeuBxuI
+       EyJhbGci0iJIUzI1NiIsInR5cCI6IkpxVc.yJpZCI6MSwidXNIcmShbwUi0iJhZG1pbiIsInBhc3N3b3JkIjoiIiwibmlja25hbwUiOilms6Xlt7Tlt7QiLCJlbFpbCI6Im5pYmFiYUBpdGNhc3QuY24iLCJ1c2Vyx3BpYyI6IiIsImlhdCI6MTU3O0AZNjY4MiwizXhwIjoxNTc4MDcyNjgyf2.twq7GqCxJPK-EA8LNrtMG041lKd233S9KBL3XeuBxuI
+       ```
+
+       - `Payload`部分是`真正的用户信息`，它是用户信息经过加密之后生成的字符串；
+
+       - Header和Signature是安全性相关的部分，只是为了保存Token的安全性。
+
+         ![image-20231020163807140](https://gitee.com/v876774538/my-img/raw/master/image-20231020163807140.png)
+
+     - JWT`使用方式`
+
+       客户端收到服务器返回的JWT后，通常会将它存储在`localStorage`或`sessionStorage`中。
+
+       此后客户端每次与服务器通信，都要带上这个JWT字符串，从而进行身份认证。推荐的做法是**把JWT放在HTTP请求头的`Authorization`字段中**，格式如下：
+
+       ```
+       Authorization: Bearer <token>
+       ```
+
+     - 在Express中使用JWT
+
+       1. 安装JWT相关包
+
+          ```shell
+          npm install jsonwebtoken express-jwt
+          ```
+
+          - `jsonwebtoken`：用于生成JWT字符串
+          - `express-jwt`：用于将JWT字符串解析还原成JSON对象
+
+       2. 导入JWT相关包
+
+          ```js
+          // 导入用于生成JWT字符串的包
+          const jwt = require('jsonwebtoken')
+          // 导入用于将客户端发送过来的JWT字符串，解析还原成JSON对象的包
+          const expressJWT = require('express-jwt')
+          ```
+
+       3. 定义`secret秘钥`
+
+          为了**保证JWT字符串的安全性**，防止JWT字符串在网络传输过程中被人破译，我们需要专门定义一个用于`加密`和`解密`的`secret秘钥`：
+
+          ```js
+          // 秘钥的本质：字符串
+          const secretKey = 'itheima No1 ^_^'
+          ```
+
+       4. 在登录成功后`生成JWT字符串`
+
+          调用`jsonwebtoken`提供的`sign()`方法，将用户的信息加密成JWT字符串，响应给客户端：
+
+          ```js
+          // 登录接口
+          app.post('/api/login', (req, res) => {
+          	...	// 登录失败
+              ...	// 获取用户信息
+              //登录成功
+              res.send({
+                  status: 200,
+                  message: '登录成功',
+                  // 调用jw.sign()生成JWT字符串，参数分别为：用户信息对象、加密秘钥、配置对象（可配置当前token有效期）
+                  token: jwt.sign({ username: userinfo.username }, secretKey, { expiresIn: '30s' })
+              })
+          })
+          ```
+
+       5. 将JWT字符串`还原为JSON对象`
+
+          客户端每次在访问那些需要权限的接口时，都要主动通过请求头中的`Authorization`字段携带token字符串，发送到服务器进行身份认证。
+
+          此时，服务器可以通过`express-jwt`这个中间件自动将客户端发送过来的token解析还原成JSON对象：
+
+          ```js
+          // expressJWT({ secretKey }) 解析Token的中间件
+          // .unless({ path: [/^\/api\//] })) 指定哪些接口不需要访问权限
+          app.use(expressJWT({ secret: secretKey }).unless({ path: [/^\/api\//] }))
+          ```
+
+       6. 使用`req.auth`获取用户信息
+
+          当`express-jwt`中间件配置成功后，即可在那些`有权限`的接口中，使用`req.auth`对象来访问从JWT字符串中解析出来的用户信息（旧版本是`req.user`）：
+
+          ```js
+          app.get('/admin/getinfo', function(req, res) {
+          	console.log(req.auth)
+          	res.send({
+          		status: 200,
+          		message: '获取用户信息成功！',
+          		data: req.auth
+          	})
+          })
+          ```
+
+       7. 捕获解析JWT失败后产生的错误
+
+          当使用express-jwt解析token字符串时，若客户端发送的token字符串`过期`或`不合法`，会产生一个`解析失败`的错误，影响项目正常运行。
+
+          我们可以通过`Express错误中间件`捕获这个错误并进行相应处理：
+
+          ```js
+          app.use((err, req, res, next) => {
+          	// token解析失败
+          	if (err.name == 'UnauthorizedError') {
+          		return res.send({ status: 401, message: '无效的token' })
+          	}
+          	// 其他原因导致的错误
+          	res.send({ status: 500, message: '未知错误' })
+          })
+          ```
+
 
 
 
