@@ -14083,3 +14083,20 @@ export default {
 </style>
 ```
 
+### 91.PC高德地图地址定位展示
+
+#### 91.1 效果
+
+![image-20231023161220475](https://gitee.com/v876774538/my-img/raw/master/image-20231023161220475.png)
+
+#### 91.2 实现
+
+利用`iframe`在页面中嵌套网页：
+
+```html
+<iframe style="width: 690px;
+height: 443px;" src="https://www.amap.com/search?query=%E4%B8%89%E7%9B%8A%E5%8F%8B(%E7%A6%8F%E5%B7%9E)%E4%BF%A1%E6%81%AF%E6%8A%80%E6%9C%AF%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&city=350100&geoobj=119.249042%7C26.059009%7C119.258062%7C26.064235&zoom=17.5" frameborder="0"></iframe>
+```
+
+![image-20231023161332368](https://gitee.com/v876774538/my-img/raw/master/image-20231023161332368.png)
+
