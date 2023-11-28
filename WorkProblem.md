@@ -14100,3 +14100,225 @@ height: 443px;" src="https://www.amap.com/search?query=%E4%B8%89%E7%9B%8A%E5%8F%
 
 ![image-20231023161332368](https://gitee.com/v876774538/my-img/raw/master/image-20231023161332368.png)
 
+### 92.uniapp 自定义简单消息提示组件 popup
+
+#### 92.1 组件
+
+`tipPopup.vue`
+
+```vue
+<template>
+	<view>
+		<uni-popup ref="popup" type="center">
+			<view class="content">
+				<view class="title">
+					{{ response.title }}
+				</view>
+				<view class="msg">
+					{{ response.msg }}
+				</view>
+				<view class="btnGroup">
+					<button class="btn" :style="{ background: getTheme }" @tap="close()">我知道了</button>
+				</view>
+			</view>
+		</uni-popup>
+	</view>
+</template>
+
+<script>
+	export default {
+		name: "tipPopup",
+		data() {
+			return {
+				response: {
+					type: Object,
+					default: {
+						title: '',
+						msg: ''
+					}
+				}
+			};
+		},
+		computed: {
+			getTheme() {
+				return this.$store.getters.getTheme
+			},
+		},
+		methods: {
+			open(res) {
+				this.response = res
+				this.$refs.popup.open('center')
+			},
+			close() {
+				this.$refs.popup.close()
+			}
+		}
+	}
+</script>
+
+<style lang="less" scoped>
+.content {
+	width: 630rpx;
+	background: #fff;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	z-index: 99;
+	
+	.title {
+		font-size: 36rpx;
+		font-family: Source Han Sans CN, Source Han Sans CN;
+		font-weight: 500;
+		color: #333333;
+		margin-bottom: 40rpx;
+	}
+	
+	.msg {
+		font-size: 28rpx;
+		font-family: Source Han Sans CN, Source Han Sans CN;
+		font-weight: 400;
+		color: #333;
+	}
+	
+	.btnGroup {
+		margin-top: 69rpx;
+		width: 100%;
+		padding: 0 75rpx;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		
+		.btn {
+			flex: 1;
+			height: 80rpx;
+			line-height: 80rpx;
+			background: var(--theme-color);
+			border-radius: 45rpx;
+			font-size: 28rpx;
+			font-family: Source Han Sans CN, Source Han Sans CN;
+			font-weight: 500;
+			color: #FFFFFF;
+		}
+	}
+}
+</style>
+```
+
+#### 92.2 使用
+
+```html
+<tip-popup ref="tipPopup"></tip-popup>
+```
+
+```js
+import tipPopup from '@/components/tipPopup.vue'
+
+export default {
+    components: {
+        tipPopup
+    },
+    methods: {
+        withdraw(item) {
+            if (this.type == 1) { // 账户余额提现
+                this.$http('post', this.APIURL.withdraw, {
+                    amount: this.amount,
+                    password: item,
+                    channel: this.modalType,
+                    bankId: this.modalType == 'LG' ? this.userInfo.bankId : null
+                }).then(res => {
+                    if (!res.success) {
+                        // this.utils.showToast(res.message);
+                        // 提现失败弹窗
+                        this.$refs.tipPopup.open({ title: '提现失败', msg: res.message })
+                        return false;
+                    }
+                    this.utils.showToast('提现成功');
+                    setTimeout(() => {
+                        uni.navigateBack({
+                            delta: 1
+                        });
+                    }, 800)
+                })
+        },
+    }
+}
+```
+
+#### 92.3 效果
+
+![image-20231124142508276](https://gitee.com/v876774538/my-img/raw/master/image-20231124142508276.png)
+
+
+
+### 93.uniapp下载图片（app、h5）
+
+```js
+let that = this
+// #ifdef APP-PLUS
+uni.downloadFile({
+    url: that.shareData.imageUrl,	// 下载图片地址
+    success: (res) => {
+        if (res.statusCode === 200) {
+            uni.saveImageToPhotosAlbum({
+                filePath: res.tempFilePath,
+                success: function() {
+                    that.utils.showToast('保存成功')
+                },
+                fail: function() {
+                    that.utils.showToast('保存失败')
+                }
+            });
+        }
+    }
+});
+// #endif
+// #ifdef H5
+// this.utils.showToast('h5暂不支持')
+// console.log(window.location.origin, this.config.httpPath)
+// if (window.location.origin == this.config.httpPath) {
+// 	// var img = document.querySelector(".content")
+// 	var img = document.querySelector("#qrCode")
+//  html2canvas 截图
+// 	html2canvas(img, {
+// 		useCORS: true,
+// 	}).then(canvas => {
+// 		const file = document.createElement("a");
+// 		file.style.display = "none";
+// 		file.href = canvas.toDataURL("image/png");
+// 		file.download = decodeURI('邀请分享');
+// 		document.body.appendChild(file);
+// 		file.click();
+// 		document.body.removeChild(file);
+// 	});
+// }
+// else {
+// 	this.utils.showToast('h5暂不支持')
+// }
+const url = that.shareData.imageUrl; // 下载的图片地址
+var xhr = new XMLHttpRequest();
+xhr.open('get', url, true);
+xhr.responseType = 'blob';
+xhr.onload = () => {
+    if (xhr.status === 200) {
+        console.log(xhr)
+        var blobUrl = new Blob([xhr.response]);
+        const link = document.createElement('a');
+        link.style.display = 'none';
+        var urlObject = window.URL.createObjectURL(blobUrl);
+        link.href = urlObject;
+        link.download = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+xhr.onerror = () => {
+    that.utils.showToast('h5暂不支持')
+}
+xhr.send();
+// #endif
+```
+
