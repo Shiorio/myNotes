@@ -13334,7 +13334,7 @@ function setScale() {
 }
 ```
 
-注意：`transform`会导致`position:fixed`失效，故只能使用`position:absolute`，采用将滚动距离赋值给绝对定位的元素的方法。
+注意：`transform`会导致顶部导航栏`position:fixed`失效，故只能使用`position:absolute`，采用将滚动距离赋值给绝对定位的元素的方法。
 
 ```js
 handleScroll() {
