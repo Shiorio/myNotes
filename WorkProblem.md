@@ -5853,7 +5853,7 @@ handleGrouping(sortData) {
             })
             tempArr.push(item.attributeName)
         }
-        else {	// 不存在
+        else {	// 存在
            	// 往已有的对象中push
             newArr[tempArr.indexOf(item.attributeName)].values.push(item)
         }
@@ -9428,6 +9428,8 @@ window.addEventListener("load", function() {
 ```
 
 #### 84.3 css
+
+隐藏内容。
 
 ```css
 .visually-hidden {
@@ -14321,4 +14323,589 @@ xhr.onerror = () => {
 xhr.send();
 // #endif
 ```
+
+### 94.antd 表格选择框后添加“全选”字眼提示
+
+#### 94.1 效果
+
+![image-20231130165054818](https://gitee.com/v876774538/my-img/raw/master/image-20231130165054818.png)
+
+#### 94.2 实现
+
+利用**伪类**，在选择框后添加“全选”字眼。
+
+```css
+.ant-table-thead {
+  .ant-table-selection-column {
+    .ant-checkbox-wrapper::after {
+      content: '全选';
+      margin-left: 10px;
+    }
+  }
+}
+```
+
+### 95.uni-app使用uni.request获取的文件流图片转base64数据
+
+#### 95.1 参考
+
+```js
+uni.request({
+    url: '', 
+    data: {},
+    header:  {},
+    responseType: 'arraybuffer',
+    success: (res) => {
+        const base64 = "data:image/png;base64,"+uni.arrayBufferToBase64(res.data)
+        console.log(base64)
+    }
+});
+```
+
+1. responseType：设置响应的数据类型为arraybuffer。
+2. uni.arrayBufferToBase64将ArrayBuffer对象转成 Base64 字符串
+3. 注：uni.arrayBufferToBase64支持平台分别为App、H5、微信小程序、快手小程序、京东小程序
+4. 代码逻辑基础说明：使用uni.request获取服务端反馈的文件流数据（注这里的responseType必须设置为arraybuffer），使用uni.arrayBufferToBase64将获取的文件流转换成base64数据。
+   转换后的base64数据需要拼接文件头：`data:image/png;base64,`
+
+#### 95.2 项目使用
+
+> 杉通宝项目：http://syy333.dynv6.net:20080/syy/shantongbao.git
+
+1. 请求封装
+
+   ```js
+   function http4(method, url, data) {
+   	return new Promise((resolve, reject) => {
+   		if (!method) {
+   			method = 'GET'
+   		}
+   		uni.request({
+   			url: '/api/app/clientNew' + url,
+   			data: data,
+   			method: method,
+   			header: {
+   				'content-type': 'application/json',
+   				// 'content-Type': 'application/x-www-form-urlencoded',
+   				'Authorization': apiFilter(url) ? 'Bearer ' + uni.getStorageSync('token') : '',
+   			},
+   			responseType: 'arraybuffer',
+   			success: (res) => {
+   				if (res.data.code == '4000') {
+   					this.utils.showToast("请重新登录")
+   					setTimeout(() => {
+   						uni.reLaunch({
+   							url: '/pages/index/Login'
+   						})
+   					}, 800)
+   					return;
+   				}
+   				if (res.statusCode !== 200) {
+   					this.utils.showToast("抱歉，服务器出错")
+   					resolve(res.data)
+   					return;
+   				}
+   
+   				resolve(res.data)
+   			},
+   			fail: (res) => {
+   				console.log(res)
+   				this.utils.showToast("网络连接错误")
+   				reject(res)
+   			}
+   		})
+   	})
+   }
+   ```
+
+2. 后端返回
+
+   ![image-20231205134845093](https://gitee.com/v876774538/my-img/raw/master/image-20231205134845093.png)
+
+   ![image-20231205134836142](C:\Users\pc01\AppData\Roaming\Typora\typora-user-images\image-20231205134836142.png)
+
+   ![image-20231205135318037](https://gitee.com/v876774538/my-img/raw/master/image-20231205135318037.png)
+
+3. 前端展示
+
+   ```html
+   <view class="code" v-if="show">
+       <image src="/static/oem_login_password.png" mode=""></image>
+       <input v-model="filter.capText" type="text" autocomplete="off" placeholder="请输入验证码"
+           placeholder-style="font-size:28upx;color:#9E9FA1;">
+       <image :src="graphCode" mode="" class="graphCode" @tap="getGraphCode()"></image>
+   </view>
+   ```
+
+   ```js
+   // 获取图形验证码
+   getGraphCode() {
+       this.$http4('get', this.APIURL.getGraphCode).then((res) => {
+           this.graphCode = 'data:image/png;base64,' + uni.arrayBufferToBase64(res)
+           this.$forceUpdate()
+       })
+   },
+   ```
+
+
+### 96.uniapp 生成推广海报
+
+> 焕米App项目：http://syy333.dynv6.net:20080/huanmi/huanmiApp.git
+
+#### 96.1 效果
+
+![image-20231206175219818](https://gitee.com/v876774538/my-img/raw/master/image-20231206175219818.png)
+
+#### 96.2 实现
+
+```html
+<!-- 推广海报 弹窗 -->
+<uni-popup ref="rejectPopup" class="rejectPopup" :maskClick='false'>
+    <view class="content">
+        <view class="photo">
+            <!-- <image class="photo" :src="fileImgPath('/static/my/invite/share-bg.png')" mode="">
+            </image> -->
+            <canvas class="photo" canvas-id="myCanvas" id="myCanvas"></canvas>
+        </view>
+        <view class="btnGroup2" v-if="btnIsShow">
+            <button class="btn1" @click="close">关闭</button>
+            <button class="btn1 btn2" @click="save">保存图片至相册</button>
+        </view>
+    </view>
+</uni-popup>
+```
+
+```css
+.rejectPopup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .photo {
+        margin-bottom: 40rpx;
+        width: 690rpx;
+        height: 952rpx;
+        // background-color: pink;
+        border-radius: 20rpx;
+    }
+
+
+    .btnGroup2 {
+        display: flex;
+        justify-content: center;
+
+
+        .btn1 {
+            font-size: 28rpx;
+            width: 214rpx;
+            height: 70rpx;
+            text-align: center;
+            line-height: 70rpx;
+            border-radius: 45rpx;
+            color: #FFFFFF;
+            background-color: #D7D7D7;
+        }
+
+        .btn2 {
+            margin-left: 40rpx;
+            width: 295rpx;
+            background-color: #1890FF;
+            color: #fff;
+        }
+    }
+
+}
+```
+
+```js
+async open() {
+    await this.$refs.rejectPopup.open('center')	// 打开弹窗
+    await this.getImg()	// 生成图片
+},
+```
+
+```js
+// 生成海报图片
+getImg() {
+    console.log(1);
+    // 获取canvas上下文
+    const canvas = uni.createCanvasContext('myCanvas', this);
+    canvas.width = 400;
+    canvas.height = 400;
+
+    // 加载两张图片
+    // 加载第一张图片
+    uni.getImageInfo({
+        src: this.img1,
+        success: (res1) => {
+            console.log(res1,'re1')
+
+            // 加载第二张图片
+            uni.getImageInfo({
+                src: this.img2,
+                success: (res2) => {
+                    console.log(res2, 'res2')
+
+                    // 绘制第一张图片
+                    const canvasWidth = uni.upx2px(690);
+                    const canvasHeight = uni.upx2px(952);
+                    const imgWidth = uni.upx2px(690);
+                    const imgHeight = uni.upx2px(952);
+                    const imgX = (canvasWidth - imgWidth) / 2;	// 图片坐标
+                    const imgY = (canvasHeight - imgHeight) / 2;
+                    // canvas.drawImage(res1.path, 0, 0, 345, 476);
+                     canvas.drawImage(res1.path, imgX, imgY, imgWidth, imgHeight);
+                    // 绘制第二张图片
+                    const canvasWidth2 = uni.upx2px(690);
+                    const canvasHeight2 = uni.upx2px(952);
+                    const imgWidth2 = uni.upx2px(200);
+                    const imgHeight2 = uni.upx2px(200);
+                    const imgX2 = (canvasWidth2 - imgWidth2*1.2);	// 图片坐标
+                    const imgY2 = (canvasHeight2 - imgHeight2*1.3);
+                    // canvas.drawImage(res2.path, 217, 345, 100, 100);
+                    canvas.drawImage(res2.path, imgX2, imgY2, imgWidth2, imgHeight2);
+
+                    // 绘制完成，保存图片
+                    setTimeout(()=>{
+                        canvas.draw(false, () => {
+                            console.log(2);
+                            uni.canvasToTempFilePath({
+                                canvasId: 'myCanvas',
+                                success: (res) => {
+                                    console.log(res
+                                        .tempFilePath
+                                    );
+                                    uni.setStorageSync(
+                                        'filePath',
+                                        res
+                                        .tempFilePath
+                                    ) //保存临时文件路径到缓存
+                                    console.log("res: ",res);
+                                    this.btnIsShow = true
+                                }
+                            }, this);
+                        });
+                        this.btnIsShow = true
+                    },800)
+                }
+            })
+        }
+    })
+
+},
+```
+
+```js
+// 保存图片到相册
+save() {
+    console.log(11111);
+    let that = this
+    let filePath = uni.getStorageSync('filePath') //从缓存中读取临时文件路径
+    console.log("filePath: ",filePath);
+    // 保存本地文件 h5不支持该方法
+    uni.saveImageToPhotosAlbum({
+      filePath: filePath,
+      success: function() {
+        uni.showToast({save
+          title: "保存成功",
+          icon: "none"
+        });
+      },
+      fail: function() {
+        uni.showToast({
+          title: "保存失败，请稍后重试",
+          icon: "none"
+        });
+      }
+    });
+},
+```
+
+### 97.uniapp携带参数返回上一页
+
+> 参考：[uniapp返回上一页携带参数,两种方法，实测有效_uniapp返回上一页带参数-CSDN博客](https://blog.csdn.net/m0_67402235/article/details/123432105)
+
+#### 97.1 方法1
+
+`pre.vue`
+
+```vue
+<template>
+	<view>
+		<view>返回的数据为:</view>
+		<view>id: {{testdata.id}}</view>
+		<view>name: {{testdata.name}}</view>
+		<button type="primary" @click="goNext">跳转到下一页面</button>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				testdata: {
+					id: '',
+					name: ''
+				}
+			}
+		},
+		onShow() {
+			let that = this
+			uni.$on('updateData',function(data){
+				that.testdata = data
+				const params = 'id:'+data.id+', name:'+data.name;
+				console.log('监听到事件来自 updateData ，携带参数为：' + params);
+			})
+		},
+		methods: {
+			goNext() {
+				uni.navigateTo({
+					url: '/pages/next/next'
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+
+</style>
+```
+
+`next.vue`
+
+```vue
+<template>
+	<view>
+		<button type="primary" @click="goBack">点击返回上一页</button>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				mydata: {
+					id: 1,
+					name: 'test'
+				}
+			}
+		},
+		methods: {
+			goBack() {
+				uni.$emit('updateData', this.mydata)
+				uni.navigateBack({
+					delta: 1
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+
+</style>
+```
+
+#### 97.2 方法2
+
+`pre.vue`
+
+```vue
+<template>
+	<view>
+		<view>返回的数据为:</view>
+		<view>id: {{testdata.id}}</view>
+		<view>name: {{testdata.name}}</view>
+		<button type="primary" @click="goNext">跳转到下一页面</button>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				testdata: {
+					id: '',
+					name: ''
+				}
+			}
+		},
+		onShow() {
+			let pages = getCurrentPages();
+			let currPage = pages[pages.length - 1]; //当前页面
+			let json = currPage.data.testdata;
+			this.testdata = json;
+		},
+		methods: {
+			goNext() {
+				uni.navigateTo({
+					url: '/pages/next/next'
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+
+</style>
+```
+
+`next.vue`
+
+```vue
+<template>
+	<view>
+		<button type="primary" @click="goBack">点击返回上一页</button>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				mydata: {
+					id: 1,
+					name: 'test'
+				}
+			}
+		},
+		methods: {
+			goBack() {
+				var pages = getCurrentPages();
+				var prevPage = pages[pages.length - 2];
+				// #ifdef H5
+				prevPage.$vm.testdata = this.mydata;	// 给上一页的testdata赋值
+				// #endif
+				// #ifdef MP-WEIXIN
+				 prevPage.setData(this.mydata);
+				// #endif
+				uni.navigateBack({//返回
+					delta: 1
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+
+</style>
+
+```
+
+#### 97.3 方法2简单版
+
+```js
+let pages = getCurrentPages();  //获取所有页面栈实例列表
+let nowPage = pages[ pages.length - 1];  //当前页页面实例
+let prevPage = pages[ pages.length - 2 ];  //上一页页面实例
+prevPage.$vm.searchVal = 1211;   //修改上一页data里面的searchVal参数值为1211
+uni.navigateBack({  //uni.navigateTo跳转的返回，默认1为返回上一级
+    delta: 1
+})
+```
+
+> 鲸品优选项目：http://syy333.dynv6.net:20080/jpyx/trialmall-jpyx.git
+
+```js
+// 跳转
+goBack(search) {
+    if (!this.goIntegrated || this.goIntegrated == 'false') {
+        let pages = getCurrentPages();  //获取所有页面栈实例列表
+        let nowPage = pages[ pages.length - 1];  //当前页页面实例
+        let prevPage = pages[ pages.length - 2 ];  //上一页页面实例
+        if (prevPage.$vm.queryParams.search) {
+            prevPage.$vm.queryParams.search = search;  // 将搜索的文字传给上一页
+        }
+        if (prevPage.$vm.goodsName) {
+            prevPage.$vm.goodsName = search;
+        }
+        console.log(search);
+        uni.navigateBack({
+            delta: 1
+        })
+    }
+    else {
+        if (this.type=='联盟'){
+            uni.navigateTo({
+                url: '/pages/product/AlliedGoods?goodsName=' + search
+                }) 
+        }else if (this.type=='拼团'){
+            uni.navigateTo({
+                url: '/pages/groupActivities/list?goodsName=' + search
+                }) 
+        }else {
+            uni.navigateTo({
+                url: '/pages/product/Integrated?search=' + search
+            })
+        }
+
+    }
+},
+```
+
+### 98.uniapp下拉选择组件
+
+> saas双钱包展业项目：http://syy333.dynv6.net:20080/xshb/sfzyAPP.git
+
+#### 98.1 组件
+
+![image-20231229165333607](https://gitee.com/v876774538/my-img/raw/master/image-20231229165333607.png)
+
+#### 98.2 使用
+
+```vue
+<!-- 产品类型 -->
+<w-picker mode="selector" @confirm="posConfirm" ref="selector" :themeColor="getTheme" :selectList="posTypeList"></w-picker>
+```
+
+```js
+// 打开弹窗
+toggleTab(str) {
+    this.$refs[str].show();	// this.$refs.profession.show()
+},
+```
+
+```js
+// 获取产品列表
+posTypeDict() {
+    this.$http('get',this.APIURL.getClassificationInfo).then(res=>{
+        if (!res.success) {
+            this.utils.showToast(res.message);
+            return false;
+        }
+        res.data.map(item=>{
+            item.label = item.productName
+            item.value = item.productCode
+        })	// 数据结构
+        this.posTypeList = res.data
+        console.log("this.posTypeList: ",this.posTypeList);
+        this.myDirect();
+    })
+},
+```
+
+```js
+// 选择
+posConfirm(val) {
+    // 赋值
+    this.posClassify = val.checkArr.label;
+    this.filter.goodsId = val.checkArr.value;
+},
+```
+
+#### 98.3 效果
+
+![image-20231229170508680](https://gitee.com/v876774538/my-img/raw/master/image-20231229170508680.png)
 
