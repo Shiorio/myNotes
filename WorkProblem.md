@@ -14909,3 +14909,269 @@ posConfirm(val) {
 
 ![image-20231229170508680](https://gitee.com/v876774538/my-img/raw/master/image-20231229170508680.png)
 
+### 99.uniapp消息滚动通知组件
+
+> saas双钱包展业项目：http://syy333.dynv6.net:20080/xshb/sfzyAPP.git
+
+#### 99.1 组件
+
+```vue
+<template>
+	<view class="notice-bar">
+		<scroll-view class="notice-scroll" :scroll-y="true" :scroll-with-animation="true" :scroll-top="scrollTop">
+			<view class="notice-content">
+				<view class="notice-item" v-for="(item, index) in noticeList" :key="index"
+					@tap="handleClickNotice(item)">
+					<text>{{ item.title }}</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script>
+	export default {
+		name: "noticeScroll",
+		data() {
+			return {
+				noticeList: [], // 通知列表
+				timer: null, // 定时器
+				interval: 2000, // 滚动时间间隔
+				scrollTop: 0, // 滚动距离
+				currentIndex: 0, // 当前通知索引
+			};
+		},
+		props: {
+			notices: {
+				// 外部传入的通知列表
+				type: Array,
+				default: [],
+			},
+		},
+		mounted() {
+			this.initNoticeList();
+		},
+		methods: {
+			// 初始化通知列表
+			initNoticeList() {
+				console.log('notices', this.notices)
+				const _this = this;
+				_this.noticeList = _this.notices;
+				if (_this.noticeList.length > 1) {
+					_this.timer = setInterval(() => {
+						_this.handleScrollNotice();
+					}, _this.interval);
+				}
+			},
+			// 点击通知时触发
+			handleClickNotice(item) {
+				this.$emit("click", item);
+			},
+			// 滚动通知
+			handleScrollNotice() {
+				const len = this.noticeList.length;
+				if (this.currentIndex === len - 1) {
+					this.currentIndex = 0;
+				} else {
+					this.currentIndex++;
+				}
+				this.animateScroll();
+			},
+			// 动画滚动
+			animateScroll() {
+				const _this = this;
+				let noticeHeight = 24; // 通知高度，根据实际情况调整
+				// 获取通知高度
+				uni.createSelectorQuery().select('.noticeBar .right').boundingClientRect((res) => {
+					console.log('noticeBar', res)
+					if (res) {
+						noticeHeight = res.height;
+					}
+					else {
+						if (this.timer) {
+							clearInterval(this.timer);
+						}
+					}
+				}).exec()
+				const scrollTop = _this.currentIndex * noticeHeight;
+				_this.scrollTop = scrollTop;
+			},
+		},
+		destroyed() {
+			if (this.timer) {
+				clearInterval(this.timer);
+			}
+		},
+	};
+</script>
+
+<style scoped>
+	.notice-bar {
+		/* 组件高度，根据实际情况调整 */
+		height: 47rpx;
+		overflow: hidden;
+	}
+
+	.notice-scroll {
+		width: 100%;
+		height: 100%;
+	}
+
+	.notice-content {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.notice-item {
+		/* 通知高度，根据实际情况调整 */
+		height: 47rpx;
+		/* 通知行高，根据实际情况调整 */
+		line-height: 47rpx;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+</style>
+```
+
+#### 99.2 使用
+
+```vue
+<view class="noticeBar" @click="goPath('/pages/my/message/index')">
+    <image src="@/static/index/notice-icon.png" mode="" class="left"></image>
+    <view class="right">
+        <view class="con">
+            <notice-scroll :notices="messageList" v-if="messageList && messageList.length != 0"></notice-scroll>
+        </view>
+        <image class="img" src="@/static/arrow-right.png" mode=""></image>
+    </view>
+</view>
+```
+
+```js
+// 通知
+userMessage() {
+    this.$http('get', this.APIURL.userMessage, {
+        messageType: 0,
+        pageSize: this.pageSize,
+        pageNo: this.pageNo
+    }).then(res => {
+        if (!res.success) {
+            this.utils.showToast(res.message);
+            return false;
+        }
+        if (res.data.rows && res.data.rows.length != 0) {
+            this.messageList = res.data.rows
+            console.log('messageList', this.messageList)
+        }
+    })
+},
+```
+
+#### 99.3 效果
+
+![image-20240103152458354](https://gitee.com/v876774538/my-img/raw/master/image-20240103152458354.png)
+
+### 100.antd修改checkbox默认样式
+
+```css
+      // 鼠标hover
+      /deep/.ant-checkbox-wrapper:hover .ant-checkbox-inner,
+      /deep/.ant-checkbox:hover .ant-checkbox-inner,
+      /deep/.ant-checkbox-input:focus + .ant-checkbox-inner
+      {
+        border-radius: 50% !important;
+        border: 1px solid #013893 !important;
+      }
+
+      // 默认
+      /deep/.ant-checkbox {
+        .ant-checkbox-inner {
+          border-radius: 50% !important;
+          border: 1px solid #013893 !important;
+        }
+      }
+
+      // 选中
+      /deep/.ant-checkbox-checked .ant-checkbox-inner,
+      /deep/.ant-checkbox-indeterminate .ant-checkbox-inner {
+        border-radius: 50% !important;
+        border: 1px solid #013893 !important;
+        background: #013893;
+      }
+```
+
+![image-20240105171529217](C:\Users\pc01\AppData\Roaming\Typora\typora-user-images\image-20240105171529217.png)
+
+![image-20240105171534985](https://gitee.com/v876774538/my-img/raw/master/image-20240105171534985.png)
+
+注意：有未解决的样式bug如下
+
+![image-20240105171554175](https://gitee.com/v876774538/my-img/raw/master/image-20240105171554175.png)
+
+### 101.css磨砂质感背景
+
+```css
+.main {
+  min-width: 641px;
+  width: 641px;
+  margin: 0 auto;
+  // border: 2px solid #ffffff;
+  // background: url('~@/assets/login/loginMainBg.png') no-repeat;
+  background-size: 100% 100%;
+  padding: 92px 0 96px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 40px;
+  border: 2px solid #fff;
+  box-shadow: 0px 10px 20px 1px #dee1ff;
+  overflow: hidden;
+  position: relative;
+}
+
+.main::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  z-index: 0;
+}
+```
+
+![image-20240105175502318](https://gitee.com/v876774538/my-img/raw/master/image-20240105175502318.png)
+
+### 102.js全局通用的数据类型判断方法
+
+#### 102.1 方法
+
+```js
+function getType(obj) {
+  let type = typeof obj
+  if (type !== 'object') {
+    // 先进行typeof判断，如果是基础数据类型，直接返回
+    return type
+  }
+  // 对于typeof返回结果是object的，再进行如下的判断，正则返回结果
+  return Object.prototype.toString.call(obj).replace(/^\[object (\S+)\]$/, '$1')
+}
+```
+
+#### 102.2 使用
+
+```js
+getType([]) // "Array" typeof []是object，因此toString返回
+getType('123') // "string" typeof 直接返回
+getType(window) // "Window" toString返回
+getType(null) // "Null"首字母大写，typeof null是object，需toString来判断
+getType(undefined) // "undefined" typeof 直接返回
+getType() // "undefined" typeof 直接返回
+getType(function () {}) // "function" typeof能判断，因此首字母小写
+getType(/123/g) //"RegExp" toString返回
+```
+
