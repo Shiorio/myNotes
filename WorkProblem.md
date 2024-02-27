@@ -1647,7 +1647,7 @@ export default {
 </style>
 ```
 
-### 11.上传图片
+### 11.antd上传图片
 
 #### 11.1 页面
 
@@ -2676,7 +2676,7 @@ export default {
 }
 ```
 
-### 20.上传图片
+### 20.antd上传图片
 
 ```html
 <a-upload accept=".jpg,.jpeg,.png,.JPG,.JPEG,.gif" :customRequest="imageEvaluateUploadImage">
@@ -7349,7 +7349,7 @@ export default {
 </style>
 ```
 
-### 72.a-upload 限制上传的文件类型/校验上传的文件类型
+### 72.antd a-upload限制上传的文件类型/校验上传的文件类型
 
 #### 72.1 限制上传文件类型
 
@@ -14102,7 +14102,7 @@ height: 443px;" src="https://www.amap.com/search?query=%E4%B8%89%E7%9B%8A%E5%8F%
 
 ![image-20231023161332368](https://gitee.com/v876774538/my-img/raw/master/image-20231023161332368.png)
 
-### 92.uniapp 自定义简单消息提示组件 popup
+### 92.uniapp自定义简单消息提示组件 popup
 
 #### 92.1 组件
 
@@ -14448,7 +14448,7 @@ uni.request({
    ```
 
 
-### 96.uniapp 生成推广海报
+### 96.uniapp生成推广海报
 
 > 焕米App项目：http://syy333.dynv6.net:20080/huanmi/huanmiApp.git
 
@@ -15175,3 +15175,645 @@ getType(function () {}) // "function" typeof能判断，因此首字母小写
 getType(/123/g) //"RegExp" toString返回
 ```
 
+### 103.npm install失败 使用淘宝镜像
+
+```shell
+npm install --registry=https://registry.npm.taobao.org
+```
+
+### 104.uniapp scroll-view报错
+
+报错内容：`[Intervention]Ignored attempt to cancel a touchmove event with cancelable=false, for example because scrolling is in progress and cannot be interrupted`
+
+原因：蒙版阻止默认的修饰符与`scroll-view`组件有冲突，如下图，因为[事件冒泡](https://so.csdn.net/so/search?q=事件冒泡&spm=1001.2101.3001.7020)，导致scroll-view组件的touchmove事件可以传递到模态框。
+
+解决方法：给`scroll-view`标签触摸移动添加阻止冒泡`@touchmove.stop`。
+
+![img](https://img-blog.csdnimg.cn/076bd9bd805a47609bb8a94f8ee4b53a.png)
+
+### 105.IOS h5打包成桌面书签app，页面跳转就会出现“系统网页导航栏”
+
+#### 105.1 问题
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/image-20240123092701616.png" alt="image-20240123092701616" style="zoom:25%;" />
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/image-20240123092713381.png" alt="image-20240123092713381" style="zoom:25%;" />
+
+#### 105.2 解决
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/image-20240123093109803.png" alt="image-20240123093109803"  />
+
+### 106.IOS低版本系统手机的h5网页启动白屏
+
+> 参考：
+>
+> [iOS端uniapp 不支持正则零宽_mob649e81593bda的技术博客_51CTO博客](https://blog.51cto.com/u_16175453/7615739)
+>
+> [IOS&Safari不兼容零宽断言正则的坑_ios中不兼容哪些正则-CSDN博客](https://blog.csdn.net/weixin_44846945/article/details/134314031)
+
+#### 106.1 问题
+
+IOS低版本系统的手机，打开h5网页白屏，开发者模式查看不报错，请求为空。
+
+#### 106.2 解决
+
+IOS低版本系统不支持**零宽断言**正则，注释/更改方法即可。
+
+正则表达式零宽断言有常见四种类型：
+
+- 正向环视(Positive Lookahead)：用`?=pattern`表示，匹配在某个模式之前的位置；
+- 负向环视(Negative Lookahead)：用`?!pattern`表示，匹配不在某个模式之前的位置；
+- 正向回顾(Positive Lookbehid)：用`?=<pattern`表示，匹配在某个模式之后的位置；
+- 负向回顾(Negative Lookbehid)：用`?<!pattern`表示，匹配不在某个模式之后的位置。
+
+### 107.uniapp上传图片 h5正常 app真机测试无反应
+
+#### 107.1 uni.uploadFile(OBJECT)说明
+
+[uni.uploadFile(OBJECT) | uni-app官网 (dcloud.net.cn)](https://uniapp.dcloud.net.cn/api/request/network-file.html#uploadfile)
+
+**OBJECT 参数说明**
+
+| 参数名   | 类型     | 必填                        | 说明                                                         | 平台差异说明                                                 |
+| :------- | :------- | :-------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| url      | String   | 是                          | 开发者服务器 url                                             |                                                              |
+| files    | Array    | 是（files和filePath选其一） | 需要上传的文件列表。**使用 files 时，filePath 和 name 不生效。** | App、H5（ 2.6.15+）                                          |
+| fileType | String   | 见平台差异说明              | 文件类型，image/video/audio                                  | 仅支付宝小程序，且必填。                                     |
+| file     | File     | 否                          | 要上传的文件对象。                                           | 仅H5（2.6.15+）支持                                          |
+| filePath | String   | 是（files和filePath选其一） | 要上传文件资源的路径。                                       |                                                              |
+| name     | String   | 是                          | 文件对应的 key , 开发者在服务器端通过这个 key 可以获取到文件二进制内容 |                                                              |
+| header   | Object   | 否                          | HTTP 请求 Header, header 中不能设置 Referer。                |                                                              |
+| timeout  | Number   | 否                          | 超时时间，单位 ms                                            | H5(HBuilderX 2.9.9+)、APP(HBuilderX 2.9.9+)、微信小程序、支付宝小程序、抖音小程序、快手小程序 |
+| formData | Object   | 否                          | HTTP 请求中其他额外的 form data                              |                                                              |
+| success  | Function | 否                          | 接口调用成功的回调函数                                       |                                                              |
+| fail     | Function | 否                          | 接口调用失败的回调函数                                       |                                                              |
+| complete | Function | 否                          | 接口调用结束的回调函数（调用成功、失败都会执行）             |                                                              |
+
+**files参数说明**
+
+files 参数是一个 file 对象的数组，file 对象的结构如下：
+
+| 参数名 | 类型   | 必填 | 说明                                        |
+| :----- | :----- | :--- | :------------------------------------------ |
+| name   | String | 否   | multipart 提交时，表单的项目名，默认为 file |
+| file   | File   | 否   | 要上传的文件对象，仅H5（2.6.15+）支持       |
+| uri    | String | 是   | 文件的本地地址                              |
+
+#### 107.2 解决
+
+真机使用`files`参数上传文件时，需要填写`uri`（h5貌似不填也能用）。
+
+```js
+function uploadIdCardInfoHttp(method, url, data) {
+	return new Promise((resolve, reject) => {
+		if (!method) {
+			method = 'GET'
+		}
+		let shantongbaoObj = JSON.parse(des_decrypt(uni.getStorageSync('shantongbao'), 'E555F1E8'))
+		// console.log('shantongbaoObj',shantongbaoObj)
+		let getTime = new Date().getTime()
+		let data1 = {
+			"charset": "UTF-8",
+			"sign": "",
+			"sessionId": shantongbaoObj.sessionId,
+			"reqTime": getTime,
+			"version": "1.0.0",
+			// "reqData": "",
+			"encType": "01",
+			"systemType": "ANDROID",
+			"signType": "01",
+			"pubKeyVersion": "1.0.0"
+		}
+		let reqData = {
+			"phoneInfo": {
+				"appVersion": "20230111",
+				"systemVersion": "12",
+				"phoneModel": "HUAWEI",
+				"system": "H5"
+			},
+			"checkValue": "1234"
+		}
+		let _key = shantongbaoObj.privateKey
+		let reqDataVal = Object.assign({}, reqData)
+		let signVal =
+			`charset=UTF-8&encType=01&pubKeyVersion=1.0.0&reqTime=${getTime}&sessionId=${shantongbaoObj.sessionId}&signType=01&systemType=ANDROID&version=1.0.0&key=${_key}`
+		// data1.reqData = des_encrypt(JSON.stringify(reqDataVal),_key.substr(0, 8))
+		data1.sign = this.utils.SHA256(signVal).toUpperCase()
+		console.log('signVal', signVal)
+		console.log('data', data)
+		let files = []
+		for (let key in data) {
+			if ((/\d/.test(key)) == false) {
+				files.push({
+					name: key,
+					file: data[key],
+					uri: data[key].path
+				})
+			}
+			
+		}
+		// let files = [
+		// 	{
+		// 		name: 'idFroPic',
+		// 		file: data.idFroPic,
+		// 		uri: data.idFroPic.path,
+		// 	},
+		// 	{
+		// 		name: 'idConPic',
+		// 		file: data.idConPic,
+		// 		uri: data.idConPic.path,
+		// 	},
+		// 	{
+		// 		name: 'cardFrontPic',
+		// 		file: data.cardFrontPic,
+		// 		uri: data.cardFrontPic.path,
+		// 	},
+		// 	{
+		// 		name: 'doorHeadPic',
+		// 		file: data.doorHeadPic,
+		// 		uri: data.doorHeadPic.path,
+		// 	},
+		// 	{
+		// 		name: 'cashierDeskPic',
+		// 		file: data.cashierDeskPic,
+		// 		uri: data.cashierDeskPic.path,
+		// 	},
+		// 	{
+		// 		name: 'indoorSettingPic',
+		// 		file: data.indoorSettingPic,
+		// 		uri: data.indoorSettingPic.path,
+		// 	},
+		// ]
+		console.log('files', files)
+		uni.uploadFile({
+			url: config.path + url,
+			formData: data1,
+			name: 'file',
+			method: method,
+			files: files,
+			timeout: 30000,
+			success: (res) => {
+				console.log('res', JSON.parse(res.data).respData)
+				uni.hideLoading()
+				if (JSON.parse(res.data).respMsg == '参数解密失败') {
+					this.utils.showToast('请重新登录')
+					localStorage.removeItem('userInfo')
+					uni.reLaunch({
+						url: '/pages/login/login'
+					})
+					return;
+				}
+				if (JSON.parse(res.data).respCode != '0000') {
+					this.utils.showToast(JSON.parse(res.data).respMsg)
+					resolve(JSON.parse(des_decrypt(JSON.parse(res.data).respData, _key.substr(0,
+						8))))
+					return;
+				}
+				resolve(JSON.parse(des_decrypt(JSON.parse(res.data).respData, _key.substr(0, 8))))
+			},
+			fail: (res) => {
+				console.log('error', res)
+				this.utils.showToast("网络连接错误")
+				reject(res)
+			},
+			complete: () => {
+				console.log('结束')
+			}
+		})
+	})
+}
+```
+
+`files`数组如下：
+
+```js
+[
+    {
+        "name": "idFroPic",
+        "file": {
+            "path": "file:///storage/emulated/0/Pictures/QQ/Image_1705484402858.jpg",
+            "size": 76899
+        },
+        "uri": "file:///storage/emulated/0/Pictures/QQ/Image_1705484402858.jpg"
+    },
+    {
+        "name": "idConPic",
+        "file": {
+            "path": "file:///storage/emulated/0/Pictures/QQ/Image_1705484407005.jpg",
+            "size": 80320
+        },
+        "uri": "file:///storage/emulated/0/Pictures/QQ/Image_1705484407005.jpg"
+    },
+    {
+        "name": "cardFrontPic",
+        "file": {
+            "path": "file:///storage/emulated/0/Pictures/QQ/Image_1705484397211.jpg",
+            "size": 65427
+        },
+        "uri": "file:///storage/emulated/0/Pictures/QQ/Image_1705484397211.jpg"
+    }
+]
+```
+
+### 108.uniapp仿微信红包打开动画效果
+
+[uniapp仿微信红包打开动画效果_uniapp 领红包特效-CSDN博客](https://blog.csdn.net/yezi20189/article/details/125663967)
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/19ab52f370f941e08fa3b64d86e8c50d.gif#pic_center)
+
+```vue
+<template>
+	<view class="index">
+		<uni-popup ref="popup">
+			<view v-if="packerState != 3" class="packer-box flex-column">
+				<view class="packer-bg anim-ease-in" :class="{ 'anim-fade-out': packerState == 2 }"></view>
+				<view class="packer-bottom-box anim-ease-in" :class="{ 'anim-out-bottom': packerState == 2 }">
+					<view class="arc-bottom-edge"></view>
+					<view class="packer-bottom-bg"></view>
+				</view>
+				<view class="packer-top-box anim-ease-in" :class="{ 'anim-out-top': packerState == 2 }">
+					<view class="flex-row sender-info">
+						<image class="sender-avatar"></image>
+						<view>{{'XXX'}}发出的红包</view>
+					</view>
+					<view class="packer-greeting double-text">{{'恭喜发财，大吉大利'}}</view>
+					<view class="arc-edge"></view>
+					<view v-if="packerState == 1" class="anim-rotate packer-btn-pos">
+						<view class="packer-btn" style="transform: translateZ(-4px);">開</view>
+						<view class="packer-btn-middle" v-for="(item, index) in 7" :key="index"
+							:style="{transform: `translateZ(${index - 3}px)`}"></view>
+						<view class="packer-btn packer-btn-front">開</view>
+					</view>
+					<view v-else class="packer-btn packer-btn-pos" @click="openPacker">開</view>
+				</view>
+			</view>
+			<view v-else class="packer-box flex-column">
+				<!-- 红包内容 -->
+			</view>
+		</uni-popup>
+	</view>
+</template>
+
+<script>
+	export default {
+		name: "redPacket",
+		data() {
+			return {
+				packerState: 0
+			};
+		},
+		methods: {
+			open() {
+				this.$refs.popup.open('center')
+			},
+			close() {
+				this.$refs.popup.close()
+			},
+			openPacker() {
+				// 加载数据，触发硬币旋转动画
+				this.packerState = 1;
+				this.request(() => {
+					// 调用抢红包接口成功，触发开红包动画
+					this.packerState = 2;
+					// 开红包动画结束后，移除相关节点，否则会阻挡其它下层节点
+					setTimeout(() => {
+						this.packerState = 3;
+					}, 500);
+				})
+
+			},
+			request(success) {
+				setTimeout(() => {
+					success()
+				}, 3000);
+			}
+		}
+	}
+</script>
+
+<style lang="less">
+	.flex-row {
+		display: flex;
+		flex-direction: row;
+		position: relative;
+	}
+
+	.flex-column {
+		display: flex;
+		flex-direction: column;
+		position: relative;
+	}
+
+	.packer-box {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 99;
+		color: rgb(235, 205, 153);
+		padding: 60rpx;
+	}
+
+	.packer-bg {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+	}
+
+	.packer-top-box {
+		width: 600rpx;
+		background-color: rgb(244, 94, 77);
+		text-align: center;
+		margin: auto;
+		transform: translateY(-160rpx);
+		border-top-left-radius: 30rpx;
+		border-top-right-radius: 30rpx;
+		position: relative;
+	}
+
+	.sender-info {
+		margin-top: 200rpx;
+		justify-content: center;
+		line-height: 60rpx;
+		font-size: 36rpx;
+	}
+
+	.sender-avatar {
+		width: 60rpx;
+		height: 60rpx;
+		border-radius: 10rpx;
+		background-color: #fff;
+		margin-right: 10rpx;
+	}
+
+	.packer-greeting {
+		font-size: 48rpx;
+		line-height: 60rpx;
+		height: 120rpx;
+		margin: 40rpx 30rpx 200rpx;
+	}
+
+	.arc-edge {
+		position: relative;
+	}
+
+	.arc-edge::after {
+		width: 100%;
+		height: 200rpx;
+		position: absolute;
+		left: 0;
+		top: -100rpx;
+		z-index: 9;
+		content: '';
+		border-radius: 50%;
+		background-color: rgb(244, 94, 77);
+		box-shadow: 0 6rpx 6rpx 0 rgba(0, 0, 0, 0.1);
+	}
+
+	.packer-bottom-box {
+		transform: translate(-50%, 0);
+		width: 600rpx;
+		height: 360rpx;
+		border-bottom-left-radius: 30rpx;
+		border-bottom-right-radius: 30rpx;
+		overflow: hidden;
+		position: absolute;
+		bottom: calc(50% - 440rpx);
+		left: 50%;
+	}
+
+	.anim-ease-in {
+		animation-duration: 0.5s;
+		animation-timing-function: ease-in;
+		animation-fill-mode: forwards;
+	}
+
+	.anim-out-top {
+		animation-name: slideOutTop;
+	}
+
+	.anim-out-bottom {
+		animation-name: slideOutBottom;
+	}
+
+	.anim-fade-out {
+		animation-name: fadeOut;
+	}
+
+	@keyframes fadeOut {
+		from {
+			opacity: 1;
+		}
+
+		to {
+			opacity: 0;
+		}
+	}
+
+	@keyframes slideOutTop {
+		from {
+			transform: translateY(-160rpx);
+		}
+
+		to {
+			transform: translateY(-200%);
+		}
+	}
+
+	@keyframes slideOutBottom {
+		from {
+			transform: translate(-50%, 0);
+		}
+
+		to {
+			transform: translate(-50%, 200%);
+		}
+	}
+
+	.arc-bottom-edge {
+		position: relative;
+	}
+
+	.arc-bottom-edge::after {
+		width: 120%;
+		height: 200rpx;
+		position: absolute;
+		left: -10%;
+		top: -100rpx;
+		z-index: 8;
+		content: '';
+		border-radius: 50%;
+		box-shadow: 0 60rpx 0 0 rgb(242, 85, 66);
+	}
+
+	.packer-bottom-bg {
+		background-color: rgb(242, 85, 66);
+		height: 280rpx;
+		margin-top: 100rpx;
+	}
+
+	.packer-btn {
+		border-radius: 50%;
+		width: 200rpx;
+		height: 200rpx;
+		line-height: 200rpx;
+		font-size: 80rpx;
+		text-align: center;
+		color: #333;
+		background-color: rgb(235, 205, 153);
+		box-shadow: 0 0 6rpx 0 rgba(0, 0, 0, 0.1);
+	}
+
+	.packer-btn-pos {
+		transform: translateX(-50%);
+		position: absolute;
+		left: 50%;
+		z-index: 10;
+		bottom: -200rpx;
+	}
+
+	.packer-btn-front {
+		position: absolute;
+		top: 0;
+		transform: translateZ(4px);
+	}
+
+	.packer-btn-middle {
+		position: absolute;
+		top: 0;
+		border-radius: 50%;
+		width: 200rpx;
+		height: 200rpx;
+		background-color: rgb(235, 180, 120);
+	}
+
+	.anim-rotate {
+		margin-left: -100rpx;
+		transform-style: preserve-3d;
+		animation: rotate 1s linear infinite;
+	}
+
+	@keyframes rotate {
+		0% {
+			transform: rotateY(0deg);
+		}
+
+		100% {
+			transform: rotateY(360deg);
+		}
+	}
+</style>
+```
+
+### 109.Promise.all 等待多个请求完成后进行操作
+
+```js
+Promise.all([
+    this.$http('post', this.APIURL.userCenter).then(res => {
+        console.log('res1', res)
+        this.userInfo = Object.assign(this.userInfo, res)
+    }),
+    this.$http('post', this.APIURL.userConfig).then(res => {
+        console.log('res2', res)
+        this.userInfo = Object.assign(this.userInfo, res)
+    }),
+]).then(() => {
+    uni.hideLoading()
+    console.log('promise all', this.userInfo)
+    uni.setStorageSync('userInfo', this.userInfo)	// 合并两个接口的用户信息
+})
+```
+
+需要使用遍历的情况
+
+```js
+modalList: [{
+        label: '支付宝',
+        val: 'ALI',
+        info: '',
+        iconUrl: require('@/static/my/withdraw/alipay.png'),
+        url: '/pages/my/withdrawSettings/alipay',
+        isActive: false,
+    },
+    {
+        label: '银行卡',
+        val: 'LG',
+        info: '',
+        iconUrl: require('@/static/my/withdraw/bankcard.png'),
+        url: '/pages/my/withdrawSettings/bankcard',
+        isActive: false,
+    },
+    {
+        label: '对公转账',
+        val: 'DG',
+        info: '',
+        iconUrl: require('@/static/my/withdraw/publicTransfer.png'),
+        url: '/pages/my/withdrawSettings/publicTransfer',
+        isActive: false,
+    },
+], // 渠道列表
+```
+
+```js
+// 渠道配置
+modalInit() {
+    var ps = []
+    this.modalList.forEach((item, index) => {
+        var channel = item.val
+        var p = this.cashConfig(item.val, (res) => {
+            console.log(item.label, res)
+            if (res) {
+                item.isActive = true
+                this.modalFlag = false
+                if (item.label == '支付宝') {
+                    item.info = this.userInfo.alipayAccount ? this.userInfo
+                        .alipayAccount : ''
+                } else if (item.label == '银行卡') {
+                    item.info = this.userInfo.bankName && this.userInfo.bankNo ?
+                        `${this.userInfo.bankName}(${this.userInfo.bankNo.slice(-4)})` :
+                        ''
+                } else if (item.label == '对公转账') {
+                    item.info = this.corporateAccount.name ? this.corporateAccount
+                        .name : ''
+                }
+            }
+        })
+        ps.push(p)
+    })
+    console.log('ps', ps)
+
+    Promise.all(ps).then(() => {
+        console.log('flag', this.modalFlag)
+        // 未开通任何渠道
+        if (this.modalFlag) {
+            this.utils.showToast('提现渠道未配置，请联系管理员进行配置！')
+            setTimeout(() => {
+                uni.navigateBack(1)
+            }, 2000)
+        }
+    })
+},
+// 提现规则
+cashConfig(channel, callback) {
+    // 这里需要return Promise
+    return this.$http('get', this.APIURL.cashConfig, {
+        type: this.type == 1 ? 'balance' : 'bounty',
+        channel: channel == 'ALI' ? 'ZFB' : channel
+    }).then(res => {
+        if (!res.success) {
+            this.utils.showToast(res.message);
+            return false;
+        }
+        if (res.data && res.data.cashStatus == 1) {
+            this.rule = res.data
+            this.modalType = channel
+        }
+        if (callback) {
+            callback(res.data.cashStatus == 1 ? true : false)
+        }
+    })
+},
+```
