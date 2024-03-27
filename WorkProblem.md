@@ -15817,3 +15817,27 @@ cashConfig(channel, callback) {
     })
 },
 ```
+
+### 110.flex: spsace-evenly兼容问题
+
+![image-20240228101430203](https://gitee.com/v876774538/my-img/raw/master/image-20240228101430203.png)
+
+bug说明：[【报Bug】justify-content: space-evenly在部分机型上无效 - DCloud问答](https://ask.dcloud.net.cn/question/99604)
+
+解决方案：利用伪元素在盒子前后都增加一个空的盒子。
+
+```css
+.container{  
+      display: flex;  
+      flex-flow: row nowrap;  
+      align-items: center;  
+      justify-content: space-between;  
+       //justify-content: space-evenly;  
+      &:before,  
+      &:after {  
+          content: '';  
+          display: block;  
+    }  
+}  
+```
+
