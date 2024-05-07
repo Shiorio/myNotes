@@ -15841,3 +15841,112 @@ bug说明：[【报Bug】justify-content: space-evenly在部分机型上无效 -
 }  
 ```
 
+### 111.uniapp 安卓系统软键盘顶起页面
+
+#### 111.1 问题描述
+
+安卓系统软键盘顶起页面，视口宽度变化，导致通过`calc(100vh - 固定rpx)`控制最大高度的`scroll-view`高度被压缩。
+
+#### 111.2 解决方案
+
+[uniapp中软键盘弹起导致页面或元素挤压解决_uni-search-bar键盘会挤压页面-CSDN博客](https://blog.csdn.net/weixin_43109722/article/details/128207803)
+
+1. `page.json`中配置不允许软键盘顶起页面
+
+   ```js
+   {
+       "path" : "pages/login/login", 	//聊天页
+       "style" : {
+   		"app-plus": {  // 在pages.json文件里面中配置
+   		    "softinputMode": "adjustPan"
+   		}
+   	}
+   }
+   ```
+
+   试验不知道为什么不生效。
+
+2. `input`属性`:adjust-position="false"`
+
+   ```vue
+   <input type="text" placeholder="请输入终端SN" class="input" placeholder-class="input-placeholder" v-model="keyword" :adjust-position="false">
+   ```
+
+   试验不知道为什么不生效。
+
+3. 通过`uni.getSystemInfoSync()`获取屏幕高度，计算获得`scroll-view`的最大高度
+
+   ```js
+   function getScreenHeight() {
+   	// px转rpx
+   	function pxToRpx(px) {
+   		const screenWidth = uni.getSystemInfoSync().screenWidth
+   		return (750 * Number.parseInt(px)) / screenWidth
+   	}
+   
+   	return pxToRpx(uni.getSystemInfoSync().windowHeight)
+   }
+   ```
+   
+```vue
+   <scroll-view scroll-y="true" class="scroll-Y" :style="`max-height: ${(utils.getScreenHeight() - 560)}rpx`">
+   	...
+   </scroll-view>
+```
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/51607ffcf461ab4a57a60cd78e999877.jpg" alt="img" style="zoom:50%;" />
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/750484508d0fa358d22e1e30e21b6625.jpg" alt="img" style="zoom:50%;" />
+
+### 112.日期格式化
+
+格式化前：
+
+![image-20240425174737849](https://gitee.com/v876774538/my-img/raw/master/image-20240425174737849.png)
+
+格式化后：
+
+![image-20240425174755489](https://gitee.com/v876774538/my-img/raw/master/image-20240425174755489.png)
+
+```js
+const formatDate = (data, type = "string") => {
+	console.log(data, "@@@@@@@@@");
+	let regex_list = [
+		// # 2013年8月15日 22:46:21
+		/\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}/g,
+		// # "2013年8月15日 22:46"
+		/\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}/g,
+		// # "2014年5月11日"
+		/\d{4}-\d{1,2}-\d{1,2}/g,
+		// # "2014年5月"
+		/\d{4}-\d{1,2}/g,
+	]
+	let text = data.replace(/年/g, "-").replace(/月/g, "-").replace(/日/g, " ").replace("/", "-").replace(/\./g, "-");
+	console.log(text, "！！！！！！！！！！")
+	let date = "";
+	for (let i of regex_list) {
+		date = text.match(i)
+		if (!validateNull(date)) {
+			break
+		}
+	}
+	if (type == "string") {
+		if (!validateNull(date)) {
+			return date[0]
+		} else {
+			return ""
+		}
+	} else {
+		console.log(data, '@@@@@');
+		if (!validateNull(date)) {
+			if (date.length == 1) {
+				date.push(date[0])
+			}
+			return date
+		} else {
+			return []
+		}
+	}
+}
+```
+
