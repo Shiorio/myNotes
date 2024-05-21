@@ -1647,7 +1647,7 @@ export default {
 </style>
 ```
 
-### 11.上传图片
+### 11.antd上传图片
 
 #### 11.1 页面
 
@@ -2676,7 +2676,7 @@ export default {
 }
 ```
 
-### 20.上传图片
+### 20.antd上传图片
 
 ```html
 <a-upload accept=".jpg,.jpeg,.png,.JPG,.JPEG,.gif" :customRequest="imageEvaluateUploadImage">
@@ -5671,7 +5671,7 @@ export default {
 
 ### 54.vue 拖拽插件 可拖放排序
 
-#### 54.1 安装依赖插件
+#### 54.1 安装依赖插件npm
 
 ```
 npm i -S vuedraggable
@@ -5853,7 +5853,7 @@ handleGrouping(sortData) {
             })
             tempArr.push(item.attributeName)
         }
-        else {	// 不存在
+        else {	// 存在
            	// 往已有的对象中push
             newArr[tempArr.indexOf(item.attributeName)].values.push(item)
         }
@@ -7349,7 +7349,7 @@ export default {
 </style>
 ```
 
-### 72.a-upload 限制上传的文件类型/校验上传的文件类型
+### 72.antd a-upload限制上传的文件类型/校验上传的文件类型
 
 #### 72.1 限制上传文件类型
 
@@ -8840,3 +8840,7136 @@ onPageScroll(e) {
     })
 }
 ```
+### 81.js原生请求及封装
+
+#### 81.1 使用XMLHttpRequest
+
+```js
+//创建Xhr对象
+var xhr = new XMLHttpRequest()
+//调用open函数
+xhr.open('GET','url地址')
+//调用send函数
+xhr.send()
+//监听onreadystatechange事件
+xhr.onreadystatechange = function() {
+    if(xhr.readystate === 4 && xhr.status === 200) {
+        console.log(xhr.responseText)
+    }
+}
+```
+
+```js
+// post请求
+ //创建xhr对象
+ var xhr = new XMLHttpRequest()
+ //调用open函数
+ xhr.open('POST','url地址')
+ //设置Content-Type属性
+ xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+ //调用send函数
+ const data = JSON.stringify({
+     name:'123'
+ })
+ xhr.send(data)  
+ //监听onreadystatechange事件
+ xhr.onreadystatechange = function () {
+     if(xhr.readyState === 4 && xhr.status === 200) {
+         console.log(xhr.responseText);
+     }
+ }
+```
+
+#### 81.2 简单封装
+
+```js
+ function http(){
+    var xhr = new XMLHttpRequest()
+    var baseUrl =  '基本地址'
+    return{
+       request:(method,url,data,success,err)=>{
+        xhr.open(method,baseUrl+url)
+       
+        if (method=='GET'){
+            xhr.send()  
+        } else {
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+            xhr.send(data) 
+        }
+        xhr.onreadystatechange = function () {
+            if(xhr.readyState === 4 && xhr.status === 200) {
+                console.log(xhr.responseText);
+                success(xhr.responseText)
+            }else{
+                err()
+            }
+        }
+       }
+    }
+ }
+ //调用
+ var myHttp = http()
+ let data = {}
+ myHttp.request('post','/form',data,function(res){
+
+ },function(){
+
+ })
+```
+
+#### 81.3 实践
+
+`http.js`
+
+```js
+function http(){
+    var xhr = new XMLHttpRequest()
+    var baseUrl =  'http://sarlisi-vip.jp/api' // 基本地址
+    return{
+       request:(method,url,data,success,err)=>{
+        xhr.open(method,baseUrl + url)
+       
+        if (method=='GET'){
+            xhr.send()  
+        } else {
+            // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+            xhr.setRequestHeader('Content-Type', 'application/json')
+            xhr.send(JSON.stringify(data)) 
+        }
+        xhr.onreadystatechange = function () {
+            if(xhr.readyState === 4 && xhr.status === 200) {
+                console.log(xhr.responseText);
+                success(xhr.responseText)
+            }else{
+                err()
+            }
+        }
+       }
+    }
+ }
+```
+
+`supplyChain.html`中引入http.js
+
+```html
+<script src="./js/http.js"></script>
+<script src="./js/supplyChain/supplyChain.js"></script>
+```
+
+`supplyChain.js`中使用
+
+```js
+var myHttp = http()
+myHttp.request('post', '/tAfterSale/afterSaleMessage', params, function(res) {
+    location.reload()	// 强制刷新
+})
+```
+
+### 82.js原生幻灯片效果
+
+#### 82.1效果
+
+![image-20230713093754027](https://gitee.com/v876774538/my-img/raw/master/image-20230713093754027.png)
+
+#### 82.2 html
+
+```html
+<div class="slideshow">
+  <div class="slideshow-wrap"></div>
+  <div class="slideshow-sliders"></div>
+</div>
+```
+
+#### 82.3 js
+
+```js
+window.addEventListener("load", function() {
+	// 图片组
+    var imgs = [
+        './images/index/image17-1.jpg',
+        './images/index/image1.png',
+        './images/index/image2.png',
+    ]
+
+    for (var i = 0; i < imgs.length; i++) {
+        var img = new Image();
+        img.src = imgs[i];
+        img.className = 'slideshow-img'
+        document.querySelector('.slideshow-wrap').appendChild(img);
+    }    
+
+    var currentImgIndex = 0;    // 当前显示的图片索引
+    // 添加索引滑块
+    for (var i = 0 ; i < imgs.length; i++) {
+        var div = document.createElement('div');
+        div.className = 'slideshow-slider';
+        div.id = i
+        document.querySelector('.slideshow-sliders').appendChild(div);
+    }
+
+    var imgElements = document.querySelector('.slideshow-wrap').querySelectorAll('.slideshow-img');
+    var sliderElements = document.querySelector('.slideshow-sliders').querySelectorAll('.slideshow-slider')
+
+    // 显示当前索引的图片 索引高亮
+    function showCurrentImg() {
+        for (var i = 0; i < imgElements.length; i++) {
+            imgElements[i].classList.remove('show')
+            sliderElements[i].classList.remove('active')
+        }
+        imgElements[currentImgIndex].classList.add('show')
+        sliderElements[currentImgIndex].classList.add('active')
+    }
+    showCurrentImg();
+
+    // 切换到下一张图片
+    function showNextImg() {
+        currentImgIndex = (currentImgIndex + 1) % imgs.length
+        showCurrentImg();
+    }
+
+    // 点击滑块切换
+    for(var i =0; i < sliderElements.length; i++) {
+        sliderElements[i].addEventListener('click', (sliderElement) => {
+            console.log('sliderElement',sliderElement)
+            currentImgIndex = sliderElement.target.id
+            showCurrentImg();
+        })
+    }
+
+    var timer   // 定时器
+    // 自动切换
+    function autoplay() {
+        timer = setInterval(() => {
+            showNextImg()
+        }, 5000)
+    }
+
+    // 停止自动切换
+    function stopplay() {
+        clearInterval(timer)
+    }
+
+    autoplay();
+
+    // 鼠标悬浮停止自动切换
+    var slideshowElement = document.querySelector('.slideshow')
+    slideshowElement.addEventListener('mouseover', () => {
+        console.log('mouseover')
+        stopplay();
+    })
+    slideshowElement.addEventListener('mouseleave', () => {
+        console.log('mouseleave')
+        autoplay();
+    })
+
+})
+
+```
+
+#### 82.4 css
+
+```css
+.slideshow {
+    .slideshow-wrap {
+        width: 5.89rem;
+        height: 8.33rem;
+        overflow: hidden;
+        position: relative;
+
+        .slideshow-img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: opacity 1s;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .show {
+            opacity: 1;
+        }
+    }
+
+    .slideshow-sliders {
+        margin-top: 0.18rem;
+        display: flex;
+
+        .slideshow-slider {
+            width: 0.28rem;
+            height: 0.04rem;
+            border-radius: 0.02rem;
+            margin-right: 0.09rem;
+            background: #DEDEDE;
+            cursor: pointer;
+        }
+
+        .active {
+            background: #3E9AC8;
+        }
+    }
+}
+```
+
+### 83.js原生系列左右点击箭头查看更多
+
+#### 83.1 效果
+
+![image-20230713094418048](https://gitee.com/v876774538/my-img/raw/master/image-20230713094418048.png)
+
+#### 83.2 html
+
+```html
+  <div class="panle4">
+    <div class="top"></div>
+    <div class="bottom"></div>
+    <div class="box">
+        <div class="title">
+          News
+        </div>
+        <div class="des">
+          <span>SANTIME</span>
+          <span class="line">|</span>
+          <span>for Beauty & Life</span>
+        </div>
+        <div class="arrow">
+          <img class="image22 disabled" src="./images/index/image22-disabled.png" alt="">
+          <img class="image22 image23" src="./images/index/image23.png" alt="">
+        </div>
+        <div class="wrap">
+          <div class="content">
+            <div class="img-box">
+              <img class="img18" src="./images/index/image18.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image19.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image20.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image21.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image21.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+            <div class="img-box">
+              <img class="img18" src="./images/index/image21.jpg" alt="">
+              <div class="middle">
+                <div class="time">
+                  2022.05.21
+                </div>
+                <div class="more">
+                  MORE
+                </div>
+              </div>
+              <div class="bottom">
+                「健康的な生活、美しさを保つ」は、SANTIME（三益友）が創業以来、一貫して掲げている目標です。
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+```
+
+关键结构：
+
+![image-20230713094651710](https://gitee.com/v876774538/my-img/raw/master/image-20230713094651710.png)
+
+#### 83.3 js
+
+```js
+window.addEventListener("load", function() {
+    // 资讯列表切换效果
+    var panle4 = document.querySelector('.panle4')
+    var wrap = panle4.querySelector('.wrap')
+    var wrapWidth = wrap.offsetWidth
+    var imgBoxs = wrap.querySelectorAll('.img-box')
+
+    var lastImgBoxIndex = 4
+    var imgBoxWidth = 375
+    if (imgBoxs && imgBoxs.length != 0) {
+        imgBoxWidth = imgBoxs[0].offsetWidth
+        lastImgBoxIndex = parseInt(wrapWidth / imgBoxWidth) // 当前页最后一个imgBox的index
+        var imgBoxsNum = lastImgBoxIndex // 一页可展示的imgBox的数量
+        console.log('lastImgBoxIndex', lastImgBoxIndex)
+    }
+    // 切换按钮点击事件
+    var arrows = panle4.querySelector('.arrow').querySelectorAll('.image22')
+    if (arrows && arrows.length != 0) {
+        var arrowLeft = arrows[0]
+        var arrowRight = arrows[1]
+        console.log(arrowLeft, arrowRight)
+        arrowLeft.addEventListener('click', () => {
+            leftTranslation();
+        })
+        arrowRight.addEventListener('click', () => {
+            rightTranslation();
+        })
+    }
+    var content = wrap.querySelector('.content')
+    var translate = 0
+    // 左移
+    function leftTranslation() {
+        if (lastImgBoxIndex > imgBoxsNum) {
+            lastImgBoxIndex--
+            translate = translate + (imgBoxWidth / 100 + 0.51)
+            // 内容平移一个img-box + 盒子外边距的距离
+            content.style.transform = "translateX(" + translate + "rem)";
+        }
+        arrowDisabled();
+    }
+    // 右移
+    function rightTranslation() {
+        if (imgBoxs && lastImgBoxIndex < imgBoxs.length) {
+            lastImgBoxIndex++
+            translate = translate - (imgBoxWidth / 100 + 0.51)
+            // 内容平移一个img-box + 盒子外边距的距离
+            content.style.transform = "translateX(" + translate + "rem)";
+        }
+        arrowDisabled();
+    }
+    // 箭头按钮判断（控制样式及是否可点击）
+    function arrowDisabled() {
+        if (lastImgBoxIndex <= imgBoxsNum) {
+            arrowLeft.src = './images/index/image22-disabled.png'
+            arrowLeft.classList.add('disabled')
+        }
+        else {
+            arrowLeft.src = './images/index/image22.png'
+            arrowLeft.classList.remove('disabled')
+        }
+        if (lastImgBoxIndex >= imgBoxs.length) {
+            arrowRight.src = './images/index/image23-disabled.png'
+            arrowRight.classList.add('disabled')
+        }
+        else {
+            arrowRight.src = './images/index/image23.png'
+            arrowRight.classList.remove('disabled')
+        }
+    }
+})
+```
+
+#### 83.4 css
+
+```css
+.panle4 {
+  position: relative;
+  width: 100%;
+
+  .top {
+    width: 100%;
+    height: 4.12rem;
+    background-color: #F5F5F5;
+  }
+
+  .bottom {
+    width: 100%;
+    height: 4.11rem;
+    background-color: #fff;
+  }
+
+  .box {
+    position: absolute;
+    right: 0;
+    top: 1.09rem;
+
+    .title {
+      font-family: FuturaLT;
+      font-weight: 300;
+      color: #333;
+      font-size: .8rem;
+      // margin-bottom: .44rem;
+    }
+  
+    .des {
+      font-family: Mplus1;
+      font-weight: 400;
+      font-size: .18rem;
+      color: #404040;
+      margin-bottom: .05rem;
+      display: flex;
+      align-items: center;
+      .line {
+        color: #808080;
+        margin: 0 .24rem;
+      }
+    }
+
+    .arrow {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: .25rem;
+
+      .image22 {
+        width: .36rem;
+        height: .36rem;
+        cursor: pointer;
+      }
+
+      .image23 {
+        margin-left: .31rem;
+        margin-right: .67rem;
+        cursor: pointer;
+        
+      }
+
+      .disabled {
+        cursor: default;
+      }
+    }
+
+    .wrap {
+      max-width: 16.6rem;
+      overflow: hidden;
+    }
+
+    .content {
+      display: flex;
+      height: 4rem;
+      transition: transform 0.2s ease 0s;
+
+      .img-box {
+        margin-left: .51rem;
+        width: 3.75rem;
+        .img18 {
+          width: 3.75rem;
+          height: 2.41rem;
+        }
+
+        .middle {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: .34rem;
+          margin-bottom: .23rem;
+          font-family: FuturaLT;
+          font-size: 0.3rem;
+          font-weight: 300;
+          color: #333333;
+
+          .more {
+            font-size: 0.18rem;
+            text-align: center;
+            line-height: .27rem;
+            padding: 0 0.11rem;
+            box-sizing: border-box;
+            height: .27rem;
+            border: .01rem solid #999;
+          }
+        }
+
+        .bottom {
+          font-size: .18rem;
+          font-weight: 400;
+          font-family: Mplus1;
+        }
+
+      }
+
+      .img-box:first-child {
+        margin-left: 0;
+      }
+
+      .img-box:hover {
+
+        .more {
+          border: .01rem solid #3E9AC8;
+          color: #3E9AC8;
+        }
+      }
+    }
+  }
+}
+```
+
+### 84.解决缺少h1标签或h1标签内容为空（但不想显示标签内容）的问题
+
+#### 84.1 效果
+
+![image-20230719095349256](https://gitee.com/v876774538/my-img/raw/master/image-20230719095349256.png)
+
+#### 84.2 html
+
+```html
+<h1 class="h1 mega-title slideshow__title visually-hidden">Product</h1>
+```
+
+#### 84.3 css
+
+隐藏内容。
+
+```css
+.visually-hidden {
+    position: absolute !important;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    border: 0;
+    width: 1px;
+    margin: -1px;
+    padding: 0
+}
+```
+
+### 85.禁止a标签内容被拖动
+
+```js
+ondragstart="return false"
+```
+
+```html
+<a href='{{block.settings.button_link}}' class="slideshow__link" target="_blank" ondragstart="return false">
+	....
+</a>
+```
+
+### 86.uni-app自定义支付键盘/数字键盘组件
+
+#### 86.1 支付键盘、数字键盘、付款键盘、密码键盘
+
+1. 插件地址
+
+   https://ext.dcloud.net.cn/plugin?id=4524
+
+2. 平台兼容性
+
+   ![image-20230801114507690](https://gitee.com/v876774538/my-img/raw/master/image-20230801114507690.png)
+
+3. 使用
+
+   ```vue
+   <cu-keyboard ref="cukeyboard" @change="change" @confirm="confirm" @hide="hide"></cu-keyboard>
+   ```
+
+   ```js
+   this.$refs.cukeyboard.open();	// 调用键盘显示
+   ```
+
+4. 实例，**附带输入光标**
+
+   ```vue
+   <!-- 重量输入 -->
+   <template>
+   	<view class="index">
+   		<uniHeader title="重量输入"></uniHeader>
+   		<view class="main">
+   			<view class="card">
+   				<view class="title">
+   					回收重量
+   				</view>
+   				<view class="weightInput" @tap="showKeyBoard()">
+   					<view class="left">
+   						<text class="number" v-if="weight">{{ weight }}</text>
+   						<view class="line" v-if="isShow"></view>
+   						<text class="placeholder" v-if="!weight && !isShow">0.00</text>
+   					</view>
+   					<view class="right">
+   						<text>kg</text>
+   					</view>
+   				</view>
+   			</view>
+   		</view>
+   		<cu-keyboard ref="cukeyboard" :number="weight" confirmText="确定" :confirmStyle="{ backgroundColor: '#1890FE' }"
+   			@change="change" @confirm="confirm" @hide="hide"></cu-keyboard>
+   	</view>
+   </template>
+   
+   <script>
+   	export default {
+   		components: {},
+   		data() {
+   			return {
+   				weight: undefined, // 重量
+   				isShow: false, // 输入光标
+   				orderNo: '',
+   				userInfo: {}
+   			};
+   		},
+   		onLoad(e) {
+   			this.userInfo = Object.assign(uni.getStorageSync('userInfo'))
+   			if (e.weight) {
+   				this.weight = e.weight
+   				this.orderNo = e.orderNo
+   
+   				console.log("this.orderNo: ", this.orderNo);
+   			}
+   		},
+   		methods: {
+   			// 支付键盘
+   			showKeyBoard() {
+   				this.isShow = true
+   				this.$refs.cukeyboard.open()
+   			},
+   			change(e) {
+   				console.log('keyboardChange', e)
+   				this.weight = e
+   			},
+   			confirm(e) {
+   				this.isShow = false
+   				if (this.utils.isNone(e)) {
+   					this.utils.showToast('请输入回收重量')
+   					return false
+   				}
+   				console.log('keyboardConfirm', e)
+   				this.weight = e
+   				
+   
+   				if (this.userInfo.partnerType == 1) {
+   					this.$http('post', this.APIURL.addRecOrder, {
+   						partnerUserId: this.userInfo.id,
+   						weight: this.weight,
+   						orderNo: this.orderNo,
+   					}, 'JSON').then(res => {
+   						if (!res.success) {
+   							this.utils.showToast(res.message)
+   							return false
+   						}
+   						this.goPath('/pages/Home/recycle/reclaimCode?url=' + res.data.url + '&orderNo=' + res.data
+   							.orderNo + '&weight=' + this.weight)
+   					})
+   				} else {
+   					this.$http('post', this.APIURL.createOrder, {
+   						weight: this.weight,
+   						orderNo: this.orderNo,
+   					}, 'JSON').then(res => {
+   						if (!res.success) {
+   							this.utils.showToast(res.message)
+   							return false
+   						}
+   						this.goPath('/pages/Home/recycle/reclaimCode?url=' + res.data.url + '&orderNo=' + res.data
+   							.orderNo + '&weight=' + this.weight)
+   					})
+   				}
+   
+   
+   			},
+   			hide() {
+   				this.isShow = false
+   				console.log('keyboardHide')
+   			},
+   			goPath(path) {
+   				uni.navigateTo({
+   					url: path
+   				})
+   			}
+   		}
+   	}
+   </script>
+   
+   <style lang="less" scoped>
+   	.index {
+   		width: 100%;
+   		min-height: 100%;
+   		background: #F8F8F8;
+   
+   		.main {
+   			padding: 40rpx 30rpx;
+   			box-sizing: border-box;
+   
+   			.card {
+   				width: 100%;
+   				background: #fff;
+   				border-radius: 30rpx;
+   				padding: 30rpx 30rpx 20rpx;
+   				box-sizing: border-box;
+   
+   				.title {
+   					font-size: 36rpx;
+   					font-weight: 500;
+   					font-family: Source Han Sans CN;
+   					color: #333;
+   					margin-bottom: 20rpx;
+   				}
+   
+   				.weightInput {
+   					height: 127rpx;
+   					line-height: 127rpx;
+   					display: flex;
+   					justify-content: space-between;
+   					align-items: center;
+   					font-size: 60rpx;
+   					font-family: Source Han Sans CN;
+   					font-weight: 500;
+   					border-bottom: 1px solid #E5E7F3;
+   
+   					text {
+   						color: #333;
+   					}
+   
+   					.placeholder {
+   						color: #C9C9C9;
+   					}
+   
+   					.line {
+   						display: inline-block;
+   						width: 4rpx;
+   						height: 30px;
+   						border: 2rpx;
+   						background-color: #0063E5;
+   						animation: cursorImg 1s infinite steps(1, start);
+   
+   						@keyframes cursorImg {
+   
+   							0%,
+   							100% {
+   								opacity: 0;
+   							}
+   
+   							50% {
+   								opacity: 1;
+   							}
+   						}
+   					}
+   				}
+   			}
+   		}
+   	}
+   </style>
+   ```
+
+#### 86.2 仿微信充值金额输入组件(带键盘、展示)
+
+1. 插件地址
+
+   https://ext.dcloud.net.cn/plugin?id=3341
+
+2. 平台兼容性
+
+   H5 √
+
+3. 使用
+
+   ```vue
+   <script>
+   import fxAmountInput from '@/components/fx-amountInput/fx-amountInput.vue';
+   export default {
+       components: {
+           fxAmountInput
+       }
+   }
+   </script>
+   ```
+
+   ```vue
+   <fx-amountInput></fx-amountInput>
+   <fx-amountInput :currency="currency" :fontSize="fontSize" :confirmText="confirmText" :btnColor="btnColor" :placeholder="placeholder" :maxNumber="maxNumber" :isBold="isBold" :isFilter="isFilter" @change="change" @confirm="confirm"></fx-amountInput>
+   ```
+
+4. 实例
+
+   ```vue
+   <template>
+   	<view class="index">
+   		<view class="storeName">
+   			{{ storeName }}
+   		</view>
+   		<view class="inputAmount">
+   			<view class="title">
+   				消费金额
+   			</view>
+   			<view class="input">
+   				<fx-amountInput currency="￥" fontSize="30" confirmText="付款" placeholder="请输入消费金额" btnColor="#58BD6D" :isBold="true" :loading="loading" :isFilter="true" @change="keyboardChange" @confirm="keyboardConfirm"></fx-amountInput>
+   			</view>
+   		</view>
+   		<view class="tip">
+   			请您在付款前确认商户信息及付款金额，确保支付安全
+   		</view>
+   		<!-- 自定义迁移弹窗 -->
+   		<custom v-if="customData" :customData="customData"></custom>
+   	</view>
+   </template>
+   
+   <script>
+   	import custom from "./custom.vue";
+   	import fxAmountInput from '@/components/fx-amountInput/fx-amountInput.vue';
+   	export default {
+   		components: {
+   			custom,
+   			fxAmountInput
+   		},
+   		data() {
+   			return {
+   				amount: '',	// 消费金额
+   				storeName: '',	// 商户名称
+   				
+   				repeated: false, //防止重复提交
+   				loading: false,	// 按钮加载中
+   				customData: '',//自定义弹窗
+   			}
+   		},
+   		onLoad() {
+   			uni.hideKeyboard(); 
+   			
+   			uni.removeStorage({key: 'merchantId'})
+   			uni.removeStorage({key: 'openId'})
+   			uni.removeStorage({key: 'mobile'})
+   			uni.removeStorage({key: 'token'})
+   			var merchantId = this.getQueryString('state');
+   			var jsCode = this.getQueryString('code');
+   			
+   			// uni.setStorageSync('merchantId', 5514)
+   			// uni.setStorageSync('openId', 'oZlAL5oF8Vkc7syrdcPi3UTO-xKM')
+   			// uni.setStorageSync('mobile', 15959180039)
+   			
+   			if (jsCode != undefined) {
+   				this.wechatPay(jsCode);
+   				uni.setStorageSync('merchantId', merchantId)
+   				this.maintenance()
+   			}
+   			var auth_code = this.getQueryString('auth_code');
+   			if (auth_code != undefined) {
+   				this.Alipay(auth_code);
+   				uni.setStorageSync('merchantId', merchantId)
+   				this.maintenance()
+   			}
+   			this.getMerchantName()
+   			
+   		},
+   		methods: {
+   			maintenance() {
+   				this.$http("post", this.$APIURL.maintenance, {
+   					merchantId: uni.getStorageSync('merchantId'),
+   				}).then((res) => {
+   					if (res.code !== this.config.SUCCESS) {
+   						this.utils.showToast(res.message);
+   						return false;
+   					}
+   					this.customData = res.data
+   				});
+   			},
+   			// 获取商户名称
+   			getMerchantName() {
+   				this.$http('post', this.$APIURL.getMerchantName, {
+   					merchantId: uni.getStorageSync('merchantId'),
+   				}).then((res) => {
+   					if (res.code !== this.config.SUCCESS) {
+   						this.utils.showToast(res.message);
+   						return false;
+   					}
+   					this.storeName = res.data
+   				})
+   			},
+   			wechatPay(code) {
+   				this.$http('post', this.$APIURL.auth, {
+   					code: code
+   				}).then(res => {
+   					if (res.code !== this.config.SUCCESS) {
+   						// this.utils.showToast(res.message);
+   						return false;
+   					}
+   					uni.setStorageSync('openId', res.data.openId)
+   				})
+   			},
+   			Alipay(code) {
+   				this.$http('post', this.$APIURL.aliAuth, {
+   					code: code
+   				}).then(res => {
+   					if (res.code !== this.config.SUCCESS) {
+   						// this.utils.showToast(res.message);
+   						return false;
+   					}
+   					uni.setStorageSync('auth_code', res.data.openId)
+   				})
+   			},
+   			getQueryString(key) {
+   				var after = window.location.search;
+   				// if (after.indexOf('?') === -1) return null; //如果url中没有传参直接返回空
+   				//key存在先通过search取值如果取不到就通过hash来取
+   				after = after.substr(1) || window.location.hash.split("?")[1];
+   
+   				if (after) {
+   					var reg = new RegExp("(^|&)" + key + "=([^&]*)(&|$)");
+   					var r = after.match(reg);
+   					console.log(r)
+   					if (r != null) {
+   						return decodeURIComponent(r[2]);
+   					} else {
+   						return null;
+   					}
+   				}
+   			},
+   			// 收款码下单
+   			createPC() {
+   				if (this.repeated) {
+   					return false;
+   				}
+   				if (this.amount == '') {
+   					this.utils.showToast("请正确填写充值金额");
+   					return false;
+   				}
+   			
+   				this.repeated = true;
+   				this.loading = true;
+   				uni.showLoading()
+   				var openId, businessCode;
+   				if (uni.getStorageSync('openId') != undefined && uni.getStorageSync('openId') != null && uni
+   					.getStorageSync('openId') != '') {
+   					openId = uni.getStorageSync('openId')
+   					businessCode = '1'
+   				} else if (uni.getStorageSync('auth_code') != undefined && uni.getStorageSync('auth_code') != null && uni
+   					.getStorageSync('auth_code') != '') {
+   					openId = uni.getStorageSync('auth_code')
+   					businessCode = '2'
+   				}
+   				this.$http('POST', this.$APIURL.createPC, {
+   					addAmount: this.amount,
+   					merchantId: uni.getStorageSync('merchantId'),
+   					openId: openId,
+   					payType: businessCode
+   				}).then(res => {
+   					this.repeated = false;
+   					if (res.code !== this.config.SUCCESS) {
+   						this.utils.showToast(res.message);
+   						this.loading = false;
+   						uni.hideLoading()
+   						return false;
+   					}
+   					this.paying(res.data)
+   				})
+   			},
+   			// 支付
+   			paying(data) {
+   				this.repeated = true;
+   				this.$http('POST', this.$APIURL.gaspaying, {
+   					orderNo: data.orderNo,
+   				}).then(res => {
+   					uni.hideLoading()
+   					this.repeated = false;
+   					if (res.code !== this.config.SUCCESS) {
+   						this.utils.showToast(res.message);
+   						this.loading = false;
+   						return false;
+   					}
+   					if (uni.getStorageSync('openId') != undefined && uni.getStorageSync('openId') != null && uni
+   						.getStorageSync('openId') != '') {
+   						// 触发微信支付
+   						this.onBridgeReady(data)
+   					}
+   					if (uni.getStorageSync('auth_code') != undefined && uni.getStorageSync('auth_code') != null &&
+   						uni.getStorageSync('auth_code') != '') {
+   						// 触发支付宝支付
+   						this.onAlipayReady(data)
+   					}
+   				})
+   			},
+   			// 微信支付
+   			onBridgeReady(data) {
+   				var that = this
+   				WeixinJSBridge.invoke('getBrandWCPayRequest', {
+   						"appId": data.spAppId, //公众号ID，由商户传入    
+   						"timeStamp": data.spTimestamp, //自1970年以来的秒数    
+   						"nonceStr": data.spNonceStr, //随机串    
+   						"package": data.spPackages,
+   						"signType": data.spSignType, //微信签名方式：    
+   						"paySign": data.spPaySign //微信签名
+   					},
+   					function(res) {
+   						if (res.err_msg == "get_brand_wcpay_request:ok") {
+   							// 使用以上方式判断前端返回,微信团队郑重提示：
+   							//res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+   							that.utils.showToast("充值成功")
+   							this.amount = ''
+   						} else {
+   							that.cancel(data.orderNo)
+   							that.utils.showToast("支付失败!")
+   						}
+   						this.loading = false
+   					});
+   			},
+   			// 支付宝支付
+   			onAlipayReady(data) {
+   				var that = this
+   				AlipayJSBridge.call("tradePay", {
+   					tradeNO: data.spPackages // 必传，此使用方式下该字段必传
+   				}, function(result) {
+   					if (result.resultCode == '9000') {
+   						that.utils.showToast("充值成功")
+   						this.amount = ''
+   					} else {
+   						that.cancel(data.orderNo)
+   						that.utils.showToast("支付失败!")
+   					}
+   					this.loading = false;
+   				});
+   			},
+   			// 支付键盘
+   			keyboardChange(e) {
+   				console.log('keyboardChange', e)
+   				this.amount = e
+   			},
+   			keyboardConfirm(e) {
+   				console.log('keyboardConfirm', e)
+   				this.createPC()	// 收款码下单
+   			},
+   		}
+   	}
+   </script>
+    
+   <style lang="less" scoped>
+   	.index {
+   		width: 100%;
+   		height: 100%;
+   		position: fixed;
+   		top: 0;
+   		left: 0;
+   		background: #F0EFF5;
+   		// padding: 140rpx 32rpx 0;
+   		padding: 32rpx;
+   		box-sizing: border-box;
+   	}
+   	
+   	.storeName {
+   		color: #7CB3E8;
+   		font-size: 30rpx;
+   		font-weight: bold;
+   		margin-bottom: 20rpx;
+   	}
+   	
+   	.inputAmount {
+   		width: 100%;
+   		padding: 30rpx 16rpx;
+   		box-sizing: border-box;
+   		background-color: #fff;
+   		margin-bottom: 20rpx;
+   		.title {
+   			font-size: 34rpx;
+   			font-weight: normal;
+   			margin-bottom: 20rpx;
+   		}
+   		.input {
+   			display: flex;
+   			align-items: center;
+   			text {
+   				font-size: 60rpx;
+   				font-weight: bold;
+   			}
+   			input {
+   				font-size: 60rpx;
+   				font-weight: bold;
+   			}
+   		}
+   	}
+   	
+   	.tip {
+   		font-size: 28rpx;
+   		color: #888;
+   	}
+   </style>
+   
+   ```
+
+   组件代码：
+
+   ```vue
+   <template>
+   	<view class="keyboard-main" :style="{height:height+'px',lineHeight:height+'px'}">
+   		<text :style="{fontSize:parseInt(fontSize)+'px',fontWeight:isBold?'bold':'initial'}">{{currency}}</text>
+   		<view class="keyboard-content" :style="{height:height+'px'}">
+   			<view class="placeholder" :style="{fontSize:parseInt((fontSize/3*2))+'px',height:height+'px', paddingLeft: '5px'}" v-if="!money">
+   				{{placeholder}}
+   			</view>
+   			<view class="input" :class="{zIndex:isShow}" :style="{fontSize:size+'px',height:height+'px', fontWeight:isBold?'bold':'initial'}" @click.stop="show">
+   				<span id="text">
+   					<block v-if="isFilter">
+   						{{filterMoney(money)}}
+   					</block>
+   					<block v-if="!isFilter">
+   						{{money}}
+   					</block>
+   					<view class="line" :style="{height:parseInt(height)+'px','background':btnColor}" v-show="isShow"></view>
+   				</span>
+   			</view>
+   		</view>
+   		<view class="mask" @click.stop="hide" v-if="isShow"></view>
+   		<view class='keyboard' :class="{noPadding:!isShow}">
+   		    <view class='key-row' v-if="isShow">
+   		        <view class='key-cell' @click.stop='_handleKeyPress(1)'>1</view>
+   		        <view class='key-cell' @click.stop='_handleKeyPress(2)'>2</view>
+   		        <view class='key-cell' @click.stop='_handleKeyPress(3)'>3</view>
+   				<view class='key-cell last-child' @click.stop="_handleKeyPress('delete')">
+   					<image class="icon" src="../../static/fx-amountInput/backspace.png" mode="aspectFill"></image>
+   				</view>
+   		    </view>
+   		    <view class='key-row' v-if="isShow">
+   		        <view class='key-cell' @click.stop='_handleKeyPress(4)'>4</view>
+   		        <view class='key-cell' @click.stop='_handleKeyPress(5)'>5</view>
+   		        <view class='key-cell' @click.stop='_handleKeyPress(6)'>6</view>
+   		        <view class='key-cell last-child'></view>
+   		    </view>
+   		    <view class='key-row' v-if="isShow">
+   		        <view class='key-cell' @click.stop='_handleKeyPress(7)'>7</view>
+   		        <view class='key-cell' @click.stop='_handleKeyPress(8)'>8</view>
+   		        <view class='key-cell' @click.stop='_handleKeyPress(9)'>9</view>
+   		        <view class='key-cell last-child'></view>
+   		    </view>
+   			<view class="key-zero-and-point" v-if="isShow">
+   				<view class="a zero" @click.stop='_handleKeyPress(0)'>0</view>
+   				<view class="a point" @click.stop="_handleKeyPress('.')">.</view>
+   				 <view class='a last-child'></view>
+   			</view>
+   		    <button class='key-confirm' :class="{big:isShow,frist:fristShow}" :style="{'background': loading ? '#8a8a8d' : btnColor}" :disabled="loading" @click.stop="_handleKeyPress('confirm')">
+   				{{confirmText}}
+   			</button>
+   		</view>
+   		<view id="input-text" :style="{fontSize:(size+5)+'px',fontWeight:isBold?'bold':'initial'}">
+   			{{filterMoney(money)}}
+   		</view>
+   	</view>
+   </template>
+   
+   <script>
+   	export default{
+   		name:"keyBoard",
+   		props:{
+   			confirmText:{
+   				default:'充值',
+   				type:String
+   			},
+   			btnColor:{
+   				default:'#2B76EF',
+   				type:String
+   			},
+   			placeholder:{
+   				default:'请输入充值金额',
+   				type:String
+   			},
+   			currency :{
+   				default:'￥',
+   				type:String
+   			},
+   			maxNumber:{
+   				default:100000000000,
+   				type:Number
+   			},
+   			fontSize:{
+   				type:[String,Number],
+   				default:30
+   			},
+   			isBold:{
+   				type:Boolean,
+   				default:true
+   			},
+   			isFilter:{
+   				type:Boolean,
+   				default:true
+   			},
+   			loading: {
+   				type: Boolean,
+   				default: false,
+   			}
+   		},
+   		data(){
+   			return {
+   				fristShow:true,
+   				isShow:false,
+   				size:0,
+   				height:0,
+   				allWidth:0,
+   				money:''
+   			}
+   		},
+   		created() {
+   			this.height = this.fontSize;
+   			this.size = this.fontSize;
+   			var query = uni.createSelectorQuery().in(this)
+   			setTimeout(()=>{
+   				this.show()
+   				query.select('.keyboard-content').boundingClientRect(data => {
+   				  this.allWidth = data.width
+   				}).exec();
+   			},200)
+   		},
+   		watch:{
+   			money(val){
+   				this.$emit('change',parseFloat(val));
+   			}
+   		},
+   		methods : {
+   			show(){
+   				this.isShow = true;
+   			},
+   			hide(){
+   				// this.fristShow = false
+   				this.isShow = false;
+   			},
+   			filterMoney(value){
+   				if(!value){
+   				    return ''
+   				}else {
+   				    value=value.replace(/\$\s?|(,*)/g, '')
+   				    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+   				}
+   			},
+   			//处理按键
+   			_handleKeyPress(num) {
+   				if (num == -1) return false;
+   				switch (String(num)) {
+   					//小数点
+   					case '.':
+   						this._handleDecimalPoint();
+   						break;
+   					//删除键
+   					case 'delete':
+   						this._handleDeleteKey();
+   						break;
+   					//确认键
+   					case 'confirm':
+   						this._handleConfirmKey();
+   						break;
+   					default:
+   						this._handleNumberKey(num);
+   						break;
+   				}
+   			},
+   			//处理小数点函数
+   			_handleDecimalPoint() {
+   				//如果包含小数点，直接返回
+   				if (this.money.indexOf('.') > -1) return false;
+   				//如果小数点是第一位，补0
+   				if (!this.money.length)
+   					this.money = '0.';
+   				//如果不是，添加一个小数点
+   				else
+   					this.money = this.money + '.';
+   				var query = uni.createSelectorQuery().in(this)
+   				query.select('#text').boundingClientRect(data => {
+   					var _w = data.width;
+   					if(_w+Number(this.size)>this.allWidth){
+   						this.size -=5
+   					}
+   				}).exec();
+   			},
+   			//处理删除键
+   			_handleDeleteKey() {
+   				let S = this.money;
+   				//如果没有输入，直接返回
+   				if (!S.length) return false;
+   				//否则删除最后一个
+   				this.money = S.substring(0, S.length - 1);
+   				var query = uni.createSelectorQuery().in(this)
+   				query.select('#input-text').boundingClientRect(data => {
+   					var _w = data.width;
+   					if(_w+20<this.allWidth && this.size<this.height){
+   						this.size +=5
+   					}
+   				}).exec();
+   			},
+   			//处理数字
+   			_handleNumberKey(num) {
+   				if(Number(this.money+num)>this.maxNumber){
+   					return
+   				}
+   				let S = this.money;
+   				//如果有小数点且小数点位数不小于2
+   				if ( S.indexOf('.') > -1 && S.substring(S.indexOf('.') + 1).length < 2)
+   					this.money = S + num;
+   				if (S.indexOf('.') > -1 && S.substring(S.indexOf('.') + 1).length >= 2)
+   					return
+   				//没有小数点
+   				if (!(S.indexOf('.') > -1)) {
+   					//如果第一位是0，只能输入小数点
+   					if (num == 0 && S.length == 0)
+   						this.money = '0.';
+   					else {
+   						if (S.length && Number(S.charAt(0)) === 0) return;
+   						this.money = S + num;
+   					}
+   				}
+   				var query = uni.createSelectorQuery().in(this)
+   				query.select('#text').boundingClientRect(data => {
+   					var _w = data.width;
+   					if(_w+Number(this.size)>this.allWidth){
+   						this.size -=5
+   					}
+   				}).exec();
+   			},
+   			
+   			//提交
+   			_handleConfirmKey() {	
+   				let S = this.money;
+   				//未输入
+   				if (!S.length||S==0){
+   					uni.showToast({
+   						title: this.placeholder,
+   						icon:'none',
+   						duration: 1000
+   					});
+   					return false;
+   				}
+   				//将 8. 这种转换成 8.00
+   				if (S.indexOf('.') > -1 && S.indexOf('.') == (S.length - 1))
+   					S = Number(S.substring(0, S.length - 1)).toFixed(2);
+   				//保留两位
+   				S = Number(S).toFixed(2);
+   				this.$emit('confirm',parseFloat(S));    //提交参数
+   			}
+   		}
+   	}
+   </script>
+   
+   <style lang="less" scoped>
+   	.keyboard-main{
+   		width: 100%;
+   		display: flex;
+   		justify-content: flex-start;
+   		align-items: flex-end;
+   		padding: 20rpx 0;
+   		box-sizing: initial;
+   		color: #1B1B1B;
+   		text{
+   			font-size: 24px;
+   			margin-right: 5px;
+   		}
+   	}
+   	.keyboard-content{
+   		width: 100%;
+   		height: 30px;
+   		position: relative;
+   		.placeholder{
+   			position: absolute;
+   			top: 0;
+   			left: 0;
+   			width: 100%;
+   			color:#c0c4cc;
+   			display: flex;
+   			justify-content: flex-start;
+   			align-items: flex-end;
+   		}
+   		.input{
+   			position: absolute;
+   			top: 0;
+   			left: 0;
+   			width: 100%;
+   			display: flex;
+   			justify-content: flex-start;
+   			align-items: flex-end;
+   			font-size: 30px;
+   			font-weight: bold;
+   			&.zIndex{
+   				z-index: 999;
+   			}
+   			#text{
+   				display: flex;
+   				justify-content: flex-start;
+   				align-items: flex-end;
+   			}
+   			.line{
+   				display: inline-block;
+   				width: 4rpx;
+   				height: 30px;
+   				border: 2rpx;
+   				background-color: #0063E5;
+   				margin-left: 8rpx;
+   				animation:cursorImg 1s infinite steps(1, start);
+   				@keyframes cursorImg {
+   					0%, 100% {
+   						opacity: 0;
+   					}
+   					50% {
+   						opacity: 1;
+   					}
+   				}
+   			}
+   		}
+   	}
+   	.mask{
+   		position: fixed;
+   		top: 0;
+   		left: 0;
+   		right: 0;
+   		bottom: 0;
+   		z-index: 1;
+   	}
+       .keyboard {
+   		flex: 1;
+           position: fixed;
+           bottom: 0;
+           left: 0;
+           width: 100%;
+   		background-color: #F5F5F5;
+   		padding: 20rpx;
+   		transition: all 0.6s;
+   		z-index: 9;
+   		box-sizing: border-box;
+   		&.noPadding{
+   			padding: 0;
+   			bottom: -100%;
+   		}
+       }
+       .keyboard .key-row {
+           display: flex;
+   		justify-content: space-between;
+           display: -webkit-flex;
+           position: relative;
+   		box-sizing: border-box;
+       }
+    
+       .keyboard .key-cell {
+   		font-size: 20px;
+   		width: 160rpx;
+   		height: 80rpx;
+   		/* margin-right: 20rpx; */
+   		margin-bottom: 20rpx;
+   		background-color: #fff;
+   		border-radius: 8rpx;
+   		display: flex;
+   		justify-content: center;
+   		align-items: center;
+   		&.last-child{
+   			/* margin-right: 0px; */
+   			width: 170rpx;
+   		}
+   		.icon{
+   			width: 50rpx;
+   			height: 40rpx;
+   		}
+       }
+     
+       .keyboard .key-confirm {
+           position: fixed;
+           text-align: center;
+           /* min-height: 100rpx; */
+           width: 170rpx;
+   		padding: 20rpx 30rpx;
+   		border-radius: 8rpx;
+   		box-sizing: border-box;
+   		color: #FFFFFF;
+           z-index: 10;
+           right: 20rpx;
+   		top: calc(100vh - 300rpx);
+           bottom: 200rpx;
+   		display:flex;
+   		justify-content: center;
+   		align-items: center;
+   		font-size: 20px;
+   		letter-spacing: 4px;
+   		font-weight: bold;
+   		transition: all 0.3s;
+   		border: 0;
+   		&.big{
+   			right: 20rpx;
+   			bottom: 20rpx;
+   			padding: 0 30rpx;
+   			bottom: 20rpx;
+   		}
+   		&.frist{
+   			position:absolute;
+   			top: auto;
+   			right: 20rpx;
+   			height: 280rpx;
+   			bottom: 20rpx;
+   		}
+       }
+   	.key-zero-and-point{
+   		display: flex;
+   		height: 80rpx;
+   		justify-content: space-between;
+   		align-items: center;
+   		font-size: 20px;
+   		.zero{
+   			display: flex;
+   			justify-content: center;
+   			align-items: center;
+   			width: 340rpx;
+   			text-align: center;
+   			background-color: #fff;
+   			border-radius: 8rpx;
+   			height: 100%;
+   		}
+   		.point{
+   			display: flex;
+   			justify-content: center;
+   			align-items: center;
+   			background-color: #fff;
+   			border-radius: 8rpx;
+   			width: 160rpx;
+   			height: 100%;
+   		}
+   		.last-child{
+   			background-color: #fff;
+   			border-radius: 8rpx;
+   			width: 170rpx;
+   			height: 100%;
+   		}
+   	}
+   	.key-cell:active{
+   		color: white;  
+   		background: black;  //黑色
+   		opacity: 0.1;    //这里重要，就是通过这个透明度来设置
+   	}
+   	.a:active,.key-confirm2:active{
+   		color: white;
+   		background: black;  //黑色
+   		opacity: 0.1;    //这里重要，就是通过这个透明度来设置
+   	}
+   	#input-text{
+   		width: max-content;
+   		position: fixed;
+   		bottom: -200%;
+   	}
+   </style>
+   
+   ```
+
+   ### 87.uni-app自定义选项卡 tab栏
+   
+   ![image-20230823141037098](https://gitee.com/v876774538/my-img/raw/master/image-20230823141037098.png)
+   
+   ```html
+   <scroll-view class="tabBar" :scroll-x="true" :scroll-with-animation="true">
+       <view class="tab" v-for="(item, index) in tabsList" :key="index" :class="index == selectIndex ? 'tabActive' : ''" @tap="handleTabChange(index)"><text>{{ item.label }}</text></view>
+   </scroll-view>
+   ```
+   
+   ```js
+   tabsList: [
+       {
+           label: '分类1'
+       },
+       {
+           label: '分类1'
+       },
+       {
+           label: '分类1'
+       },
+       {
+           label: '分类1'
+       },
+       {
+           label: '分类1'
+       },
+   ],	// 分类
+   selectIndex: 0,
+   ```
+   
+   ```css
+   .tabBar {
+       width: 100%;
+       max-width: 100%;
+       height: 70rpx;
+       line-height: 70rpx;
+       white-space: nowrap;
+       position: relative;
+   
+       .tab {
+           display: inline-block;
+           width: 25%;
+           height: 70rpx;
+           text-align: center;
+           padding: 0 9rpx;
+           box-sizing: border-box;
+   
+           font-size: 28rpx;
+           font-weight: 500;
+           font-family: Source Han Sans SC-Medium, Source Han Sans CN;
+           color: #333;
+       }
+       .tabActive {
+           color: #1890FF;
+           position: relative;
+   
+           text::after {
+               content: '';
+               display: block;
+               width: 50%;
+               height: 3px;
+               background: #1890FF;
+               position: absolute;
+               bottom: 0;
+               left: 50%;
+               margin-left: -25%;
+               border-radius: 3px;
+           }
+       }
+   }
+   ```
+   
+   ### 87.uniapp 排序tab栏 升降序
+   
+   #### 87.1 效果展示
+   
+   ![image-20230901115540463](https://gitee.com/v876774538/my-img/raw/master/image-20230901115540463.png)
+   
+   #### 87.2 代码实现
+   
+   ![image-20230901115510846](https://gitee.com/v876774538/my-img/raw/master/image-20230901115510846.png)
+   
+   ```html
+   <view class="sorts" v-else>
+       <view class="sort" v-for="(item, index) in sortTypeList" :key="index" @tap="handleSortTypeChange(item, index)" :class="item.checked ? 'sortActive' : ''">
+           {{ item.name }}
+           <view class="arrowBox" v-if="Object.keys(item.valMap).length > 1">
+               <image class="arrow" :src="fileImgPath('/static2/home/transhipment/common.png')" mode="" v-if="!item.checked"></image>
+               <image class="arrow" :src="fileImgPath('/static2/home/transhipment/asc.png')" mode="" v-else-if="item.checked && item.selectVal == 0"></image>
+               <image class="arrow" :src="fileImgPath('/static2/home/transhipment/desc.png')" mode="" v-else-if="item.checked && item.selectVal == 1"></image>
+           </view>
+       </view>
+   </view>
+   ```
+   
+   ```css
+   .sort {
+       display: flex;
+       align-items: center;
+       margin-right: 30rpx;
+       font-size: 28rpx;
+       color: #C4C4C4;
+   
+       .arrowBox {
+           display: flex;
+           align-items: center;
+   
+           .arrow {
+               display: flex;
+               flex-direction: column;
+               justify-content: center;
+               width: 18rpx;
+               height: 32rpx;
+               margin-left: 20rpx;
+           }
+       }
+   }
+   
+   .sortActive {
+       color: #1890FF;
+       font-weight: 500;
+   }
+   ```
+   
+   ```js
+   sortTypeList: [
+       {
+           name:'默认',
+           checked:true,
+           valMap: {
+               0: '',
+           },
+           selectVal: 0
+       },
+       {
+           name:'销量',
+           checked:false,
+           valMap: {
+               0: 1,
+               1: 2
+           },
+           selectVal: 0,
+       },
+       {
+           name:'米币',
+           checked:false,
+           valMap: {
+               0: 3,
+               1: 4
+           },
+           selectVal: 0
+       },
+       {
+           name:'最新上架',
+           checked:false,
+           valMap: {
+               0: 5,
+           },
+           selectVal: 0
+       },
+   ],//排序 1-销量高到低 2-销量低到高 3-米币高到低 4-米币低到高 5-最新上架
+   ```
+   
+   ```js
+   handleSortTypeChange(item, index) {
+       if (Object.keys(item.valMap).length > 1 && item.checked) {
+           item.selectVal = item.selectVal == 0 ? item.selectVal = 1 : item.selectVal = 0;	// 排序升降序切换
+       }
+       this.sortTypeList2.forEach((itemm, indexx) => {
+           itemm.checked = false
+       })
+       item.checked = true
+       // 获取对应值
+       this.sortType = item.valMap[item.selectVal]
+       // 获取列表
+       this.loadStatus = "loading";
+       this.pagination.pageNo = 1;
+       this.list = [];
+       this.hmGiftInfoPage()
+   },
+   ```
+   
+
+### 87.APP应用更新（应用外更新、热更新）
+
+> 小云秘书项目：http://syy333.dynv6.net:20080/xshb/xshbAPP.git
+
+`config.js`存放版本名、更新地址等全局变量
+
+```js
+const version_name = '1.0.3'  // 版本名
+const downUrl = ''	// 更新地址
+const isUpdate = false	// 需要更新
+const isForce = false	// 强制更新
+const isShow = true	// 是否展示
+```
+
+`utils.js`
+
+```js
+// 检查更新
+function checkUpdate(context) {
+	// 判断环境
+	let platform = uni.getSystemInfoSync().platform
+	console.log('platform', platform)
+	let type = 1
+	if (platform == 'android') {
+		type = 2 // android
+	} else if (platform == 'ios') {
+		type = 3 // ios
+	} else {
+		type = 1 // h5
+	}
+
+	// 更新 Android/IOS
+	if (type == 2 || type == 3) {
+		getUpdate(context, type, (data) => {
+			config.isShow = data.isShow // 控制显示隐藏
+
+			// 需要（应用外）更新
+			if (config.isUpdate) {
+				uni.showModal({
+					title: '版本更新',
+					content: '发现新版本，是否下载？',
+					confirmColor: config.theme,
+					showCancel: !config.isForce,
+					success: function(res) {
+						if (res.confirm) {
+							plus.runtime.openURL(config.downUrl);
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			} else {
+				// 判断是否需要（应用内）热更新
+				getUpdate(context, 1, () => {
+					if (config.isUpdate) {
+						context.$refs.updateApp.open()	// 打开热更新弹窗
+					}
+				})
+			}
+		})
+	}
+	// 更新 h5
+	else {
+		getUpdate(context, type, (data) => {
+			config.isShow = data.isShow // 控制显示隐藏
+			
+			if (config.isUpdate) {
+				context.$refs.updateApp.open()	// 打开热更新弹窗
+			}
+		})
+	}
+}
+
+function getUpdate(context, type, callback) {
+	context.$http('get', context.APIURL.getUpdate, {
+		version: config.version_name,
+		type: type
+	}).then((res) => {
+		console.log('getUpdate', type, res)
+		if (!res.success) {
+			context.utils.showToast(res.message);
+			return false;
+		}
+		config.isUpdate = res.data.isUpdate	// 是否更新
+		config.downUrl = res.data.url	// 下载地址
+		config.isForce = res.data.isForce // 控制强制更新
+
+		callback(res.data)
+	})
+}
+
+export default {
+	checkUpdate,
+}
+```
+
+`updateApp.vue`自定义热更新弹窗组件
+
+```vue
+<template>
+	<view>
+		<uni-popup ref="updateApp" class="updateApp" type="center" :mask-click="false">
+		<view class="updatetips-whole" v-if="isShow">
+			<view class="updatetips">
+				<image class="close" src="@/static/close.png" @tap="close()" v-if="!config.isForce"></image>
+				<!-- <image :src="fileImgPath('/static/updateIcon.png')" class="updateIcon" mode="widthFix"></image> -->
+				<view>
+					<view class="updatetips-head">
+						<view class="updatetips-version" :style="`color: ${getTheme}`">
+							版本更新
+						</view>
+						<view class="des">
+							当前APP版本较低，访问该页面需要更新
+						</view>
+					</view>
+					<view class="updatetips-content" v-if="versionContent">{{versionContent}}</view>
+					<!-- 进度条 -->
+					<progress v-if="isProgress" :percent="progress" :activeColor="getTheme" stroke-width="3" style="margin-top: 40rpx;"/>
+				</view>
+				<view class="updatetips-btn-disable" v-if="isProgress">立即更新</view>
+				<view class="updatetips-btn" v-else @click="downloadBtn()" :style="`background: ${getTheme}`">立即更新</view>
+			</view>
+		</view>
+		</uni-popup>
+	</view>
+</template>
+
+<script>
+	export default {
+		props:['show','versionNum','versionContent','downloadUrl'],
+		data() {
+			return {
+				progress:0,
+				isProgress:false,
+				isShow: false,
+			};
+		},
+		computed:{
+			getTheme() {
+				return this.$store.getters.getTheme
+			},
+		},
+		mounted() {
+		},
+		methods: {
+			open(){
+				this.isShow = true
+				this.$refs.updateApp.open('center')
+			},
+			close() {
+				this.isShow = false
+				this.$refs.updateApp.close()
+			},
+			downloadBtn(){
+				// if(uni.getSystemInfoSync().platform == 'android'){
+					this.isProgress = true
+					const downloadTask = uni.downloadFile({
+						url: this.config.downUrl,
+						success: (res) => {
+							//安装
+							plus.runtime.install(
+								res.tempFilePath, {
+									force: true
+								},
+								function(_res) {
+									plus.runtime.restart();
+								},(e)=>{
+									plus.nativeUI.alert('资源更新失败,原因:' + e.message)
+								}
+							)
+						},
+						fail: (err)=> {
+							// uni.$u.toast('下载失败')
+							this.utils.showToast('下载失败')
+						}
+					})
+					// 查看下载进度
+					downloadTask.onProgressUpdate((res) => {
+						this.progress = res.progress
+					})
+				// }
+				// if(uni.getSystemInfoSync().platform == 'ios'){
+				// 	plus.runtime.openURL(this.config.downUrl)
+				// }			
+			}
+		}
+	};
+</script>
+
+<style lang="less" scoped>
+	.updateApp{
+		/deep/.uni-popup__wrapper{
+			width: 100%;
+		}
+	}
+	.updatetips-whole{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+	}
+	.updatetips{
+		width: 80%;
+		background: #fff;
+		border-radius: 20rpx;
+		padding: 40rpx 0;
+		box-sizing: border-box;
+		position: relative;
+		.close {
+			width: 40rpx;
+			height: 40rpx;
+			position: absolute;
+			top: 10rpx;
+			right: 10rpx;
+		}
+	}
+	.updatetips-version{
+		text-align: center;
+		color: #1890FF;
+		font-size: 48rpx;
+		margin-bottom: 20rpx;
+	}
+	.des{
+		width: 100%;
+		text-align: center;
+		font-size: 28rpx;
+		font-family: Source Han Sans SC-Medium, Source Han Sans SC;
+		font-weight: 500;
+		color: #333333;
+	}
+	.updatetips-content{
+		width: 80%;
+		// min-height: 144rpx;
+		margin: 40rpx auto 0;
+	}
+	.updatetips-btn-disable {
+		height: 120rpx;
+		line-height: 120rpx;
+		text-align: center;
+		color: #E6E6E6;
+	}
+	.updatetips-btn {
+		width: 401rpx;
+		height: 90rpx;
+		line-height: 90rpx;
+		background: #1890FF;
+		color: #fff;
+		box-shadow: 0px 3rpx 6rpx 1px rgba(0,0,0,0.16);
+		border-radius: 45rpx;
+		text-align: center;
+		margin: 60rpx auto 0;
+	}
+	
+</style>
+```
+
+`index.vue`调用检查更新
+
+```vue
+<template>
+	<view class="login">
+		...
+		<!-- 更新 -->
+		<update-app ref="updateApp"></update-app>
+	</view>
+
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				...
+			}
+		},
+		onLoad() {
+			...
+		},
+		onShow() {
+			this.utils.getOrgConfig(this)	// 获取app配置信息
+            ...
+		},
+		methods: {
+			...
+		}
+	}
+</script>
+
+<style lang="less" scoped>
+    ...
+</style>
+```
+
+### 88.uni-app 支付密码输入弹窗/验证码输入页面
+
+> 杉通宝公众号项目：http://syy333.dynv6.net:20080/syy/shantongbao-exchange.git
+
+#### 88.1 支付密码输入弹窗
+
+1. 效果
+
+   ![image-20231011153934146](https://gitee.com/v876774538/my-img/raw/master/image-20231011153934146.png)
+
+2. 组件
+
+   `payPassword.vue`
+
+   ```vue
+   <template>
+   	<uni-popup ref="popup" class="popup" :mask-click="false">
+   		<view class="content">
+   			<view class="title">
+   				<text>请输入支付密码</text>
+   				<image src="@/static/close1.png" mode="" @tap="close()"></image>
+   			</view>
+   			<view class="des">
+   				{{ tip }}
+   			</view>
+   			<view class="price">
+   				￥<text class="em">{{ utils.priceFilter(price) }}</text>
+   			</view>
+   			<view class="code">
+   				<input type="number" v-model="form.code" :maxlength="maxLength" @input="onInput" @blur="onBlur"
+   					@focus="onFocus" :focus="isFocus" @confirm="handleSubmit()">
+   				<view class="numbers">
+   					<view class="number" v-for="(item, index) in codeArr">
+   						<text v-if="item && isShow">{{ item }}</text>
+   						<text v-else-if="item && !isShow" class="dot"></text>
+   						<view class="focusLine" v-if="isFocus && currentIndex + 1 == index"></view>
+   					</view>
+   				</view>
+   			</view>
+   		</view>
+   	</uni-popup>
+   </template>
+   
+   <script>
+   	export default {
+   		name: "payPassword",
+   		props: {
+   			price: {
+   				type: [String, Number],
+   				default: 0
+   			},
+   			tip: {
+   				type: String,
+   				default: '提现'
+   			}
+   		},
+   		data() {
+   			return {
+   				form: {},
+   				codeArr: ['', '', '', '', '', ''],
+   				maxLength: 6,
+   				currentIndex: -1,
+   				isFocus: true, // 默认进入时获取输入焦点
+   				isShow: false, // 控制显示数字或隐藏
+   			};
+   		},
+   		methods: {
+   			open() {
+   				this.handleClear()
+   				this.$refs.popup.open('center')
+   			},
+   			close() {
+   				this.$refs.popup.close()
+   			},
+   			onInput(e) {
+   				var value = e.detail.value;
+   				if (value.length <= this.maxLength) {
+   					var valueArr = value.split('');
+   					this.currentIndex = valueArr.length - 1
+   					for (var i = 0; i < this.maxLength; i++) {
+   						this.codeArr[i] = valueArr[i]
+   					}
+   				}
+   			},
+   			onBlur() {
+   				this.isFocus = false
+   			},
+   			onFocus() {
+   				this.isFocus = true
+   			},
+   			handleClear() {
+   				this.form.code = ''
+   				this.codeArr = ['', '', '', '', '', '']
+   				this.currentIndex = -1
+   				this.isFocus = false
+   				setTimeout(() => {
+   					this.isFocus = true
+   				}, 500)
+   				this.$forceUpdate()
+   			},
+   			handleSubmit() {
+   				if (this.form.code.length < this.maxLength) {
+   					this.utils.showToast(`请输入${this.maxLength}位支付密码`)
+   					return false
+   				}
+   				this.$emit('onConfirm', this.form.code)
+   			}
+   		}
+   	}
+   </script>
+   
+   <style lang="less" scoped>
+   	.content {
+   		width: 690rpx;
+   		background: #fff;
+   		border-radius: 20rpx;
+   		padding: 30rpx 30rpx 105rpx;
+   		box-sizing: border-box;
+   		text-align: center;
+   		font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   		font-weight: 500;
+   		color: #333333;
+   		
+   		.title {
+   			font-size: 36rpx;
+   			margin-bottom: 40rpx;
+   			position: relative;
+   			
+   			image {
+   				width: 30rpx;
+   				height: 30rpx;
+   				position: absolute;
+   				top: 10rpx;
+   				right: 0;
+   			}
+   		}
+   		
+   		.des {
+   			font-size: 28rpx;
+   			margin-bottom: 10rpx;
+   		}
+   		
+   		.price {
+   			font-size: 37rpx;
+   			display: flex;
+   			justify-content: center;
+   			align-items: center;
+   			
+   			.em {
+   				font-size: 64rpx;
+   				margin-left: 10rpx;
+   			}
+   		}
+   	}
+   	
+   	.code {
+   		position: relative;
+   		margin-top: 40rpx;
+   
+   		input {
+   			position: relative;
+   			z-index: 2;
+   			width: 100%;
+   			height: 86rpx;
+   			color: transparent;
+   		}
+   
+   		.numbers {
+   			position: absolute;
+   			top: 0;
+   			width: 100%;
+   			z-index: 1;
+   			display: flex;
+   			justify-content: space-between;
+   			align-items: center;
+   
+   			.number {
+   				position: relative;
+   				width: 86rpx;
+   				height: 86rpx;
+   				line-height: 86rpx;
+   				text-align: center;
+   				border-radius: 16rpx;
+   				background: #f6f6f6;
+   				font-size: 60rpx;
+   				font-family: Source Han Sans CN-Regular, Source Han Sans CN;
+   				font-weight: 400;
+   				color: #333333;
+   				display: flex;
+   				justify-content: center;
+   				align-items: center;
+   
+   				.dot {
+   					display: inline-block;
+   					width: 24rpx;
+   					height: 24rpx;
+   					border-radius: 50%;
+   					background: #333;
+   				}
+   
+   				.focusLine {
+   					position: absolute;
+   					left: 0;
+   					top: 25%;
+   					width: 1px;
+   					height: 50%;
+   					background: #000;
+   					opacity: 1;
+   					-webkit-animation: sharkLight 1s linear infinite;
+   					animation: sharkLight 1s linear infinite;
+   				}
+   
+   				@-webkit-keyframes sharkLight {
+   					from {
+   						-webkit-transform: scale(1);
+   						opacity: 1;
+   					}
+   
+   					to {
+   						-webkit-transform: scale(0.9);
+   						opacity: 0;
+   					}
+   				}
+   			}
+   		}
+   	}
+   </style>
+   ```
+
+3. 使用
+
+   ![image-20231011154221021](https://gitee.com/v876774538/my-img/raw/master/image-20231011154221021.png)
+
+   `withdraw.vue`
+
+   ```vue
+   <template>
+   	<view class="index">
+   		<goBack title="提现" backgroundColor="#fff"></goBack>
+   		<view class="main">
+   			<view class="card card-account" @tap="utils.goPath('/pages/merchant/my/changeAccount')">
+   				<view class="left">
+   					<image src="@/static/my/alipay.png" mode=""></image>
+   					<view class="center">
+   						<text>{{ utils.hideName(merchantInfo.name)}}</text>
+   						<text>{{ utils.hideTel(merchantInfo.alipayAccount) }}</text>
+   					</view>
+   				</view>
+   				<view class="right">
+   					<text v-if="merchantInfo.alipayAccount">更换账号</text>
+   					<text v-else>设置提现账号</text>
+   					<image src="@/static/arrow-right.png" mode=""></image>
+   				</view>
+   			</view>
+   			<view class="card card-withdraw">
+   				<view class="title">
+   					提现金额
+   				</view>
+   				<view class="number">
+   					<text>￥</text>
+   					<input type="number" v-model="money" placeholder="请输入转出金额" placeholder-class="placeholder">
+   				</view>
+   				<view class="bottom">
+   					<text>可提现的余额： ¥{{ utils.priceFilter(merchantInfo.balance ? merchantInfo.balance : 0) }}</text>
+   					<button @tap="getAll">全部提现</button>
+   				</view>
+   			</view>
+   			<view class="btnGroup">
+   				<button class="btn" @tap="handleConfirm()">确认提现</button>
+   			</view>
+   		</view>
+   		<pay-password ref="payPasswordPopup" :price="money" @onConfirm="handleSubmit"></pay-password>
+   	</view>
+   </template>
+   
+   <script>
+   	import payPassword from '@/components/payPassword.vue'
+   	export default {
+   		components: {
+   			payPassword
+   		},
+   		data() {
+   			return {
+   				merchantInfo: {},
+   				money: '',
+   			};
+   		},
+   		onShow() {
+   			this.getMerchantInfo()
+   		},
+   		methods: {
+   			getAll() {
+   				this.money = this.merchantInfo.balance
+   				this.$forceUpdate()
+   			},
+   			getMerchantInfo() {
+   				this.$http('get',this.APIURL.getMerchantInfo).then(res=>{
+   					this.merchantInfo = res.data
+   				})
+   			},
+   			handleConfirm() {
+   				console.log(this.money)
+   				if (this.utils.isNone(this.merchantInfo.alipayAccount)) {
+   					this.utils.showToast('请先设置提现账号')
+   					return false
+   				}
+   				if (this.utils.isNone(this.money) && this.money != 0) {
+   					this.utils.showToast('请输入提现金额')
+   					return false
+   				}
+   				if (Number(this.money) > Number(this.merchantInfo.balance)) {
+   					this.utils.showToast('提现金额不能超过余额')
+   					return false
+   				}
+   				if (Number(this.money) <= 0) {
+   				// if (Number(this.money) < 0) {
+   					this.utils.showToast('提现金额有误，请重新输入')
+   					return false
+   				}
+   				if(this.merchantInfo.isSetPayPwd == 2) {
+   					var that = this
+   					uni.showModal({
+   						title: '提示',
+   						content: '该账号未设置支付密码，请设置密码后再提现',
+   						cancelText: '取消',
+   						confirmText: '设置',
+   						success: (ress) => {
+   							if (ress.confirm) {
+   								that.utils.goPath('/pages/merchant/my/setPayPassword/verification', { type: 'set' })
+   							}
+   						},
+   					})
+   					return false
+   				}
+   				
+   				this.$refs.payPasswordPopup.open()
+   			},
+   			handleSubmit(payPwd) {
+   				var that = this
+   				console.log('支付密码', payPwd)
+   				this.$refs.payPasswordPopup.close()
+   				this.$http('post',this.APIURL.withdraw,{
+   					money: this.money,
+   					payPwd: payPwd,
+   				},'JSON').then(res=>{
+   					// 支付密码错误
+   					if (!res.success) {
+   						uni.showModal({
+   							title: res.message,
+   							content: '请重试',
+   							cancelText: '忘记密码',
+   							confirmText: '重试',
+   							success: (ress) => {
+   								if (ress.confirm) {
+   									// 重试
+   									that.$refs.payPasswordPopup.open()
+   								}
+   								else if (ress.cancel) {
+   									// 忘记密码
+   									that.utils.goPath('/pages/merchant/my/setPayPassword/verification', { type: 'forget' })
+   								}
+   							},
+   						})
+   						return false
+   					}
+   					
+   					// 支付密码正确
+   					this.utils.showToast('提现成功')
+   					setTimeout(()=>{
+   						this.utils.reLaunch('/pages/merchant/tabBar/my')
+   					},800)
+   					
+   				})
+   	
+   			}
+   		}
+   	}
+   </script>
+   
+   <style lang="less">
+   	.index {
+   		.main {
+   			padding: 20rpx 30rpx;
+   			box-sizing: border-box;
+   
+   			.card {
+   				background: #fff;
+   				border-radius: 20rpx;
+   			}
+   
+   			.card-account {
+   				display: flex;
+   				justify-content: space-between;
+   				align-items: center;
+   				padding: 20rpx 30rpx;
+   				box-sizing: border-box;
+   
+   				.left {
+   					display: flex;
+   					align-items: center;
+   					font-size: 28rpx;
+   					font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   					font-weight: 500;
+   					color: #333333;
+   
+   					image {
+   						width: 92rpx;
+   						min-width: 92rpx;
+   						height: 92rpx;
+   						margin-right: 20rpx;
+   					}
+   
+   					.center {
+   						display: flex;
+   						flex-direction: column;
+   
+   						text:first-child {
+   							margin-bottom: 17rpx;
+   						}
+   
+   						text:last-child {
+   							font-size: 24rpx;
+   							color: #B9B8BE;
+   						}
+   					}
+   				}
+   
+   				.right {
+   					font-size: 28rpx;
+   					font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   					font-weight: 500;
+   					color: #333333;
+   
+   					image {
+   						width: 25rpx;
+   						height: 25rpx;
+   						margin-left: 10rpx;
+   					}
+   				}
+   			}
+   		
+   			.card-withdraw {
+   				margin-top: 20rpx;
+   				padding: 30rpx;
+   				box-sizing: border-box;
+   				
+   				.title {
+   					font-size: 36rpx;
+   					font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   					font-weight: 500;
+   					color: #333333;
+   					margin-bottom: 40rpx;
+   				}
+   				
+   				.number {
+   					position: relative;
+   					font-size: 60rpx;
+   					font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   					font-weight: 500;
+   					color: #333333;
+   					border-bottom: 1px solid #E7E7E7;
+   					padding-bottom: 20rpx;
+   					margin-bottom: 20rpx;
+   					
+   					input {
+   						width: 100%;
+   						line-height: 87rpx;
+   						padding-left: 74rpx;
+   						font-size: 60rpx;
+   						font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   						font-weight: 500;
+   						color: #333333;
+   					}
+   					
+   					.placeholder {
+   						color: #CCCCCC;
+   					}
+   					
+   					text {
+   						position: absolute;
+   						line-height: 87rpx;
+   					}
+   				}
+   			
+   				.bottom {
+   					height: 40rpx;
+   					line-height: 40rpx;
+   					font-size: 28rpx;
+   					font-family: Source Han Sans CN-Regular, Source Han Sans CN;
+   					font-weight: 400;
+   					color: #999999;
+   					display: flex;
+   					justify-content: space-between;
+   					align-items: center;
+   					
+   					button {
+   						background: transparent;
+   						border: none;
+   						width: fit-content;
+   						font-size: 28rpx;
+   						font-family: Source Han Sans CN-Regular, Source Han Sans CN;
+   						font-weight: 400;
+   						color: #3E9AFD;
+   					}
+   				}
+   			}
+   		
+   			.btnGroup {
+   				position: fixed;
+   				bottom: 178rpx;
+   				left: 0;
+   				width: 100%;
+   				
+   				.btn {
+   					width: 610rpx;
+   					height: 90rpx;
+   					line-height: 90rpx;
+   					background: #3E9AFD;
+   					border-radius: 45rpx;
+   					margin: 0 auto;
+   					font-size: 28rpx;
+   					font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   					font-weight: 500;
+   					color: #FFFFFF;
+   				}
+   			}
+   		}
+   	}
+   </style>
+   ```
+
+#### 88.2 验证码输入页面
+
+> 流程：获取验证码前需要先通过图形验证码校验，点击“获取验证码”按钮，调用获取验证码接口，通过后直接跳转到验证码输入页面。
+
+1. 图形验证码弹窗
+
+   ![image-20231011154402206](https://gitee.com/v876774538/my-img/raw/master/image-20231011154402206.png)
+
+   组件`graphic-verification.vue`
+
+   ```vue
+   <!-- 图形验证码弹窗 -->
+   <template>
+   	<view class="popup" v-if="isShow">
+   		<view class="content">
+   			<image class="close" src="@/static/close.png" @tap="handleCancel()"></image>
+   			<view class="title">请先按图形输入正确字符</view>
+   			<view class="code" @tap="handleReset()">
+   				<image :src="'data:image/png;base64,'+imgUrl" mode=""></image>
+   				<view class="tip">
+   					看不清？点击刷新
+   				</view>
+   			</view>
+   			<input type="text" placeholder="请输入图形验证码" placeholder-style="color: #E6E6E6;" v-model="dataForm.pictureCode" class="input">
+   			<view class="btnGroup">
+   				<button class="btn" @tap="handleSubmit()">获取验证码</button>
+   			</view>
+   		</view>
+   	</view>
+   </template>
+   
+   <script>
+   	export default {
+   		name:"graphic-verification",
+   		data() {
+   			return {
+   				imgUrl: '',	// 图形验证码图片
+   				dataForm: {
+   					pictureId: '',	// 验证码id
+   					pictureCode: '',	// 输入图形验证码
+   				},
+   				isShow: false,
+   			};
+   		},
+   		methods: {
+   			open(){
+   				this.isShow = true
+   				this.handleReset()
+   			},
+   			close(){
+   				this.isShow = false
+   			},
+   			// 获取图形验证码
+   			getGraphicCode() {
+   				console.log('获取图形验证码')
+   				let api = uni.getStorageSync('userType') == 'client' ? this.APIURL.userGetImgCode : this.APIURL.merchantGetImgCode
+   				this.$http('post', api).then((res) => {
+   					if (!res.success) {
+   						this.utils.showToast(res.message);
+   						return false;
+   					}
+   					this.imgUrl = res.data.image
+   					this.dataForm.pictureId = res.data.imageId
+   				})
+   			},
+   			// 刷新
+   			handleReset() {
+   				this.dataForm = {
+   					pictureId: '',	// 验证码id
+   					pictureCode: '',	// 输入图形验证码
+   				}
+   				this.getGraphicCode()
+   			},
+   			// 提交
+   			handleSubmit() {
+   				if (this.utils.isNone(this.dataForm.pictureCode)) {
+   					this.utils.showToast('请输入图形验证码')
+   					return false
+   				}
+   				this.$emit('ok', this.dataForm)
+   			},
+   			// 取消
+   			handleCancel() {
+   				this.$emit('cancel')
+   			}
+   		}
+   	}
+   </script>
+   
+   <style lang="less" scoped>
+   .popup {
+       	width: 100%;
+       	height: 100%;
+       	background: rgba(0, 0, 0, 0.3);
+       	position: fixed;
+       	width: 100%;
+       	height: 100%;
+       	top: 0;
+       	left: 0;
+       	right: 0;
+       	bottom: 0;
+       	z-index: 999;
+   		
+   		.content {
+   			width: 686rpx;
+   			background: #ffffff;
+   			border-radius: 20rpx;
+   			padding: 32rpx;
+   			box-sizing: border-box;
+   			margin: 300rpx auto 0;
+   			display: flex;
+   			flex-direction: column;
+   			align-items: center;
+   			position: relative;
+   			
+   			.close {
+   				width: 40rpx;
+   				height: 40rpx;
+   				position: absolute;
+   				top: 10rpx;
+   				right: 10rpx;
+   			}
+   			
+   			.title {
+   				text-align: center;
+   				font-size: 32rpx;
+   				font-weight: 500;
+   			}
+   			
+   			.code {
+   				width: 100%;
+   				display: flex;
+   				flex-direction: column;
+   				align-items: center;
+   				margin-top: 20rpx;
+   				.tip {
+   					font-size: 26rpx;
+   					color: #333;
+   					margin-top: 20rpx;
+   				}
+   				
+   				image {
+   					width: 300rpx;
+   					height: 100rpx;
+   					// background-color: red;
+   					border: 1px solid #E6E6E6;
+   				}
+   				
+   			}
+   			
+   			.input {
+   				width: 100%;
+   				height: 80rpx;
+   				line-height: 80rpx;
+   				text-align: center;
+   				font-size: 28rpx;
+   				background: #F6F6F8;
+   				margin-top: 20rpx;
+   				border-radius: 40rpx;
+   			}
+   			
+   			.btnGroup {
+   				width: 100%;
+   				display: flex;
+   				align-items: center;
+   				margin-top: 20rpx;
+   				
+   				.btn {
+   					flex: 1;
+   					width: 100%;
+   					height: 80rpx;
+   					line-height: 80rpx;
+   					font-size: 32rpx;
+   					font-weight: 500;
+   					font-family: Source Han Sans SC;
+   					margin-right: 20rpx;
+   					background: #E6E6E6;
+   					border-radius: 40rpx;
+   				}
+   				.btn:last-child {
+   					color: #333;
+   					margin-right: 0;
+   				}
+   				.btn:first-child {
+   					background: #3E9AFD;
+   					color: #fff;
+   				}
+   			}
+   		}
+       }
+   </style>
+   ```
+
+   使用`login.vue`
+
+   ```vue
+   <template>
+   	<view class="index">
+   		<goBack></goBack>
+   		<view class="main">
+   			<view class="title">
+   				<text>手机号登录</text>
+   				<view class="register" v-if="userType == 'merchant'" @tap="utils.goPath('/pages/public/login/register')">
+   					注册
+   				</view>
+   			</view>
+   			<view class="form">
+   				<view class="input">
+   					<input type="text" class="phone" v-model="form.phone" placeholder="请输入您的手机号"
+   						placeholder-style="color: #ccc">
+   					<image src="../../../static/clear.png" class="clearIcon" v-if="!disabled" @tap="form.phone = ''">
+   					</image>
+   				</view>
+   			</view>
+   			<view class="btnGroup">
+   				<button class="btn" :disabled="disabled" :class="disabled ? 'btn-disabled' : ''"
+   					@tap="getCode()">获取验证码</button>
+   				<!-- <button class="btn btn-transparent" @tap="utils.goPath('/pages/public/login/loginByPassword')">密码登录</button> -->
+   			</view>
+   		</view>
+   		<!-- 图形验证码弹窗 -->
+   		<graphicVerification ref="graphicVerification" @cancel="handleCancel()" @ok="handleSubmit"></graphicVerification>
+   	</view>
+   </template>
+   
+   <script>
+   	import graphicVerification from '@/components/graphic-verification.vue'
+   	export default {
+   		components: {
+   			graphicVerification
+   		},
+   		data() {
+   			return {
+   				form: {}, // 表单
+   				userType: 'client',	// 用户端(client):18533330014 商家端(merchant):18533330015
+   				codeTouch: false,	// 防连点
+   			}
+   		},
+   		computed: {
+   			disabled() {
+   				return this.form.phone ? false : true
+   			}
+   		},
+   		onLoad(options) {
+   			uni.removeStorage({
+   				key: 'token'
+   			});
+   			uni.removeStorage({
+   				key: 'userInfo'
+   			});
+   			uni.removeStorage({
+   				key: 'merchantInfo'
+   			});
+   			// 返回页面时刷新
+   			window.addEventListener('pageshow', function(e) {
+   			    // 通过persisted属性判断是否存在 BF Cache
+   			    if (e.persisted) {  // persisted判断是否后退进入
+   			        location.reload();
+   			    }
+   			});
+   			
+   			// 判断商家端/用户端
+   			if (options && options.userType) {
+   				console.log('options', options.userType)
+   				this.userType = options.userType
+   				uni.setStorageSync('userType', this.userType)
+   			}
+   			else if (uni.getStorageSync('userType')) {
+   				this.userType = uni.getStorageSync('userType')
+   			}
+   			else {
+   				this.userType = 'client'
+   				uni.setStorageSync('userType', this.userType)
+   			}
+   		},
+   		methods: {
+   			// 获取验证码
+   			getCode() {
+   				// 校验手机号
+   				let regPhone = /^1[3456789]\d{9}$/;
+   				if (this.utils.isNone(this.form.phone)) {
+   					this.utils.showToast('请输入手机号码')
+   					return false
+   				} else if (!regPhone.test(this.form.phone)) {
+   					this.utils.showToast('手机号码格式有误')
+   					return false;
+   				}
+   				// 获取图形验证码
+   				this.$refs.graphicVerification.open()
+   			},
+   			// 图形验证码取消
+   			handleCancel() {
+   				this.$refs.graphicVerification.close()
+   			},
+   			// 图形验证码确认
+   			handleSubmit(dataForm) {
+   				Object.assign(this.form, dataForm)
+   				console.log(this.form)
+   				this.getCode2()
+   			},
+   			// 获取验证码
+   			getCode2() {
+   				let api = uni.getStorageSync('userType') == 'client' ? this.APIURL.userGetCodeNoToken : this.APIURL
+   					.merchantGetCodeNoToken
+   				if (this.codeTouch) {
+   					return false
+   				}
+   				this.codeTouch = true
+   				uni.showLoading()
+   				this.$http('post', api, {
+   					phone: this.form.phone,
+   					type: 2, // 登录
+   					pictureId: this.form.pictureId,
+   					pictureCode: this.form.pictureCode
+   				}).then((res) => {
+   					setTimeout(() => {
+   						this.codeTouch = false
+   						uni.hideLoading()
+   					}, 500)
+   					if (!res.success) {
+   						this.utils.showToast(res.message)
+   						if (res.code == 10110010) {
+   							// 账号不存在
+   							this.$refs.graphicVerification.close()
+   						}
+   						else if (res.code == -1) {
+   							// 图片验证码错误
+   							this.$refs.graphicVerification.handleReset()
+   						}
+   						return false
+   					}
+   					this.$refs.graphicVerification.close()
+   					this.utils.goPath('/pages/public/login/getCode', this.form)
+   				})
+   			},
+   		}
+   	}
+   </script>
+   
+   <style lang="less" scoped>
+   	.index {
+   		width: 100%;
+   		height: 100%;
+   		background: #FFFFFF;
+   
+   		.main {
+   			padding: 60rpx 70rpx;
+   			box-sizing: border-box;
+   
+   			.title {
+   				font-size: 40rpx;
+   				font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   				font-weight: 500;
+   				color: #333333;
+   				margin-bottom: 59rpx;
+   				
+   				display: flex;
+   				justify-content: space-between;
+   				align-items: center;
+   				.register {
+   					font-size: 28rpx;
+   					font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   					font-weight: 500;
+   					color: #3E9AFD;
+   				}
+   			}
+   
+   			.form {
+   				margin-bottom: 50rpx;
+   
+   				.input {
+   					position: relative;
+   
+   					input {
+   						height: 102rpx;
+   						line-height: 102rpx;
+   						font-size: 28rpx;
+   						font-family: Source Han Sans CN-Regular, Source Han Sans CN;
+   						font-weight: 400;
+   						color: #333;
+   						border-bottom: 1px solid #EAEAEA;
+   					}
+   
+   					.clearIcon {
+   						width: 32rpx;
+   						height: 32rpx;
+   						position: absolute;
+   						top: 50%;
+   						right: 0;
+   						margin-top: -16rpx;
+   					}
+   				}
+   
+   
+   			}
+   
+   			.btnGroup {
+   				.btn {
+   					height: 90rpx;
+   					line-height: 90rpx;
+   					border-radius: 45rpx;
+   					font-size: 28rpx;
+   					font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   					font-weight: 500;
+   					margin-bottom: 15rpx;
+   					color: #fff;
+   					background-color: #3E9AFD;
+   				}
+   
+   				.btn-disabled {
+   					color: #FFFFFF;
+   					background-color: #CCCCCC;
+   				}
+   
+   				.btn-transparent {
+   					color: #333;
+   					background: transparent;
+   				}
+   			}
+   		}
+   	}
+   </style>
+   ```
+
+   
+
+2. 验证码输入页面
+
+   ![image-20231011154428798](https://gitee.com/v876774538/my-img/raw/master/image-20231011154428798.png)
+
+   ```vue
+   <template>
+   	<view class="index">
+   		<goBack></goBack>
+   		<view class="main">
+   			<view class="title">请输入验证码</view>
+   			<view class="des">
+   				已发送至手机{{ form.phone }}
+   			</view>
+   			<view class="code">
+   				<input type="number" v-model="form.code" :maxlength="maxLength" @input="onInput" @blur="onBlur"
+   					@focus="onFocus" :focus="isFocus" @confirm="login()">
+   				<view class="numbers">
+   					<view class="number" v-for="(item, index) in codeArr">
+   						<text>{{ item }}</text>
+   						<view class="focusLine" v-if="isFocus && currentIndex + 1 == index"></view>
+   					</view>
+   				</view>
+   				<view class="getCode">
+   					<button v-show="codeShow" @tap="getCode()">获取验证码</button>
+   					<button v-show="!codeShow" style="color: #ccc;">重新发送（{{count}})</button>
+   				</view>
+   			</view>
+   		</view>
+   	</view>
+   </template>
+   
+   <script>
+   	export default {
+   		data() {
+   			return {
+   				form: {},
+   				codeArr: ['', '', '', ''],
+   				maxLength: 4,
+   				currentIndex: -1,
+   				isFocus: true, // 默认进入时获取输入焦点
+   				// 获取验证码
+   				codeShow: true,
+   				count: '',
+   				timer: null,
+   				codeTouch: false,
+   			};
+   		},
+   		onLoad(options) {
+   			if (options && options.query) {
+   				this.form = JSON.parse(options.query)
+   				// this.getCode()
+   				this.verification()
+   			}
+   		},
+   		methods: {
+   			// 输入验证码
+   			onInput(e) {
+   				var value = e.detail.value;
+   				if (value.length <= this.maxLength) {
+   					var valueArr = value.split('');
+   					this.currentIndex = valueArr.length - 1
+   					for (var i = 0; i < this.maxLength; i++) {
+   						this.codeArr[i] = valueArr[i]
+   					}
+   				}
+   			},
+   			onBlur() {
+   				this.isFocus = false
+   			},
+   			onFocus() {
+   				this.isFocus = true
+   			},
+   			// 获取验证码
+   			getCode() {
+   				let regPhone = /^1[3456789]\d{9}$/;
+   				if (this.utils.isNone(this.form.phone)) {
+   					this.utils.showToast('请输入手机号码');
+   					return false;
+   				} else if (!regPhone.test(this.form.phone)) {
+   					this.utils.showToast('手机号码格式有误');
+   					return false;
+   				}
+   				if (this.codeTouch) {
+   					return false
+   				}
+   				this.codeTouch = true
+   				this.verification();
+   				let api = uni.getStorageSync('userType') == 'client' ? this.APIURL.userGetCodeNoToken : this.APIURL
+   					.merchantGetCodeNoToken
+   				this.$http('post', api, {
+   					phone: this.form.phone,
+   					type: 2, // 登录
+   					pictureId: this.form.pictureId,
+   					pictureCode: this.form.pictureCode
+   				}).then((res) => {
+   					setTimeout(() => {
+   						this.codeTouch = false
+   					}, 500)
+   					if (!res.success) {
+   						this.utils.showToast(res.message)
+   						return false
+   					}
+   					this.utils.showToast('短信发送成功');
+   				})
+   			},
+   			// 验证码60s倒计时
+   			verification() {
+   				const TIME_COUNT = 60;
+   				if (!this.timer) {
+   					this.count = TIME_COUNT;
+   					this.codeShow = false;
+   					this.timer = setInterval(() => {
+   						if (this.count > 1 && this.count <= TIME_COUNT) {
+   							this.count--;
+   						} else {
+   							this.codeShow = true;
+   							clearInterval(this.timer);
+   							this.timer = null;
+   						}
+   					}, 1000)
+   				}
+   			},
+   			// 登录
+   			login() {
+   				let userType = uni.getStorageSync('userType') ? uni.getStorageSync('userType') : 'client'
+   
+   				// 商家端
+   				if (userType == 'merchant') {
+   					this.$http('post', this.APIURL.merchantLogin, {
+   						account: this.form.phone,
+   						verCode: this.form.code,
+   					}).then((res) => {
+   						if (!res.success) {
+   							this.utils.showToast(res.message)
+   							return false
+   						}
+   						console.log('token', res.data)
+   						uni.setStorageSync('token', res.data)
+   						this.utils.reLaunch('/pages/merchant/tabBar/order')
+   					})
+   				}
+   				// 用户端
+   				else {
+   					this.$http('post', this.APIURL.clientLogin, {
+   						account: this.form.phone,
+   						verCode: this.form.code,
+   					}).then((res) => {
+   						if (!res.success) {
+   							this.utils.showToast(res.message)
+   							return false
+   						}
+   						console.log('token', res.data)
+   						uni.setStorageSync('token', res.data)
+   						this.utils.reLaunch('/pages/client/tabBar/home')
+   					})
+   				}
+   			},
+   		},
+   	}
+   </script>
+   
+   <style lang="less" scoped>
+   	.index {
+   		width: 100%;
+   		height: 100%;
+   		background: #FFFFFF;
+   
+   		.main {
+   			padding: 60rpx 70rpx;
+   			box-sizing: border-box;
+   
+   			.title {
+   				font-size: 40rpx;
+   				font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+   				font-weight: 500;
+   				color: #333333;
+   				margin-bottom: 20rpx;
+   			}
+   
+   			.des {
+   				font-size: 28rpx;
+   				font-family: Source Han Sans CN-Regular, Source Han Sans CN;
+   				font-weight: 400;
+   				color: #CCCCCC;
+   				margin-bottom: 70rpx;
+   			}
+   
+   			.code {
+   				position: relative;
+   
+   				input {
+   					position: relative;
+   					z-index: 2;
+   					width: 100%;
+   					height: 120rpx;
+   					color: transparent;
+   					margin-bottom: 40rpx;
+   				}
+   
+   				.numbers {
+   					position: absolute;
+   					top: 0;
+   					width: 100%;
+   					z-index: 1;
+   					display: flex;
+   					justify-content: space-between;
+   					align-items: center;
+   
+   					.number {
+   						position: relative;
+   						width: 120rpx;
+   						height: 120rpx;
+   						line-height: 120rpx;
+   						text-align: center;
+   						border-radius: 16rpx;
+   						background: #f6f6f6;
+   						font-size: 60rpx;
+   						font-family: Source Han Sans CN-Regular, Source Han Sans CN;
+   						font-weight: 400;
+   						color: #333333;
+   
+   						.focusLine {
+   							position: absolute;
+   							left: 0;
+   							top: 25%;
+   							width: 1px;
+   							height: 50%;
+   							background: #000;
+   							opacity: 1;
+   							-webkit-animation: sharkLight 1s linear infinite;
+   							animation: sharkLight 1s linear infinite;
+   						}
+   
+   						@-webkit-keyframes sharkLight {
+   							from {
+   								-webkit-transform: scale(1);
+   								opacity: 1;
+   							}
+   
+   							to {
+   								-webkit-transform: scale(0.9);
+   								opacity: 0;
+   							}
+   						}
+   					}
+   
+   
+   				}
+   
+   				.getCode {
+   					button {
+   						font-size: 28rpx;
+   						font-family: Source Han Sans CN-Regular, Source Han Sans CN;
+   						font-weight: 400;
+   						color: #333;
+   						background: transparent;
+   						text-align: left;
+   						height: 40rpx;
+   						line-height: 40rpx;
+   					}
+   				}
+   			}
+   		}
+   	}
+   </style>
+   ```
+
+### 89.日期范围选择弹窗
+
+> 杉通宝公众号项目：http://syy333.dynv6.net:20080/syy/shantongbao-exchange.git
+
+#### 89.1 效果
+
+未选择时显示【全部】；选择某日时显示具体日期，如【2023-10-11】；选择日期范围显示【区间】；按月份选择则显示具体月份，如【2023-10】
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/image-20231011155244225.png" alt="image-20231011155244225"  />
+
+![image-20231011155259912](https://gitee.com/v876774538/my-img/raw/master/image-20231011155259912.png)
+
+#### 89.2 组件
+
+![image-20231011155620675](https://gitee.com/v876774538/my-img/raw/master/image-20231011155620675.png)
+
+`utils.js`
+
+```js
+/**
+ * 获取某年某月有多少天
+ */
+export const getOneMonthDays = (year,month)=>{
+	month = Number(month);
+	const baseMonthsDays = [31,28,31,30,31,30,31,31,30,31,30,31];
+	if(year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)){
+		if(month === 2){
+			baseMonthsDays[month] = 29;
+		}
+	}
+	return baseMonthsDays[month];
+}
+
+/**
+ * 获取日期的年月日时分秒
+ */
+export const getTimeArray = (date)=>{
+	const year = date.getFullYear();
+	const month = date.getMonth()+1;
+	const day = date.getDate();
+	const hour = date.getHours();
+	const minute = date.getMinutes();
+	const second = date.getSeconds();
+	return [year,month,day,hour,minute,second];
+}
+/**
+ * 小于10的数字前面补0
+ */
+export const addZero = (num)=>{
+	return num < 10 ? '0' + num : num;
+}
+
+/**
+ * 获取当前值在数组中的索引
+ */
+export const getIndexOfArray = (value,array)=>{
+	let index = array.findIndex(item => item == value);
+	return index > -1 ? index : 0;
+}
+```
+
+`jp-timePicker.vue`
+
+```vue
+<template>
+	<view class="date-time-picker" v-if="visible">
+		<view class="date-time-mask" @click.stop="hide"></view>
+		<view class="date-time-container" @click.stop="handleEvent">
+			<view class="time-picker-tool">
+				<view class="cancel-btn">
+				</view>
+				<view class="tool-title">
+					<text>选择时间</text>
+				</view>
+				
+				<view class="cancel-btn" @click.stop="cancel">
+					<image class="cancal" src="https://api.fzhuanmi.com/file/static2/recycle/cancal.png" mode=""></image>
+				</view>
+			</view>
+			<view class="jp-picker">
+				<!-- <view @click="gettype('year')" class="jp-picker-year"  :class="type=='year'?'jp-picker-xzr':''">按年</view> -->
+				
+				<view @click="gettype('date')" class="jp-picker-year-month" :class="type=='date'?'jp-picker-xzr':''">按日选择</view>
+				<view @click="gettype('year-month')" class="jp-picker-year-month jp-picker-date "
+					:class="type=='year-month'?'jp-picker-xzr':''">按月选择</view>
+			</view>
+			
+			<view class="date-time" v-if="type!='date'">
+				{{formatDateArrays1[0]}}-{{formatDateArrays1[1]}}
+			</view>
+			<view class="date-time date-time2" v-else>
+				<view class="left" @click="changeTab('left')" :class="tabType=='left'?'active':''">
+					<text v-if="formatDateArrays2!=[]">{{formatDateArrays2[0]}}-{{formatDateArrays2[1]}}-{{formatDateArrays2[2]}}</text>
+					<text v-else>请选择</text>
+				</view>
+				<text style="color: #333333;">至</text>
+				<view class="left right"  @click="changeTab('right')" :class="tabType=='right'?'active':''">
+					<text v-if="formatDateArrays3.length!=0">{{formatDateArrays3[0]}}-{{formatDateArrays3[1]}}-{{formatDateArrays3[2]}}</text>
+					<text v-else>请选择</text>
+					<!-- {{formatDateArrays3}} -->
+				</view>
+			</view>
+			
+			<picker-view class="picker-view" :indicator-style="indicatorStyleString" :value="dateTime"
+				@change="dateTimePickerChange">
+				<picker-view-column data-id='year' v-if='isShowYear'>
+					<view class="item" v-for="(item,index) in years" :key="index"
+						:style="formatDateArrays[0]==item?'color: #1890FF':''">{{item}}年</view>
+				</picker-view-column>
+				<picker-view-column data-id='month' v-if='isShowMonth'>
+					<view class="item" v-for="(item,index) in months" :key="index"
+						:style="formatDateArrays[1]==item?'color: #1890FF':''">{{item}}月</view>
+				</picker-view-column>
+				<picker-view-column data-id='day' v-if='isShowDay'>
+					<view class="item" v-for="(item,index) in days" :key="index"
+						:style="formatDateArrays[2]==item?'color: #1890FF':''">{{item}}日</view>
+				</picker-view-column>
+			</picker-view>
+			
+			
+			<view class="confirm-btn" @click.stop="confirm">
+				确定
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	import {
+		getOneMonthDays,
+		getTimeArray,
+		addZero,
+		getIndexOfArray,
+	} from './uitls/util.js'
+	export default {
+		name: 'jp-timePicker',
+		props: {
+			startYear: {
+				type: Number,
+				default: 1900
+			},
+			endYear: {
+				type: Number,
+				default: new Date().getFullYear()
+			},
+			datestring: {
+				type: [String, Array],
+				default: ''
+			},
+			datestype: {
+				type: String,
+				default: 'year'
+			},
+		},
+		data() {
+			return {
+				formatDateArrays: [],
+				formatDateArrays1: [],
+				formatDateArrays2: [],
+				formatDateArrays3: [],
+				visible: false,
+				dateTime: [],
+				days: [],
+				indicatorStyle: {
+					background: '',
+					height: '40px',
+				},
+				indicatorStyleString: '',
+				type: 'year',
+				tabType:'left'
+			}
+		},
+		watch: {
+			datestype() {
+				this.type = this.datestype
+			},
+			indicatorStyle(val) {
+				this.getIndicatorStyle();
+			},
+			type() {
+				this.initDateTime()
+			},
+			datestring() {
+				this.initDateTime()
+			}
+		},
+		computed: {
+			years() {
+				return this.initTimeData(this.endYear, this.startYear);
+			},
+			isShowYear() {
+				return this.type !== 'time' && this.type !== 'hour-minute';
+			},
+			months() {
+				return this.initTimeData(12, 1);
+			},
+			isShowMonth() {
+				return this.type !== 'year' && this.type !== 'time' && this.type !== 'hour-minute';
+			},
+			isShowDay() {
+				return this.type === 'date' || this.type === 'datetime' || this.type === 'datetime-all';
+			},
+			hours() {
+				return this.initTimeData(23, 0);
+			},
+			isShowHour() {
+				return this.type !== 'date' && this.type !== 'year-month' && this.type !== 'year';
+			},
+			minutes() {
+				return this.initTimeData(59, 0);
+			},
+			isShowMinute() {
+				return this.type !== 'date' && this.type !== 'year-month' && this.type !== 'year';
+			},
+			seconds() {
+				return this.initTimeData(59, 0);
+			},
+			isShowSecond() {
+				return this.type === 'datetime-all' || this.type === 'time';
+			}
+		},
+		methods: {
+			changeTab(type) {
+				this.tabType = type
+			},
+			gettype(type) {
+				this.type = type
+			},
+			getIndicatorStyle() {
+				if (this.indicatorStyle) {
+					for (let key in this.indicatorStyle) {
+						this.indicatorStyleString += `${key}:${this.indicatorStyle[key]};`
+					}
+				}
+			},
+			handleEvent() {
+				return;
+			},
+			cancel() {
+				this.hide();
+				this.$emit('cancel')
+			},
+			confirm() {
+				if(this.type === 'date') {
+					console.log('formatDateArrays2', this.formatDateArrays2)
+					console.log('formatDateArrays3', this.formatDateArrays3)
+					if((this.formatDateArrays2 == '' || (this.formatDateArrays2 && this.formatDateArrays2.length == 0)) || this.formatDateArrays3 == '' || (this.formatDateArrays3 && this.formatDateArrays3.length == 0)) {
+						this.utils.showToast('请选择日期')
+						return false
+					}
+					// 比较日期大小
+					else {
+						var startDate = Array(this.formatDateArrays2).join('-')
+						var endDate = Array(this.formatDateArrays3).join('-')
+						console.log('startDate:', new Date(startDate))
+						console.log('endDate:', new Date(endDate))
+						if (new Date(startDate) > new Date(endDate)) {
+							this.utils.showToast('日期区间错误')
+							return false
+						}
+					}
+				}
+				this.formatDate();
+				this.hide();
+			},
+			show() {
+				this.visible = true;
+			},
+			hide() {
+				this.visible = false;
+			},
+			initDateTime() {
+				let value;
+				if (this.datestring.length > 0) {
+					if (this.type === 'year') {
+						value = new Date(this.datestring, 0);
+					} else if (this.type === 'time' || this.type === 'hour-minute') {
+						let date = new Date();
+						let ary = this.datestring.split(':');
+						ary.forEach((item, index) => {
+							if (index == 0) {
+								date.setHours(item)
+							} else if (index == 1) {
+								date.setMinutes(item)
+							} else if (index == 2) {
+								date.setSeconds(item)
+							}
+						})
+						value = date;
+					} else {
+						value = new Date(this.datestring.replace(/-/g, '/'));
+					}
+
+				} else {
+					value = new Date();
+				}
+				let len, timeArray, index;
+				let array = getTimeArray(value);
+				let [year, month, day, hour, minute, second] = array;
+				this.days = this.initTimeData(getOneMonthDays(year, month - 1), 1);
+				let names = ['year', 'month', 'day', 'hour', 'minute', 'second'];
+				switch (this.type) {
+					case "date":
+						len = 3;
+						break;
+					case "year-month":
+						len = 2;
+						break;
+					case "year":
+						len = 1;
+						break;
+					case "datetime":
+						len = 5;
+						break;
+					case "datetime-all":
+						len = 6;
+						break;
+					case "time":
+						len = 3;
+						break;
+					case "hour-minute":
+						len = 2;
+						break;
+				}
+				timeArray = new Array(len).fill(0);
+				if (this.type === 'time' || this.type === 'hour-minute') {
+					names = names.slice(3);
+					array = array.slice(3);
+				}
+				timeArray = timeArray.map((item, index) => {
+					const name = names[index];
+					return getIndexOfArray(array[index], this[name + 's'])
+				})
+				this.dateTime = timeArray;
+
+				if (this.type === 'date' || this.type === 'year-month' || this.type === 'year') {
+					this.formatDateArrays = this.dateTime.map((item, index) => {
+						return this[names[index] + 's'][item] < 10 ? addZero(this[names[index] + 's'][item]) :
+							this[names[index] + 's'][item];
+					})
+				}
+				// console.log("this.formatDateArrays:",this.formatDateArrays)
+				if(this.type=='year-month') {
+					this.formatDateArrays1=this.formatDateArrays
+				}
+				if(this.type=='date'&&this.tabType=='left') {
+					this.formatDateArrays2=this.formatDateArrays
+				}
+				if(this.type=='date'&&this.tabType=='right') {
+					this.formatDateArrays3=this.formatDateArrays
+				}
+			},
+			initTimeData(end, start) {
+				let timeArray = [];
+				while (start <= end) {
+					timeArray.push(start);
+					start++;
+				}
+				return timeArray;
+			},
+			formatDate() {
+				let names = ['year', 'month', 'day', 'hour', 'minute', 'second'];
+				let dateString=[], formatDateArray = [];
+				// if (this.type === 'date' || this.type === 'year-month' || this.type === 'year') {
+				// 	formatDateArray = this.dateTime.map((item, index) => {
+				// 		return this[names[index] + 's'][item] < 10 ? addZero(this[names[index] + 's'][item]) :
+				// 			this[names[index] + 's'][item];
+				// 	})
+				// 	dateString = formatDateArray.join('-');
+				// }
+				// console.log("this.formatDateArrays1: ",this.formatDateArrays1);
+				// console.log("this.formatDateArrays2: ",this.formatDateArrays2);
+				// console.log("this.formatDateArrays:3 ",this.formatDateArrays3);
+				dateString.formatDateArrays1 = this.formatDateArrays1
+				dateString.formatDateArrays2 = this.formatDateArrays2
+				dateString.formatDateArrays3 = this.formatDateArrays3
+				dateString.type = this.type
+				this.$emit('change', dateString)
+			},
+			dateTimePickerChange(e) {
+				let columns = e.target.value;
+				if (this.type === 'date' || this.type === 'datetime' || this.type === 'datetime-all') {
+					this.dateTime.splice(0, 1, columns[0]);
+					if (columns[0] != this.dateTime[0]) {
+						this.days = this.initTimeData(getOneMonthDays(this.years[this.dateTime[0]], this.months[this
+							.dateTime[1]]), 1);
+						if (this.dateTime[1] == 1) {
+							if (this.dateTime[2] === this.days.length - 1) {
+								if (getOneMonthDays(this.years[columns[0]], this.dateTime[1]) < getOneMonthDays(this.years[
+										this.dateTime[0]], this.dateTime[1])) {
+									this.dateTime.splice(2, 1, this.days.length - 1)
+								}
+							}
+						}
+					} else {
+						this.dateTime.splice(1, 1, columns[1]);
+						this.days = this.initTimeData(getOneMonthDays(this.years[this.dateTime[0]], this.dateTime[1]), 1);
+						if (columns[1] != this.dateTime[1]) {
+							if (this.dateTime[1] == 1) {
+								if (this.dateTime[2] === this.days.length - 1) {
+									if (getOneMonthDays(this.years[columns[0]], this.dateTime[1]) < getOneMonthDays(this
+											.years[this.dateTime[0]],
+											this.dateTime[1])) {
+										this.dateTime.splice(2, 1, this.days.length - 1)
+									}
+								}
+							} else {
+								if (this.dateTime[2] > this.days.length - 1) {
+									this.dateTime.splice(2, 1, this.days.length - 1)
+								} else {
+									this.dateTime.splice(2, 1, columns[2])
+								}
+							}
+						} else {
+							this.dateTime.splice(2, 1, columns[2])
+						}
+					}
+					if (columns.length > 2) {
+						columns.splice(3).forEach((column, index) => {
+							this.dateTime.splice(index + 3, 1, column);
+						})
+					}
+				} else {
+					columns.forEach((column, index) => {
+						this.dateTime.splice(index, 1, column);
+					})
+				}
+				// if (!this.isShowToolBar) {
+				// 	this.formatDate();
+				// }
+
+				let names = ['year', 'month', 'day', 'hour', 'minute', 'second'];
+				this.formatDateArrays = [];
+				if (this.type === 'date' || this.type === 'year-month' || this.type === 'year') {
+					this.formatDateArrays = this.dateTime.map((item, index) => {
+						return this[names[index] + 's'][item] < 10 ? addZero(this[names[index] + 's'][item]) :
+							this[names[index] + 's'][item];
+					})
+				}
+				console.log(this.formatDateArrays)
+				if(this.type=='year-month') {
+					this.formatDateArrays1=this.formatDateArrays
+				}
+				if(this.type=='date'&&this.tabType=='left') {
+					this.formatDateArrays2=this.formatDateArrays
+				}
+				if(this.type=='date'&&this.tabType=='right') {
+					this.formatDateArrays3=this.formatDateArrays
+				}
+			},
+		
+				
+		},
+		mounted() {
+			this.type = this.datestype
+			this.getIndicatorStyle();
+			this.initDateTime();
+		}
+	}
+</script>
+
+<style lang='scss' scoped>
+	.date-time-picker {
+		.date-time-mask {
+			position: fixed;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background-color: rgba($color: #000000, $alpha: .5);
+			z-index: 998;
+		}
+
+		.jp-picker {
+			background-color: #fff;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 120rpx;
+			font-size: 30rpx;
+			
+		}
+
+		.jp-picker-year {
+			padding: 10rpx 20rpx;
+			border-top-left-radius: 30rpx;
+			border-bottom-left-radius: 30rpx;
+			height: 30rpx;
+			line-height: 30rpx;
+		}
+
+		.jp-picker-year-month {
+			width: 285rpx;
+			height: 90rpx;
+			line-height: 90rpx;
+			text-align: center;
+			font-size: 32rpx;
+			color: #1890FF;
+			border-radius: 20rpx 0 0 20rpx;
+			border: 1rpx solid #1890FF;
+		}
+
+		.jp-picker-date {
+			border-radius: 0 20rpx 20rpx 0;
+		}
+
+		.jp-picker-xzr {
+			background-color: #1890FF;
+			color: #fff;
+		}
+
+		.date-time-container {
+			position: fixed;
+			height: 60%;
+			bottom: 0;
+			right: 0;
+			left: 0;
+			background-color: #fff;
+			z-index: 999;
+			display: flex;
+			flex-direction: column;
+
+			.time-picker-tool {
+				height: 80rpx;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				font-size: 28rpx;
+
+				.cancel-btn {
+					padding: 0 28rpx;
+					box-sizing: border-box;
+					color: #333;
+					
+					
+					.cancal {
+						width: 35rpx;
+						height: 35rpx;
+					}
+				}
+
+				.tool-title {
+					font-weight: 500;
+					font-size: 16px;
+					max-width: 50%;
+					overflow: hidden;
+					white-space: nowrap;
+					text-overflow: ellipsis;
+				}
+
+			
+			}
+			
+			
+			
+			
+			.date-time {
+				padding-bottom: 11rpx;
+				box-sizing: border-box;
+				margin: 60rpx auto;
+				color: #1890FF;
+				font-size: 32rpx;
+				width: 515rpx;
+				text-align: center;
+				border-bottom: 1rpx solid #1890FF;
+			}
+			
+			
+			.date-time2 {
+				display: flex;
+				justify-content: space-between;
+				border-bottom: none;
+				
+				
+				.left {
+					margin-right: 40rpx;
+					padding-bottom: 11rpx;
+					box-sizing: border-box;
+					border-bottom: 1rpx solid #333333;
+					width: 230rpx;
+					text-align: center;
+					color: #333333;
+				}
+				
+				
+				.right {
+					margin-left: 40rpx;
+					margin-right: 0;
+				}
+				
+				
+				.active {
+					color: #1890FF;
+					border-bottom: 1rpx solid #1890FF;
+				}
+			}
+
+			.picker-view {
+				width: 100%;
+				flex: 1;
+
+				.item {
+					font-size: 34rpx;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
+			}
+		
+		
+			.confirm-btn {
+				margin: 36rpx auto;
+				width: 570rpx;
+				height: 90rpx;
+				border-radius: 20rpx;
+				background-color: #1890FF;
+				font-size: 32rpx;
+				line-height: 92rpx;
+				text-align: center;
+				color: #fff;
+			}
+		
+		
+		}
+	}
+</style>
+```
+
+#### 89.3 使用
+
+```vue
+<template>
+	<view class="index">
+		<view class="main">
+			<image src="@/static/home/bg2.png" mode="" class="bg"></image>
+			<view class="card card-total">
+				<view class="row1">
+					<view class="left">
+						我的收益（元）
+					</view>
+					<view class="right" @tap="utils.goPath('/pages/merchant/my/setPayPassword/verification')">
+						<image src="@/static/my/setIcon.png" mode=""></image>
+						<text>支付密码</text>
+					</view>
+				</view>
+				<view class="row2">
+					<view class="left">
+						<image src="@/static/my/balanceIcon.png" mode=""></image>
+						<text>{{ utils.numberFilter(merchantInfo.balance, 2) }}</text>
+					</view>
+					<button class="right btn" @tap="utils.goPath('/pages/merchant/my/withdraw')">
+						<text>提现</text>
+						<image src="@/static/arrow-right-white.png" mode=""></image>
+					</button>
+				</view>
+				<view class="row3">
+					<view class="left">
+						<text>当日收益</text><text>+{{ utils.numberFilter(merchantInfo.intradayMoney, 2) }}</text>
+					</view>
+					<view class="right">
+						<text>合计收益</text><text>+{{ utils.numberFilter(merchantInfo.sumMoney, 2) }}</text>
+					</view>
+				</view>
+			</view>
+			<view class="card card-detail">
+				<view class="header">
+					<view class="left">
+						<view class="li" v-for="(item, index) in tabs" :class="selectIndex == index ? 'li-active' : ''"
+							@tap="handleTabChange(index)">
+							<text>{{ item.label }}</text>
+						</view>
+					</view>
+					<view class="right" @tap="handleDate()">
+						<text :class="dateShow != '全部' ? 'fontColorBlue' : ''">{{ dateShow }}</text>
+						<image src="@/static/my/calanderIcon.png" mode="" v-if="dateShow == '全部'"></image>
+						<image src="@/static/my/calanderIcon-active.png" mode="" v-else></image>
+					</view>
+				</view>
+				<view class="content">
+					<view class="li" v-for="(item, index) in list" :key="item.id">
+						<view class="left">
+							<text class="row1">
+								{{ item.earningsType | earningsTypeFilter }}
+							</text>
+							<text class="row2">
+								{{ item.createTime }}
+							</text>
+						</view>
+						<view class="right">
+							<text :class="item.earnings == '+' ? 'fontColorBlue' : ''">{{ item.earnings }}{{ utils.numberFilter(item.money, 2) }}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+			<uni-load-more :status="loadStatus" :content-text="contentText"></uni-load-more>
+		</view>
+		<tabBar currentPage="/pages/merchant/tabBar/my"></tabBar>
+		<!-- 日期选择 -->
+		<jpTimePicker ref='date-time' :datestype="type" :datestring='dateString' @change='dateTimeChange'></jpTimePicker>
+	</view>
+</template>
+
+<script>
+	import jpTimePicker from '@/components/jp-timePicker/jp-timePicker.vue'
+	export default {
+		components: {
+			jpTimePicker,
+		},
+		data() {
+			return {
+				merchantInfo: {},	// 商户信息
+				
+				form: {
+					earnings: '',	// 收益 +收入 -支出
+					earingsType: '',	// 流水类型
+					createTimeStart: '',	// 开始时间
+					createTimeEnd: '',	// 结束时间
+				},
+				
+				selectIndex: 0,
+				tabs: [{
+						label: '收益明细',
+						val: ''
+					},
+					{
+						label: '支出',
+						val: '-'
+					},
+					{
+						label: '收入',
+						val: '+'
+					},
+				],
+				
+				list: [],	// 积分流水
+				pagination: {
+					pageSize: 10,
+					pageNo: 1
+				},	// 分页
+				
+				// 加载更多
+				contentText: {
+					contentdown: "上拉显示更多",
+					contentrefresh: "正在加载...",
+					contentnomore: "没有更多数据了"
+				},
+				loadStatus: "loading", //'loading','noMore'
+				
+				// 日期选择
+				dateString: '',
+				dateShow: '全部',	// 筛选列表展示的日期
+				type: 'date',
+				month: '',
+				date: '',
+				form: {},
+				timeType: '',
+			};
+		},
+		onLoad() {
+			// 获取用户信息
+			this.utils.updateMerchantInfo((data) => {
+				this.merchantInfo = data
+				this.handleSearch()
+			})
+		},
+		methods: {
+			// 获取收益统计
+			getEarningSum() {
+				this.$http('get', this.APIURL.getEarningSum).then((res) => {
+					if (!res.success) {
+						this.utils.showToast(res.message)
+						return false
+					}
+					this.merchantInfo = Object.assign(this.merchantInfo, res.data)
+					uni.setStorageSync('merchantInfo', this.merchantInfo)
+					this.$forceUpdate()
+				})
+			},
+			// 收益流水查询
+			getEarningFlow() {
+				this.$http('post', this.APIURL.getEarningFlow + `?pageNo=${this.pagination.pageNo}&pageSize=${this.pagination.pageSize}`, {
+					createTimeStart: this.form.createTimeStart,
+					createTimeEnd: this.form.createTimeEnd,
+					earnings: this.form.earnings,
+				}).then((res) => {
+					if (!res.success) {
+						this.utils.showToast(res.message)
+						return false
+					}
+					this.list = this.list.concat(res.data.rows)
+					if(this.list.length >= res.data.totalRows){
+						this.loadStatus = "noMore";
+					}
+				})
+			},
+			handleClear() {
+				this.list = []
+				this.pagination.pageNo = 1
+				this.loadStatus = 'loading'
+			},
+			// 查询
+			handleSearch() {
+				this.getEarningSum()
+				this.handleClear()
+				this.getEarningFlow()
+			},
+			handleTabChange(index) {
+				this.selectIndex = index
+				this.form.earnings = this.tabs[this.selectIndex].val
+				this.handleSearch()
+			},
+			// 打开日期选择弹窗
+			handleDate() {
+				this.timeType = ''
+				this.$refs['date-time'].show();
+			},
+			// 日期选择
+			dateTimeChange(value) {
+				this.dateString = value
+				console.log("value: ",value);
+				
+				// 按月选择
+				if (value.type == 'year-month') {
+					this.month = value.formatDateArrays1.join('-')
+					console.log("this.month: ", this.month);
+					this.timeType  = this.month
+					this.date= ''
+					
+					this.dateShow = this.timeType
+					
+					this.form.createTimeStart = this.month + '-01'
+					this.form.createTimeEnd = this.getLastDay(value.formatDateArrays1[0], value.formatDateArrays1[1])
+					console.log('form', this.form)
+				}
+				// 按日期选择
+				else {
+					this.date = value.formatDateArrays2.join('-') + ' - ' + value.formatDateArrays3.join('-')
+					console.log("this.date: ", this.date);
+					this.timeType  = this.date
+					this.month = ''
+					
+					if (value.formatDateArrays2.join('-') == value.formatDateArrays3.join('-')) {
+						this.dateShow = value.formatDateArrays2.join('-')
+					}
+					else {
+						this.dateShow = '区间'
+					}
+					
+					this.form.createTimeStart = value.formatDateArrays2.join('-')
+					this.form.createTimeEnd = value.formatDateArrays3.join('-')
+					console.log('form', this.form)
+				}
+				
+				this.handleSearch()
+			},
+			// 获取当月最后一天
+			getLastDay(year, month) {
+				var lastDay = new Date(year, month, 0)
+				return `${year}-${month}-${lastDay.getDate()}`
+			}
+		},
+		filters: {
+			earningsTypeFilter(val) {
+				switch(val) {
+					case 1:
+						return 'POS交易'
+					case 2:
+						return '积分兑换'
+					case 3:
+						return '退款'
+					default:
+						return ''
+				}
+			}
+		},
+		//上拉加载
+		onReachBottom() {
+			if(this.loadStatus == 'loading'){
+				this.pagination.pageNo = this.pagination.pageNo + 1;
+				this.getEarningFlow()
+			}
+		},
+		//下拉刷新
+		onPullDownRefresh() {
+			this.loadStatus = "loading";
+			this.handleSearch()
+			setTimeout(()=>{
+				uni.stopPullDownRefresh()
+			},800)
+		},
+	}
+</script>
+
+<style lang="less" scoped>
+	.fontColorBlue {
+		color: #3E9AFD;
+	}
+	
+	.index {
+		.main {
+			position: relative;
+			padding: 210rpx 30rpx 120rpx;
+			box-sizing: border-box;
+
+			.bg {
+				width: 100%;
+				height: 450rpx;
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				z-index: 0;
+			}
+
+			.card {
+				position: relative;
+				background: #fff;
+				border-radius: 20rpx;
+			}
+
+			.card-total {
+				padding: 40rpx 40rpx 30rpx;
+				box-sizing: border-box;
+				font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+				font-weight: 500;
+				color: #333333;
+				margin-bottom: 20rpx;
+				
+				.row1,
+				.row2,
+				.row3 {
+					display: flex;
+					align-items: center;
+				}
+				
+				.row1 {
+					font-size: 28rpx;
+					margin-bottom: 30rpx;
+					justify-content: space-between;
+					
+					.right {
+						display: flex;
+						align-items: center;
+						
+						image {
+							width: 24rpx;
+							height: 24rpx;
+							margin-right: 10rpx;
+						}
+					}
+				}
+
+				.row2 {
+					font-size: 48rpx;
+					margin-bottom: 40rpx;
+					justify-content: space-between;
+
+					image {
+						width: 48rpx;
+						height: 48rpx;
+						margin-right: 20rpx;
+					}
+					
+					.right {
+						height: 60rpx;
+						line-height: 60rpx;
+						background: #3E9AFD;
+						border-radius: 34rpx;
+						padding: 0 30rpx;
+						box-sizing: border-box;
+						display: flex;
+						align-items: center;
+						font-size: 28rpx;
+						font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+						font-weight: 500;
+						color: #FFFFFF;
+						
+						image {
+							width: 25rpx;
+							height: 25rpx;
+							margin: 0;
+							margin-left: 10rpx;
+						}
+					}
+				}
+
+				.row3 {
+					justify-content: space-between;
+					font-size: 28rpx;
+					font-family: Source Han Sans CN-Regular, Source Han Sans CN;
+					font-weight: 400;
+					color: #999999;
+				}
+			}
+
+			.card-detail {
+				padding: 40rpx 30rpx;
+				box-sizing: border-box;
+
+				.header {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+
+					.left {
+						display: flex;
+						align-items: flex-end;
+
+						.li {
+							margin-right: 30rpx;
+							font-size: 28rpx;
+							font-family: Source Han Sans CN-Medium, Source Han Sans CN;
+							font-weight: 500;
+							color: #333333;
+							position: relative;
+
+							text {
+								position: relative;
+								z-index: 1;
+							}
+						}
+
+						.li:first-child {
+							font-size: 36rpx;
+						}
+
+						.li-active:after {
+							content: '';
+							display: block;
+							width: 100%;
+							height: 3px;
+							background: #3E9AFD;
+							position: absolute;
+							bottom: 4rpx;
+							z-index: 0;
+						}
+					}
+
+					.right {
+						background: #EAECFF;
+						border-radius: 26rpx;
+						width: fit-content;
+						height: 51rpx;
+						line-height: 51rpx;
+						display: flex;
+						align-items: center;
+						padding: 0 23rpx;
+						box-sizing: border-box;
+						font-size: 28rpx;
+						font-family: Source Han Sans SC-Medium, Source Han Sans SC;
+						font-weight: 500;
+						color: #333333;
+						
+						image {
+							width: 24rpx;
+							height: 24rpx;
+							margin-left: 9rpx;
+						}
+					}
+				}
+			
+				.content {
+					.li {
+						padding: 30rpx 0;
+						box-sizing: border-box;
+						display: flex;
+						justify-content: space-between;
+						border-bottom: 1px solid #E7E7E7;
+						
+						.left {
+							display: flex;
+							flex-direction: column;
+							
+							.row1 {
+								font-size: 32rpx;
+								font-family: Source Han Sans SC-Medium, Source Han Sans SC;
+								font-weight: 500;
+								color: #333333;
+								margin-bottom: 10rpx;
+							}
+							
+							.row2 {
+								font-size: 24rpx;
+								font-family: Source Han Sans SC-Regular, Source Han Sans SC;
+								font-weight: 400;
+								color: #999999;
+							}
+						}
+						
+						.right {
+							font-size: 32rpx;
+							font-family: Source Han Sans SC-Medium, Source Han Sans SC;
+							font-weight: 500;
+							color: #333333;
+						}
+					}
+					
+					.li:last-child {
+						border-bottom: 0;
+						padding-bottom: 0;
+					}
+				}
+			}
+		}
+	}
+</style>
+```
+
+### 90.大屏适配
+
+参考：https://blog.csdn.net/Liushiliu104/article/details/129372083?spm=1001.2100.3001.7377&utm_medium=distribute.pc_feed_blog_category.none-task-blog-classify_tag-8-129372083-null-null.nonecase&depth_1-utm_source=distribute.pc_feed_blog_category.none-task-blog-classify_tag-8-129372083-null-null.nonecase
+
+#### 90.1 rem+font-size
+
+> SANTIME项目：http://syy333.dynv6.net:20080/syy/santime.git
+
+```js
+<script>
+    (function (win) {
+        var tid;
+
+        function refreshRem() {
+            let designSize = 1920; // 设计图尺寸
+            let html = document.documentElement;
+            let wW = html.clientWidth; // 窗口宽度
+            let rem = (wW * 100) / designSize;
+            document.documentElement.style.fontSize = rem + "px";
+        }
+
+        win.addEventListener(
+            "resize",
+            function () {
+                clearTimeout(tid);
+                tid = setTimeout(refreshRem, 300);
+            },
+            false
+        );
+        win.addEventListener(
+            "pageshow",
+            function (e) {
+                if (e.persisted) {
+                    clearTimeout(tid);
+                    tid = setTimeout(refreshRem, 300);
+                }
+            },
+            false
+        );
+
+        refreshRem();
+    })(window);
+
+    $(function () {
+        $("#foot").load("foot.html");
+    });
+</script>
+```
+
+![image-20231011164950570](https://gitee.com/v876774538/my-img/raw/master/image-20231011164950570.png)
+
+#### 90.2 scale缩放
+
+三益友官网：http://syy333.dynv6.net:20080/zhangzl/syy.git master分支
+
+```js
+window.onload = function() {
+  setScale();
+}
+window.onresize = function () {
+  setScale();
+};
+function setScale() {
+  // 设计稿：1920 * 1080
+  // 1.设计稿尺寸
+  let targetWidth = 1920;
+  // 2.拿到当前设备（浏览器）的宽度
+  // document.documentElement  获取html的宽度
+  let currentWidth = document.documentElement.clientWidth || document.body.clientWidth;
+  // 3.计算缩放比率(屏幕过宽，根据高度计算缩放比例)
+  let scaleRatio = currentWidth / targetWidth;
+  // 4.开始缩放网页
+  // 宽度>1920 顶部中心缩放
+  if (currentWidth > targetWidth) {
+    document.body.style = `transform: scale(${scaleRatio}); transform-origin: top center;`;
+  }
+  // 宽度<1920 顶部靠左缩放
+  else {
+    document.body.style = `transform: scale(${scaleRatio}); transform-origin: top left;`;
+  }
+}
+```
+
+注意：`transform`会导致顶部导航栏`position:fixed`失效，故只能使用`position:absolute`，采用将滚动距离赋值给绝对定位的元素的方法。
+
+```js
+handleScroll() {
+  var scrollTop =
+    window.pageYOffset ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop;
+  // let top = this.selectIndex == 0 ? 670 : 502;
+  let top = document.documentElement.querySelector(".header").offsetHeight + document.documentElement.querySelector(".header").offsetTop;
+  var headerElement = document.documentElement.querySelector(".header1");
+  if (scrollTop >= top) {
+    if (!this.show) {
+      this.show = true;
+      this.show1 = true;
+    }
+    headerElement.style = `top: ${scrollTop / this.scaleRatio}px`;
+  } else {
+    if (this.show) {
+      this.show1 = false;
+      setTimeout(() => {
+        this.show = false;
+      }, 400);
+    }
+  }
+},
+```
+
+完整代码：
+
+```vue
+<template>
+  <div class="index">
+    <div
+      class="main1"
+      :style="{ height: selectIndex == 0 ? '670px' : '502px' }"
+    >
+      <div style="height: 25px"></div>
+      <div class="header" id="header">
+        <div class="left">
+          <img
+            @click="goPath({ path: '/home' })"
+            src="@/assets/img/logo1.png"
+            alt=""
+          />
+        </div>
+        <div class="right">
+          <ul>
+            <li
+              class="li"
+              v-for="(item, index) in menuList"
+              :key="index"
+              @click="selectMenu(index)"
+            >
+              <div :class="selectIndex == index ? 'active' : ''">
+                {{ item.name }}
+              </div>
+            </li>
+            <div class="kailong" v-show="selectIndex == 2"></div>
+            <div class="program" v-show="selectIndex == 2">
+              <div
+                :class="paySelectIndex == 0 ? 'programActive' : ''"
+                @click="paySelect(0)"
+              >
+                金融支付
+              </div>
+              <div
+                :class="paySelectIndex == 1 ? 'programActive' : ''"
+                @click="paySelect(1)"
+              >
+                互联网
+              </div>
+              <div
+                :class="paySelectIndex == 2 ? 'programActive' : ''"
+                @click="paySelect(2)"
+              >
+                跨境 / 进出口
+              </div>
+            </div>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="header header1"
+        :class="show1 ? 'slideUp' : 'slideDown'"
+        v-show="show"
+      >
+        <div class="left">
+          <img
+            @click="goPath({ path: '/home' })"
+            src="@/assets/img/logo2.png"
+            alt=""
+          />
+        </div>
+        <div class="right">
+          <ul>
+            <li
+              v-for="(item, index) in menuList"
+              :key="index"
+              @click="selectMenu(index)"
+            >
+              <div :class="selectIndex == index ? 'active' : ''">
+                {{ item.name }}
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <img class="homeBg" :src="menuList[selectIndex].img" alt="" />
+      <div class="title" :style="{ top: selectIndex == 0 ? '258px' : '220px' }">
+        {{ menuList[selectIndex].title }}
+      </div>
+      <div class="des" :style="{ top: selectIndex == 0 ? '377px' : '320px' }">
+        {{ menuList[selectIndex].des }}
+      </div>
+      <img
+        class="select"
+        src="@/assets/img/select.png"
+        alt=""
+        v-show="selectIndex == 0"
+      />
+    </div>
+    <router-view />
+    <div class="foot">
+      <div class="content">
+        <div class="foot1">
+          <div><img src="@/assets/img/footLogo.png" alt="" /></div>
+          <div><span @click="goPath({ path: '/aboutUs' })">关于我们</span></div>
+          <div><span @click="goPath({ path: '/new' })">新闻资讯</span></div>
+          <div>
+            <span @click="goPath({ path: '/contactUs' })">联系我们</span>
+          </div>
+        </div>
+        <div class="foot2" style="margin-top: 20px">
+          <div style="color: #333333"><span>关注我们</span></div>
+          <div>
+            <span @click="goPath({ path: '/solutionPay' })">解决方案</span>
+          </div>
+          <div>
+            <span @click="goPath({ path: '/new', query: { type: 0 } })"
+              >公司资讯</span
+            >
+          </div>
+          <div>你更喜欢电子邮件吗?</div>
+        </div>
+        <div class="foot2">
+          <div>实时动态与招聘信息</div>
+          <div><span @click="goPath({ path: '/aboutUs' })">关于我们</span></div>
+          <div>
+            <span @click="goPath({ path: '/new', query: { type: 1 } })"
+              >活动资讯</span
+            >
+          </div>
+          <div>
+            <a href="mailto:linying@syy333.com" style="color: #8f90a5"
+              >linying@syy333.com</a
+            >
+          </div>
+        </div>
+        <div class="foot2">
+          <div style="position: relative">
+            <img class="weixin" src="@/assets/img/weixin.png" alt="" />
+            <img
+              class="erweima"
+              src="@/assets/img/contactUs/erweima1.png"
+              alt=""
+            />
+          </div>
+          <div><span @click="goPath({ path: '/joinUs' })">加入我们</span></div>
+        </div>
+      </div>
+      <a href="https://beian.miit.gov.cn/" target="_blank" class="bah">
+        ©三益友（福州）信息技术有限公司
+        <img src="@/assets/img/bah.png" alt="" />闽ICP备案2020021055号
+      </a>
+    </div>
+  </div>
+</template>
+
+<script>
+/**
+ *
+ * @Author zzl
+ * @Date 2020/11/18 15:34.
+ */
+import homeBg1 from "@/assets/img/homeBg.png";
+import homeBg2 from "@/assets/img/homeBg2.png";
+
+export default {
+  components: {},
+  props: {},
+  data() {
+    return {
+      show: false,
+      show1: false,
+      show2: false,
+      selectIndex: 0,
+      paySelectIndex: 0,
+      menuList: [
+        {
+          name: "首 页",
+          title: "面向电商互联网服务提供商",
+          des: "业务多元化 | 服务定制化 | 市场全球化",
+          img: homeBg1,
+        },
+        {
+          name: "关于我们",
+          title: "关于我们",
+          des: "态度正确、能力非凡、品质高尚、追求极致",
+          img: homeBg2,
+        },
+        {
+          name: "解决方案",
+          title: "金融支付",
+          des: "便携高效 安全支付 全方位个性服务",
+          img: homeBg2,
+        },
+        {
+          name: "新闻资讯",
+          title: "新闻资讯",
+          des: "我们一起去创造、发现更对",
+          img: homeBg2,
+        },
+        {
+          name: "加入我们",
+          title: "加入我们",
+          des: "我们在一起，就会了不起",
+          img: homeBg2,
+        },
+        {
+          name: "联系我们",
+          title: "联系我们",
+          des: "一起去发现更多",
+          img: homeBg2,
+        },
+      ],
+      scaleRatio: 1, // 缩放比率
+    };
+  },
+  computed: {},
+  mounted() {
+    switch (this.$route.path) {
+      case "/home":
+        this.selectIndex = 0;
+        break;
+      case "/aboutUs":
+        this.selectIndex = 1;
+        break;
+      case "/solutionPay":
+        this.selectIndex = 2;
+        this.paySelectIndex = 0;
+        break;
+      case "/internet":
+        this.selectIndex = 2;
+        this.paySelectIndex = 1;
+        break;
+      case "/outbound":
+        this.selectIndex = 2;
+        this.paySelectIndex = 2;
+        break;
+      case "/new":
+        this.selectIndex = 3;
+        break;
+      case "/newDetail":
+        this.selectIndex = 3;
+        break;
+      case "/joinUs":
+        this.selectIndex = 4;
+        break;
+      case "/contactUs":
+        this.selectIndex = 5;
+        break;
+    }
+
+    // 设置缩放
+    window.onload = () => {
+      this.scaleRatio = setScale();
+    };
+    window.onresize = () => {
+      this.scaleRatio = setScale();
+    };
+
+    function setScale() {
+      // 设计稿：1920 * 1080
+      // 1.设计稿尺寸
+      let targetWidth = 1920;
+      // 2.拿到当前设备（浏览器）的宽度
+      // document.documentElement  获取html的宽度
+      let currentWidth =
+        document.documentElement.clientWidth || document.body.clientWidth;
+      // 3.计算缩放比率(屏幕过宽，根据高度计算缩放比例)
+      let scaleRatio = currentWidth / targetWidth;
+      // 4.开始缩放网页
+      // 宽度>1920 顶部中心缩放
+      if (currentWidth > targetWidth) {
+        document.body.style = `transform: scale(${scaleRatio}); transform-origin: top center;`;
+      }
+      // 宽度<1920 顶部靠左缩放
+      else {
+        document.body.style = `transform: scale(${scaleRatio}); transform-origin: top left;`;
+      }
+      return scaleRatio;
+    }
+
+    window.addEventListener("scroll", this.handleScroll);
+  },
+  methods: {
+    mouseenter(index) {
+      if (index == 2) {
+        this.show2 = true;
+      }
+    },
+    mouseleave(index) {
+      if (index == 2) {
+        setTimeout(() => {
+          this.show2 = false;
+        }, 1000);
+      }
+    },
+    goPath(obj) {
+      this.$router.push(obj);
+      window.scrollTo(0, 0);
+    },
+    handleScroll() {
+      var scrollTop =
+        window.pageYOffset ||
+        document.documentElement.scrollTop ||
+        document.body.scrollTop;
+      // let top = this.selectIndex == 0 ? 670 : 502;
+      let top = document.documentElement.querySelector(".header").offsetHeight + document.documentElement.querySelector(".header").offsetTop;
+      var headerElement = document.documentElement.querySelector(".header1");
+      if (scrollTop >= top) {
+        if (!this.show) {
+          this.show = true;
+          this.show1 = true;
+        }
+        headerElement.style = `top: ${scrollTop / this.scaleRatio}px`;
+      } else {
+        if (this.show) {
+          this.show1 = false;
+          setTimeout(() => {
+            this.show = false;
+          }, 400);
+        }
+      }
+    },
+    paySelect(index) {
+      window.scrollTo(0, 0);
+      this.paySelectIndex = index;
+      switch (index) {
+        case 0:
+          this.$router.push({ path: "/solutionPay" });
+          this.menuList[this.selectIndex].title = "金融支付";
+          this.menuList[this.selectIndex].des =
+            "便携高效 安全支付 全方位个性服务";
+          break;
+        case 1:
+          this.$router.push({ path: "/internet" });
+          this.menuList[this.selectIndex].title = "互联网";
+          this.menuList[this.selectIndex].des = "大数据，打通国际物流";
+          break;
+        case 2:
+          this.$router.push({ path: "/outbound" });
+          this.menuList[this.selectIndex].title = "跨境/进出口";
+          this.menuList[this.selectIndex].des =
+            "降低成本，打造一站式便捷跨境物流";
+          break;
+      }
+    },
+    selectMenu(index) {
+      window.scrollTo(0, 0);
+      this.selectIndex = index;
+      switch (index) {
+        case 0:
+          this.$router.push({ path: "/home" });
+          break;
+        case 1:
+          this.$router.push({ path: "/aboutUs" });
+          break;
+        case 2:
+          this.$router.push({ path: "/solutionPay" });
+          this.paySelectIndex = 0;
+          break;
+        case 3:
+          this.$router.push({ path: "/new" });
+          break;
+        case 4:
+          this.$router.push({ path: "/joinUs" });
+          break;
+        case 5:
+          this.$router.push({ path: "/contactUs" });
+          break;
+      }
+    },
+  },
+  watch: {
+    ["$route.path"]: function (val) {
+      switch (val) {
+        case "/home":
+          this.selectIndex = 0;
+          break;
+        case "/aboutUs":
+          this.selectIndex = 1;
+          break;
+        case "/solutionPay":
+          this.selectIndex = 2;
+          this.paySelectIndex = 0;
+          break;
+        case "/internet":
+          this.selectIndex = 2;
+          this.paySelectIndex = 1;
+          break;
+        case "/outbound":
+          this.selectIndex = 2;
+          this.paySelectIndex = 2;
+          break;
+        case "/new":
+          this.selectIndex = 3;
+          break;
+        case "/newDetail":
+          this.selectIndex = 3;
+          break;
+        case "/joinUs":
+          this.selectIndex = 4;
+          break;
+        case "/contactUs":
+          this.selectIndex = 5;
+          break;
+      }
+    },
+  },
+  filters: {},
+  beforeDestroy() {},
+};
+</script>
+
+<style lang="less" scoped>
+.slideUp {
+  animation-name: slideUp;
+  -webkit-animation-name: slideUp;
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.slideDown {
+  animation-name: slideDown;
+  -webkit-animation-name: slideDown;
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+.index {
+  width: 100%;
+  min-width: 1920px;
+  /*height: 100%;*/
+
+  .main1 {
+    width: 100%;
+    height: 670px;
+    position: relative;
+
+    .homeBg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .title {
+      position: absolute;
+      top: 258px;
+      width: 100%;
+      font-size: 62px;
+      font-family: Source Han Sans CN;
+      font-weight: 400;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .des {
+      position: absolute;
+      top: 377px;
+      width: 100%;
+      font-size: 28px;
+      font-family: Source Han Sans CN;
+      font-weight: 400;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .select {
+      width: 55px;
+      height: 55px;
+      position: absolute;
+      top: 551px;
+      left: calc(50% - 27px);
+    }
+  }
+
+  .header {
+    width: 100%;
+    min-width: 1920px;
+    height: 50px;
+    line-height: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 0 6%;
+    box-sizing: border-box;
+
+    .left {
+      font-size: 30px;
+      font-family: HuXiaoBo-NanShen;
+      font-weight: 400;
+      cursor: pointer;
+      img {
+        display: block;
+      }
+    }
+
+    .right {
+      position: relative;
+      .li:nth-child(3):hover .program {
+        display: block;
+      }
+      .kailong {
+        width: 0;
+        height: 0;
+        border-right: 20px solid transparent;
+        border-left: 20px solid transparent;
+        border-bottom: 20px solid white;
+        position: absolute;
+        top: 85px;
+        left: 246px;
+      }
+
+      .programActive {
+        color: #fe3b35;
+      }
+
+      .program {
+        position: absolute;
+        top: 100px;
+        left: 56px;
+        width: 420px;
+        height: 45px;
+        line-height: 45px;
+        background: #ffffff;
+        border-radius: 5px;
+        font-size: 18px;
+        font-family: Source Han Sans CN;
+        font-weight: 300;
+        color: #232330;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        cursor: pointer;
+      }
+    }
+
+    .right ul {
+      font-size: 20px;
+      font-family: Source Han Sans CN;
+      font-weight: 500;
+      display: inline-flex;
+
+      li {
+        list-style: none;
+        padding-left: 20px;
+        padding-right: 20px;
+        cursor: pointer;
+        box-sizing: content-box;
+        /*font-weight: bold;*/
+      }
+
+      li .active:after {
+        content: "";
+        display: block;
+        bottom: 0;
+        width: 100%;
+        height: 5px;
+        background: #fe3b35;
+        transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+        left: 0;
+        right: 0;
+        margin: auto;
+      }
+
+      li div:after {
+        content: "";
+        display: block;
+        bottom: 0;
+        width: 0%;
+        height: 5px;
+        background: #fe3b35;
+        transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+        left: 0;
+        right: 0;
+        margin: auto;
+        color: #fe3b35;
+      }
+
+      li div:hover:after {
+        width: 100%;
+      }
+
+      li div:hover {
+        color: #fe3b35;
+      }
+
+      .active {
+        color: #fe3b35;
+        /*font-weight: bold;*/
+        /*border-bottom: 5px solid #FE3B35;*/
+      }
+    }
+  }
+
+  .header1 {
+    width: 100%;
+    min-width: 1920px;
+    color: #333333;
+    height: 80px;
+    z-index: 999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 25px 6%;
+    background: #fff;
+    animation-duration: 0.5s;
+    /* Safari and Chrome */
+    -webkit-animation-duration: 0.5s;
+    box-shadow: 0px 5px 10px 0px rgba(35, 35, 48, 0.05);
+  }
+
+  .foot {
+    width: 100%;
+    height: 390px;
+    background: url("~@/assets/img/footBg.png") no-repeat;
+    background-size: 100% 100%;
+
+    .content {
+      width: 100%;
+      min-width: 1920px;
+      margin: 0 auto;
+      padding: 67px 10% 0;
+
+      .foot1 {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        font-size: 20px;
+        font-family: Source Han Sans CN;
+        font-weight: 400;
+        color: #333333;
+        line-height: 77px;
+        img {
+          width: 188px;
+          height: 77px;
+          display: block;
+        }
+
+        div {
+          width: 25%;
+          span {
+            cursor: pointer;
+          }
+        }
+      }
+
+      .foot2 {
+        font-size: 16px;
+        font-family: Source Han Sans CN;
+        font-weight: 400;
+        color: #8f90a5;
+        line-height: 36px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        div {
+          width: 25%;
+          span {
+            cursor: pointer;
+          }
+        }
+
+        .weixin {
+          margin-top: 10px;
+          margin-left: -10px;
+          cursor: pointer;
+        }
+
+        .erweima {
+          position: absolute;
+          bottom: 0;
+          left: 70px;
+          width: 150px;
+          display: none;
+        }
+
+        .weixin:hover + .erweima {
+          display: block;
+        }
+      }
+    }
+
+    .bah {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      color: #8997a4;
+      font-size: 16px;
+      font-family: Source Han Sans CN;
+      font-weight: 400;
+
+      img {
+        margin-left: 66px;
+        margin-right: 23px;
+      }
+    }
+  }
+}
+</style>
+```
+
+### 91.PC高德地图地址定位展示
+
+#### 91.1 效果
+
+![image-20231023161220475](https://gitee.com/v876774538/my-img/raw/master/image-20231023161220475.png)
+
+#### 91.2 实现
+
+利用`iframe`在页面中嵌套网页：
+
+```html
+<iframe style="width: 690px;
+height: 443px;" src="https://www.amap.com/search?query=%E4%B8%89%E7%9B%8A%E5%8F%8B(%E7%A6%8F%E5%B7%9E)%E4%BF%A1%E6%81%AF%E6%8A%80%E6%9C%AF%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&city=350100&geoobj=119.249042%7C26.059009%7C119.258062%7C26.064235&zoom=17.5" frameborder="0"></iframe>
+```
+
+![image-20231023161332368](https://gitee.com/v876774538/my-img/raw/master/image-20231023161332368.png)
+
+### 92.uniapp自定义简单消息提示组件 popup
+
+#### 92.1 组件
+
+`tipPopup.vue`
+
+```vue
+<template>
+	<view>
+		<uni-popup ref="popup" type="center">
+			<view class="content">
+				<view class="title">
+					{{ response.title }}
+				</view>
+				<view class="msg">
+					{{ response.msg }}
+				</view>
+				<view class="btnGroup">
+					<button class="btn" :style="{ background: getTheme }" @tap="close()">我知道了</button>
+				</view>
+			</view>
+		</uni-popup>
+	</view>
+</template>
+
+<script>
+	export default {
+		name: "tipPopup",
+		data() {
+			return {
+				response: {
+					type: Object,
+					default: {
+						title: '',
+						msg: ''
+					}
+				}
+			};
+		},
+		computed: {
+			getTheme() {
+				return this.$store.getters.getTheme
+			},
+		},
+		methods: {
+			open(res) {
+				this.response = res
+				this.$refs.popup.open('center')
+			},
+			close() {
+				this.$refs.popup.close()
+			}
+		}
+	}
+</script>
+
+<style lang="less" scoped>
+.content {
+	width: 630rpx;
+	background: #fff;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	z-index: 99;
+	
+	.title {
+		font-size: 36rpx;
+		font-family: Source Han Sans CN, Source Han Sans CN;
+		font-weight: 500;
+		color: #333333;
+		margin-bottom: 40rpx;
+	}
+	
+	.msg {
+		font-size: 28rpx;
+		font-family: Source Han Sans CN, Source Han Sans CN;
+		font-weight: 400;
+		color: #333;
+	}
+	
+	.btnGroup {
+		margin-top: 69rpx;
+		width: 100%;
+		padding: 0 75rpx;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		
+		.btn {
+			flex: 1;
+			height: 80rpx;
+			line-height: 80rpx;
+			background: var(--theme-color);
+			border-radius: 45rpx;
+			font-size: 28rpx;
+			font-family: Source Han Sans CN, Source Han Sans CN;
+			font-weight: 500;
+			color: #FFFFFF;
+		}
+	}
+}
+</style>
+```
+
+#### 92.2 使用
+
+```html
+<tip-popup ref="tipPopup"></tip-popup>
+```
+
+```js
+import tipPopup from '@/components/tipPopup.vue'
+
+export default {
+    components: {
+        tipPopup
+    },
+    methods: {
+        withdraw(item) {
+            if (this.type == 1) { // 账户余额提现
+                this.$http('post', this.APIURL.withdraw, {
+                    amount: this.amount,
+                    password: item,
+                    channel: this.modalType,
+                    bankId: this.modalType == 'LG' ? this.userInfo.bankId : null
+                }).then(res => {
+                    if (!res.success) {
+                        // this.utils.showToast(res.message);
+                        // 提现失败弹窗
+                        this.$refs.tipPopup.open({ title: '提现失败', msg: res.message })
+                        return false;
+                    }
+                    this.utils.showToast('提现成功');
+                    setTimeout(() => {
+                        uni.navigateBack({
+                            delta: 1
+                        });
+                    }, 800)
+                })
+        },
+    }
+}
+```
+
+#### 92.3 效果
+
+![image-20231124142508276](https://gitee.com/v876774538/my-img/raw/master/image-20231124142508276.png)
+
+
+
+### 93.uniapp下载图片（app、h5）
+
+```js
+let that = this
+// #ifdef APP-PLUS
+uni.downloadFile({
+    url: that.shareData.imageUrl,	// 下载图片地址
+    success: (res) => {
+        if (res.statusCode === 200) {
+            uni.saveImageToPhotosAlbum({
+                filePath: res.tempFilePath,
+                success: function() {
+                    that.utils.showToast('保存成功')
+                },
+                fail: function() {
+                    that.utils.showToast('保存失败')
+                }
+            });
+        }
+    }
+});
+// #endif
+// #ifdef H5
+// this.utils.showToast('h5暂不支持')
+// console.log(window.location.origin, this.config.httpPath)
+// if (window.location.origin == this.config.httpPath) {
+// 	// var img = document.querySelector(".content")
+// 	var img = document.querySelector("#qrCode")
+//  html2canvas 截图
+// 	html2canvas(img, {
+// 		useCORS: true,
+// 	}).then(canvas => {
+// 		const file = document.createElement("a");
+// 		file.style.display = "none";
+// 		file.href = canvas.toDataURL("image/png");
+// 		file.download = decodeURI('邀请分享');
+// 		document.body.appendChild(file);
+// 		file.click();
+// 		document.body.removeChild(file);
+// 	});
+// }
+// else {
+// 	this.utils.showToast('h5暂不支持')
+// }
+const url = that.shareData.imageUrl; // 下载的图片地址
+var xhr = new XMLHttpRequest();
+xhr.open('get', url, true);
+xhr.responseType = 'blob';
+xhr.onload = () => {
+    if (xhr.status === 200) {
+        console.log(xhr)
+        var blobUrl = new Blob([xhr.response]);
+        const link = document.createElement('a');
+        link.style.display = 'none';
+        var urlObject = window.URL.createObjectURL(blobUrl);
+        link.href = urlObject;
+        link.download = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+xhr.onerror = () => {
+    that.utils.showToast('h5暂不支持')
+}
+xhr.send();
+// #endif
+```
+
+### 94.antd 表格选择框后添加“全选”字眼提示
+
+#### 94.1 效果
+
+![image-20231130165054818](https://gitee.com/v876774538/my-img/raw/master/image-20231130165054818.png)
+
+#### 94.2 实现
+
+利用**伪类**，在选择框后添加“全选”字眼。
+
+```css
+.ant-table-thead {
+  .ant-table-selection-column {
+    .ant-checkbox-wrapper::after {
+      content: '全选';
+      margin-left: 10px;
+    }
+  }
+}
+```
+
+### 95.uni-app使用uni.request获取的文件流图片转base64数据
+
+#### 95.1 参考
+
+```js
+uni.request({
+    url: '', 
+    data: {},
+    header:  {},
+    responseType: 'arraybuffer',
+    success: (res) => {
+        const base64 = "data:image/png;base64,"+uni.arrayBufferToBase64(res.data)
+        console.log(base64)
+    }
+});
+```
+
+1. responseType：设置响应的数据类型为arraybuffer。
+2. uni.arrayBufferToBase64将ArrayBuffer对象转成 Base64 字符串
+3. 注：uni.arrayBufferToBase64支持平台分别为App、H5、微信小程序、快手小程序、京东小程序
+4. 代码逻辑基础说明：使用uni.request获取服务端反馈的文件流数据（注这里的responseType必须设置为arraybuffer），使用uni.arrayBufferToBase64将获取的文件流转换成base64数据。
+   转换后的base64数据需要拼接文件头：`data:image/png;base64,`
+
+#### 95.2 项目使用
+
+> 杉通宝项目：http://syy333.dynv6.net:20080/syy/shantongbao.git
+
+1. 请求封装
+
+   ```js
+   function http4(method, url, data) {
+   	return new Promise((resolve, reject) => {
+   		if (!method) {
+   			method = 'GET'
+   		}
+   		uni.request({
+   			url: '/api/app/clientNew' + url,
+   			data: data,
+   			method: method,
+   			header: {
+   				'content-type': 'application/json',
+   				// 'content-Type': 'application/x-www-form-urlencoded',
+   				'Authorization': apiFilter(url) ? 'Bearer ' + uni.getStorageSync('token') : '',
+   			},
+   			responseType: 'arraybuffer',
+   			success: (res) => {
+   				if (res.data.code == '4000') {
+   					this.utils.showToast("请重新登录")
+   					setTimeout(() => {
+   						uni.reLaunch({
+   							url: '/pages/index/Login'
+   						})
+   					}, 800)
+   					return;
+   				}
+   				if (res.statusCode !== 200) {
+   					this.utils.showToast("抱歉，服务器出错")
+   					resolve(res.data)
+   					return;
+   				}
+   
+   				resolve(res.data)
+   			},
+   			fail: (res) => {
+   				console.log(res)
+   				this.utils.showToast("网络连接错误")
+   				reject(res)
+   			}
+   		})
+   	})
+   }
+   ```
+
+2. 后端返回
+
+   ![image-20231205134845093](https://gitee.com/v876774538/my-img/raw/master/image-20231205134845093.png)
+
+   ![image-20231205134836142](C:\Users\pc01\AppData\Roaming\Typora\typora-user-images\image-20231205134836142.png)
+
+   ![image-20231205135318037](https://gitee.com/v876774538/my-img/raw/master/image-20231205135318037.png)
+
+3. 前端展示
+
+   ```html
+   <view class="code" v-if="show">
+       <image src="/static/oem_login_password.png" mode=""></image>
+       <input v-model="filter.capText" type="text" autocomplete="off" placeholder="请输入验证码"
+           placeholder-style="font-size:28upx;color:#9E9FA1;">
+       <image :src="graphCode" mode="" class="graphCode" @tap="getGraphCode()"></image>
+   </view>
+   ```
+
+   ```js
+   // 获取图形验证码
+   getGraphCode() {
+       this.$http4('get', this.APIURL.getGraphCode).then((res) => {
+           this.graphCode = 'data:image/png;base64,' + uni.arrayBufferToBase64(res)
+           this.$forceUpdate()
+       })
+   },
+   ```
+
+
+### 96.uniapp生成推广海报
+
+> 焕米App项目：http://syy333.dynv6.net:20080/huanmi/huanmiApp.git
+
+#### 96.1 效果
+
+![image-20231206175219818](https://gitee.com/v876774538/my-img/raw/master/image-20231206175219818.png)
+
+#### 96.2 实现
+
+```html
+<!-- 推广海报 弹窗 -->
+<uni-popup ref="rejectPopup" class="rejectPopup" :maskClick='false'>
+    <view class="content">
+        <view class="photo">
+            <!-- <image class="photo" :src="fileImgPath('/static/my/invite/share-bg.png')" mode="">
+            </image> -->
+            <canvas class="photo" canvas-id="myCanvas" id="myCanvas"></canvas>
+        </view>
+        <view class="btnGroup2" v-if="btnIsShow">
+            <button class="btn1" @click="close">关闭</button>
+            <button class="btn1 btn2" @click="save">保存图片至相册</button>
+        </view>
+    </view>
+</uni-popup>
+```
+
+```css
+.rejectPopup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .photo {
+        margin-bottom: 40rpx;
+        width: 690rpx;
+        height: 952rpx;
+        // background-color: pink;
+        border-radius: 20rpx;
+    }
+
+
+    .btnGroup2 {
+        display: flex;
+        justify-content: center;
+
+
+        .btn1 {
+            font-size: 28rpx;
+            width: 214rpx;
+            height: 70rpx;
+            text-align: center;
+            line-height: 70rpx;
+            border-radius: 45rpx;
+            color: #FFFFFF;
+            background-color: #D7D7D7;
+        }
+
+        .btn2 {
+            margin-left: 40rpx;
+            width: 295rpx;
+            background-color: #1890FF;
+            color: #fff;
+        }
+    }
+
+}
+```
+
+```js
+async open() {
+    await this.$refs.rejectPopup.open('center')	// 打开弹窗
+    await this.getImg()	// 生成图片
+},
+```
+
+```js
+// 生成海报图片
+getImg() {
+    console.log(1);
+    // 获取canvas上下文
+    const canvas = uni.createCanvasContext('myCanvas', this);
+    canvas.width = 400;
+    canvas.height = 400;
+
+    // 加载两张图片
+    // 加载第一张图片
+    uni.getImageInfo({
+        src: this.img1,
+        success: (res1) => {
+            console.log(res1,'re1')
+
+            // 加载第二张图片
+            uni.getImageInfo({
+                src: this.img2,
+                success: (res2) => {
+                    console.log(res2, 'res2')
+
+                    // 绘制第一张图片
+                    const canvasWidth = uni.upx2px(690);
+                    const canvasHeight = uni.upx2px(952);
+                    const imgWidth = uni.upx2px(690);
+                    const imgHeight = uni.upx2px(952);
+                    const imgX = (canvasWidth - imgWidth) / 2;	// 图片坐标
+                    const imgY = (canvasHeight - imgHeight) / 2;
+                    // canvas.drawImage(res1.path, 0, 0, 345, 476);
+                     canvas.drawImage(res1.path, imgX, imgY, imgWidth, imgHeight);
+                    // 绘制第二张图片
+                    const canvasWidth2 = uni.upx2px(690);
+                    const canvasHeight2 = uni.upx2px(952);
+                    const imgWidth2 = uni.upx2px(200);
+                    const imgHeight2 = uni.upx2px(200);
+                    const imgX2 = (canvasWidth2 - imgWidth2*1.2);	// 图片坐标
+                    const imgY2 = (canvasHeight2 - imgHeight2*1.3);
+                    // canvas.drawImage(res2.path, 217, 345, 100, 100);
+                    canvas.drawImage(res2.path, imgX2, imgY2, imgWidth2, imgHeight2);
+
+                    // 绘制完成，保存图片
+                    setTimeout(()=>{
+                        canvas.draw(false, () => {
+                            console.log(2);
+                            uni.canvasToTempFilePath({
+                                canvasId: 'myCanvas',
+                                success: (res) => {
+                                    console.log(res
+                                        .tempFilePath
+                                    );
+                                    uni.setStorageSync(
+                                        'filePath',
+                                        res
+                                        .tempFilePath
+                                    ) //保存临时文件路径到缓存
+                                    console.log("res: ",res);
+                                    this.btnIsShow = true
+                                }
+                            }, this);
+                        });
+                        this.btnIsShow = true
+                    },800)
+                }
+            })
+        }
+    })
+
+},
+```
+
+```js
+// 保存图片到相册
+save() {
+    console.log(11111);
+    let that = this
+    let filePath = uni.getStorageSync('filePath') //从缓存中读取临时文件路径
+    console.log("filePath: ",filePath);
+    // 保存本地文件 h5不支持该方法
+    uni.saveImageToPhotosAlbum({
+      filePath: filePath,
+      success: function() {
+        uni.showToast({save
+          title: "保存成功",
+          icon: "none"
+        });
+      },
+      fail: function() {
+        uni.showToast({
+          title: "保存失败，请稍后重试",
+          icon: "none"
+        });
+      }
+    });
+},
+```
+
+### 97.uniapp携带参数返回上一页
+
+> 参考：[uniapp返回上一页携带参数,两种方法，实测有效_uniapp返回上一页带参数-CSDN博客](https://blog.csdn.net/m0_67402235/article/details/123432105)
+
+#### 97.1 方法1
+
+`pre.vue`
+
+```vue
+<template>
+	<view>
+		<view>返回的数据为:</view>
+		<view>id: {{testdata.id}}</view>
+		<view>name: {{testdata.name}}</view>
+		<button type="primary" @click="goNext">跳转到下一页面</button>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				testdata: {
+					id: '',
+					name: ''
+				}
+			}
+		},
+		onShow() {
+			let that = this
+			uni.$on('updateData',function(data){
+				that.testdata = data
+				const params = 'id:'+data.id+', name:'+data.name;
+				console.log('监听到事件来自 updateData ，携带参数为：' + params);
+			})
+		},
+		methods: {
+			goNext() {
+				uni.navigateTo({
+					url: '/pages/next/next'
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+
+</style>
+```
+
+`next.vue`
+
+```vue
+<template>
+	<view>
+		<button type="primary" @click="goBack">点击返回上一页</button>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				mydata: {
+					id: 1,
+					name: 'test'
+				}
+			}
+		},
+		methods: {
+			goBack() {
+				uni.$emit('updateData', this.mydata)
+				uni.navigateBack({
+					delta: 1
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+
+</style>
+```
+
+#### 97.2 方法2
+
+`pre.vue`
+
+```vue
+<template>
+	<view>
+		<view>返回的数据为:</view>
+		<view>id: {{testdata.id}}</view>
+		<view>name: {{testdata.name}}</view>
+		<button type="primary" @click="goNext">跳转到下一页面</button>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				testdata: {
+					id: '',
+					name: ''
+				}
+			}
+		},
+		onShow() {
+			let pages = getCurrentPages();
+			let currPage = pages[pages.length - 1]; //当前页面
+			let json = currPage.data.testdata;
+			this.testdata = json;
+		},
+		methods: {
+			goNext() {
+				uni.navigateTo({
+					url: '/pages/next/next'
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+
+</style>
+```
+
+`next.vue`
+
+```vue
+<template>
+	<view>
+		<button type="primary" @click="goBack">点击返回上一页</button>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				mydata: {
+					id: 1,
+					name: 'test'
+				}
+			}
+		},
+		methods: {
+			goBack() {
+				var pages = getCurrentPages();
+				var prevPage = pages[pages.length - 2];
+				// #ifdef H5
+				prevPage.$vm.testdata = this.mydata;	// 给上一页的testdata赋值
+				// #endif
+				// #ifdef MP-WEIXIN
+				 prevPage.setData(this.mydata);
+				// #endif
+				uni.navigateBack({//返回
+					delta: 1
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+
+</style>
+
+```
+
+#### 97.3 方法2简单版
+
+```js
+let pages = getCurrentPages();  //获取所有页面栈实例列表
+let nowPage = pages[ pages.length - 1];  //当前页页面实例
+let prevPage = pages[ pages.length - 2 ];  //上一页页面实例
+prevPage.$vm.searchVal = 1211;   //修改上一页data里面的searchVal参数值为1211
+uni.navigateBack({  //uni.navigateTo跳转的返回，默认1为返回上一级
+    delta: 1
+})
+```
+
+> 鲸品优选项目：http://syy333.dynv6.net:20080/jpyx/trialmall-jpyx.git
+
+```js
+// 跳转
+goBack(search) {
+    if (!this.goIntegrated || this.goIntegrated == 'false') {
+        let pages = getCurrentPages();  //获取所有页面栈实例列表
+        let nowPage = pages[ pages.length - 1];  //当前页页面实例
+        let prevPage = pages[ pages.length - 2 ];  //上一页页面实例
+        if (prevPage.$vm.queryParams.search) {
+            prevPage.$vm.queryParams.search = search;  // 将搜索的文字传给上一页
+        }
+        if (prevPage.$vm.goodsName) {
+            prevPage.$vm.goodsName = search;
+        }
+        console.log(search);
+        uni.navigateBack({
+            delta: 1
+        })
+    }
+    else {
+        if (this.type=='联盟'){
+            uni.navigateTo({
+                url: '/pages/product/AlliedGoods?goodsName=' + search
+                }) 
+        }else if (this.type=='拼团'){
+            uni.navigateTo({
+                url: '/pages/groupActivities/list?goodsName=' + search
+                }) 
+        }else {
+            uni.navigateTo({
+                url: '/pages/product/Integrated?search=' + search
+            })
+        }
+
+    }
+},
+```
+
+### 98.uniapp下拉选择组件
+
+> saas双钱包展业项目：http://syy333.dynv6.net:20080/xshb/sfzyAPP.git
+
+#### 98.1 组件
+
+![image-20231229165333607](https://gitee.com/v876774538/my-img/raw/master/image-20231229165333607.png)
+
+#### 98.2 使用
+
+```vue
+<!-- 产品类型 -->
+<w-picker mode="selector" @confirm="posConfirm" ref="selector" :themeColor="getTheme" :selectList="posTypeList"></w-picker>
+```
+
+```js
+// 打开弹窗
+toggleTab(str) {
+    this.$refs[str].show();	// this.$refs.profession.show()
+},
+```
+
+```js
+// 获取产品列表
+posTypeDict() {
+    this.$http('get',this.APIURL.getClassificationInfo).then(res=>{
+        if (!res.success) {
+            this.utils.showToast(res.message);
+            return false;
+        }
+        res.data.map(item=>{
+            item.label = item.productName
+            item.value = item.productCode
+        })	// 数据结构
+        this.posTypeList = res.data
+        console.log("this.posTypeList: ",this.posTypeList);
+        this.myDirect();
+    })
+},
+```
+
+```js
+// 选择
+posConfirm(val) {
+    // 赋值
+    this.posClassify = val.checkArr.label;
+    this.filter.goodsId = val.checkArr.value;
+},
+```
+
+#### 98.3 效果
+
+![image-20231229170508680](https://gitee.com/v876774538/my-img/raw/master/image-20231229170508680.png)
+
+### 99.uniapp消息滚动通知组件
+
+> saas双钱包展业项目：http://syy333.dynv6.net:20080/xshb/sfzyAPP.git
+
+#### 99.1 组件
+
+```vue
+<template>
+	<view class="notice-bar">
+		<scroll-view class="notice-scroll" :scroll-y="true" :scroll-with-animation="true" :scroll-top="scrollTop">
+			<view class="notice-content">
+				<view class="notice-item" v-for="(item, index) in noticeList" :key="index"
+					@tap="handleClickNotice(item)">
+					<text>{{ item.title }}</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script>
+	export default {
+		name: "noticeScroll",
+		data() {
+			return {
+				noticeList: [], // 通知列表
+				timer: null, // 定时器
+				interval: 2000, // 滚动时间间隔
+				scrollTop: 0, // 滚动距离
+				currentIndex: 0, // 当前通知索引
+			};
+		},
+		props: {
+			notices: {
+				// 外部传入的通知列表
+				type: Array,
+				default: [],
+			},
+		},
+		mounted() {
+			this.initNoticeList();
+		},
+		methods: {
+			// 初始化通知列表
+			initNoticeList() {
+				console.log('notices', this.notices)
+				const _this = this;
+				_this.noticeList = _this.notices;
+				if (_this.noticeList.length > 1) {
+					_this.timer = setInterval(() => {
+						_this.handleScrollNotice();
+					}, _this.interval);
+				}
+			},
+			// 点击通知时触发
+			handleClickNotice(item) {
+				this.$emit("click", item);
+			},
+			// 滚动通知
+			handleScrollNotice() {
+				const len = this.noticeList.length;
+				if (this.currentIndex === len - 1) {
+					this.currentIndex = 0;
+				} else {
+					this.currentIndex++;
+				}
+				this.animateScroll();
+			},
+			// 动画滚动
+			animateScroll() {
+				const _this = this;
+				let noticeHeight = 24; // 通知高度，根据实际情况调整
+				// 获取通知高度
+				uni.createSelectorQuery().select('.noticeBar .right').boundingClientRect((res) => {
+					console.log('noticeBar', res)
+					if (res) {
+						noticeHeight = res.height;
+					}
+					else {
+						if (this.timer) {
+							clearInterval(this.timer);
+						}
+					}
+				}).exec()
+				const scrollTop = _this.currentIndex * noticeHeight;
+				_this.scrollTop = scrollTop;
+			},
+		},
+		destroyed() {
+			if (this.timer) {
+				clearInterval(this.timer);
+			}
+		},
+	};
+</script>
+
+<style scoped>
+	.notice-bar {
+		/* 组件高度，根据实际情况调整 */
+		height: 47rpx;
+		overflow: hidden;
+	}
+
+	.notice-scroll {
+		width: 100%;
+		height: 100%;
+	}
+
+	.notice-content {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.notice-item {
+		/* 通知高度，根据实际情况调整 */
+		height: 47rpx;
+		/* 通知行高，根据实际情况调整 */
+		line-height: 47rpx;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+</style>
+```
+
+#### 99.2 使用
+
+```vue
+<view class="noticeBar" @click="goPath('/pages/my/message/index')">
+    <image src="@/static/index/notice-icon.png" mode="" class="left"></image>
+    <view class="right">
+        <view class="con">
+            <notice-scroll :notices="messageList" v-if="messageList && messageList.length != 0"></notice-scroll>
+        </view>
+        <image class="img" src="@/static/arrow-right.png" mode=""></image>
+    </view>
+</view>
+```
+
+```js
+// 通知
+userMessage() {
+    this.$http('get', this.APIURL.userMessage, {
+        messageType: 0,
+        pageSize: this.pageSize,
+        pageNo: this.pageNo
+    }).then(res => {
+        if (!res.success) {
+            this.utils.showToast(res.message);
+            return false;
+        }
+        if (res.data.rows && res.data.rows.length != 0) {
+            this.messageList = res.data.rows
+            console.log('messageList', this.messageList)
+        }
+    })
+},
+```
+
+#### 99.3 效果
+
+![image-20240103152458354](https://gitee.com/v876774538/my-img/raw/master/image-20240103152458354.png)
+
+### 100.antd修改checkbox默认样式
+
+```css
+      // 鼠标hover
+      /deep/.ant-checkbox-wrapper:hover .ant-checkbox-inner,
+      /deep/.ant-checkbox:hover .ant-checkbox-inner,
+      /deep/.ant-checkbox-input:focus + .ant-checkbox-inner
+      {
+        border-radius: 50% !important;
+        border: 1px solid #013893 !important;
+      }
+
+      // 默认
+      /deep/.ant-checkbox {
+        .ant-checkbox-inner {
+          border-radius: 50% !important;
+          border: 1px solid #013893 !important;
+        }
+      }
+
+      // 选中
+      /deep/.ant-checkbox-checked .ant-checkbox-inner,
+      /deep/.ant-checkbox-indeterminate .ant-checkbox-inner {
+        border-radius: 50% !important;
+        border: 1px solid #013893 !important;
+        background: #013893;
+      }
+```
+
+![image-20240105171529217](C:\Users\pc01\AppData\Roaming\Typora\typora-user-images\image-20240105171529217.png)
+
+![image-20240105171534985](https://gitee.com/v876774538/my-img/raw/master/image-20240105171534985.png)
+
+注意：有未解决的样式bug如下
+
+![image-20240105171554175](https://gitee.com/v876774538/my-img/raw/master/image-20240105171554175.png)
+
+### 101.css磨砂质感背景
+
+```css
+.main {
+  min-width: 641px;
+  width: 641px;
+  margin: 0 auto;
+  // border: 2px solid #ffffff;
+  // background: url('~@/assets/login/loginMainBg.png') no-repeat;
+  background-size: 100% 100%;
+  padding: 92px 0 96px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 40px;
+  border: 2px solid #fff;
+  box-shadow: 0px 10px 20px 1px #dee1ff;
+  overflow: hidden;
+  position: relative;
+}
+
+.main::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  z-index: 0;
+}
+```
+
+![image-20240105175502318](https://gitee.com/v876774538/my-img/raw/master/image-20240105175502318.png)
+
+### 102.js全局通用的数据类型判断方法
+
+#### 102.1 方法
+
+```js
+function getType(obj) {
+  let type = typeof obj
+  if (type !== 'object') {
+    // 先进行typeof判断，如果是基础数据类型，直接返回
+    return type
+  }
+  // 对于typeof返回结果是object的，再进行如下的判断，正则返回结果
+  return Object.prototype.toString.call(obj).replace(/^\[object (\S+)\]$/, '$1')
+}
+```
+
+#### 102.2 使用
+
+```js
+getType([]) // "Array" typeof []是object，因此toString返回
+getType('123') // "string" typeof 直接返回
+getType(window) // "Window" toString返回
+getType(null) // "Null"首字母大写，typeof null是object，需toString来判断
+getType(undefined) // "undefined" typeof 直接返回
+getType() // "undefined" typeof 直接返回
+getType(function () {}) // "function" typeof能判断，因此首字母小写
+getType(/123/g) //"RegExp" toString返回
+```
+
+### 103.npm install失败 使用淘宝镜像
+
+```shell
+npm install --registry=https://registry.npm.taobao.org
+```
+
+### 104.uniapp scroll-view报错
+
+报错内容：`[Intervention]Ignored attempt to cancel a touchmove event with cancelable=false, for example because scrolling is in progress and cannot be interrupted`
+
+原因：蒙版阻止默认的修饰符与`scroll-view`组件有冲突，如下图，因为[事件冒泡](https://so.csdn.net/so/search?q=事件冒泡&spm=1001.2101.3001.7020)，导致scroll-view组件的touchmove事件可以传递到模态框。
+
+解决方法：给`scroll-view`标签触摸移动添加阻止冒泡`@touchmove.stop`。
+
+![img](https://img-blog.csdnimg.cn/076bd9bd805a47609bb8a94f8ee4b53a.png)
+
+### 105.IOS h5打包成桌面书签app，页面跳转就会出现“系统网页导航栏”
+
+#### 105.1 问题
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/image-20240123092701616.png" alt="image-20240123092701616" style="zoom:25%;" />
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/image-20240123092713381.png" alt="image-20240123092713381" style="zoom:25%;" />
+
+#### 105.2 解决
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/image-20240123093109803.png" alt="image-20240123093109803"  />
+
+### 106.IOS低版本系统手机的h5网页启动白屏
+
+> 参考：
+>
+> [iOS端uniapp 不支持正则零宽_mob649e81593bda的技术博客_51CTO博客](https://blog.51cto.com/u_16175453/7615739)
+>
+> [IOS&Safari不兼容零宽断言正则的坑_ios中不兼容哪些正则-CSDN博客](https://blog.csdn.net/weixin_44846945/article/details/134314031)
+
+#### 106.1 问题
+
+IOS低版本系统的手机，打开h5网页白屏，开发者模式查看不报错，请求为空。
+
+#### 106.2 解决
+
+IOS低版本系统不支持**零宽断言**正则，注释/更改方法即可。
+
+正则表达式零宽断言有常见四种类型：
+
+- 正向环视(Positive Lookahead)：用`?=pattern`表示，匹配在某个模式之前的位置；
+- 负向环视(Negative Lookahead)：用`?!pattern`表示，匹配不在某个模式之前的位置；
+- 正向回顾(Positive Lookbehid)：用`?=<pattern`表示，匹配在某个模式之后的位置；
+- 负向回顾(Negative Lookbehid)：用`?<!pattern`表示，匹配不在某个模式之后的位置。
+
+### 107.uniapp上传图片 h5正常 app真机测试无反应
+
+#### 107.1 uni.uploadFile(OBJECT)说明
+
+[uni.uploadFile(OBJECT) | uni-app官网 (dcloud.net.cn)](https://uniapp.dcloud.net.cn/api/request/network-file.html#uploadfile)
+
+**OBJECT 参数说明**
+
+| 参数名   | 类型     | 必填                        | 说明                                                         | 平台差异说明                                                 |
+| :------- | :------- | :-------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| url      | String   | 是                          | 开发者服务器 url                                             |                                                              |
+| files    | Array    | 是（files和filePath选其一） | 需要上传的文件列表。**使用 files 时，filePath 和 name 不生效。** | App、H5（ 2.6.15+）                                          |
+| fileType | String   | 见平台差异说明              | 文件类型，image/video/audio                                  | 仅支付宝小程序，且必填。                                     |
+| file     | File     | 否                          | 要上传的文件对象。                                           | 仅H5（2.6.15+）支持                                          |
+| filePath | String   | 是（files和filePath选其一） | 要上传文件资源的路径。                                       |                                                              |
+| name     | String   | 是                          | 文件对应的 key , 开发者在服务器端通过这个 key 可以获取到文件二进制内容 |                                                              |
+| header   | Object   | 否                          | HTTP 请求 Header, header 中不能设置 Referer。                |                                                              |
+| timeout  | Number   | 否                          | 超时时间，单位 ms                                            | H5(HBuilderX 2.9.9+)、APP(HBuilderX 2.9.9+)、微信小程序、支付宝小程序、抖音小程序、快手小程序 |
+| formData | Object   | 否                          | HTTP 请求中其他额外的 form data                              |                                                              |
+| success  | Function | 否                          | 接口调用成功的回调函数                                       |                                                              |
+| fail     | Function | 否                          | 接口调用失败的回调函数                                       |                                                              |
+| complete | Function | 否                          | 接口调用结束的回调函数（调用成功、失败都会执行）             |                                                              |
+
+**files参数说明**
+
+files 参数是一个 file 对象的数组，file 对象的结构如下：
+
+| 参数名 | 类型   | 必填 | 说明                                        |
+| :----- | :----- | :--- | :------------------------------------------ |
+| name   | String | 否   | multipart 提交时，表单的项目名，默认为 file |
+| file   | File   | 否   | 要上传的文件对象，仅H5（2.6.15+）支持       |
+| uri    | String | 是   | 文件的本地地址                              |
+
+#### 107.2 解决
+
+真机使用`files`参数上传文件时，需要填写`uri`（h5貌似不填也能用）。
+
+```js
+function uploadIdCardInfoHttp(method, url, data) {
+	return new Promise((resolve, reject) => {
+		if (!method) {
+			method = 'GET'
+		}
+		let shantongbaoObj = JSON.parse(des_decrypt(uni.getStorageSync('shantongbao'), 'E555F1E8'))
+		// console.log('shantongbaoObj',shantongbaoObj)
+		let getTime = new Date().getTime()
+		let data1 = {
+			"charset": "UTF-8",
+			"sign": "",
+			"sessionId": shantongbaoObj.sessionId,
+			"reqTime": getTime,
+			"version": "1.0.0",
+			// "reqData": "",
+			"encType": "01",
+			"systemType": "ANDROID",
+			"signType": "01",
+			"pubKeyVersion": "1.0.0"
+		}
+		let reqData = {
+			"phoneInfo": {
+				"appVersion": "20230111",
+				"systemVersion": "12",
+				"phoneModel": "HUAWEI",
+				"system": "H5"
+			},
+			"checkValue": "1234"
+		}
+		let _key = shantongbaoObj.privateKey
+		let reqDataVal = Object.assign({}, reqData)
+		let signVal =
+			`charset=UTF-8&encType=01&pubKeyVersion=1.0.0&reqTime=${getTime}&sessionId=${shantongbaoObj.sessionId}&signType=01&systemType=ANDROID&version=1.0.0&key=${_key}`
+		// data1.reqData = des_encrypt(JSON.stringify(reqDataVal),_key.substr(0, 8))
+		data1.sign = this.utils.SHA256(signVal).toUpperCase()
+		console.log('signVal', signVal)
+		console.log('data', data)
+		let files = []
+		for (let key in data) {
+			if ((/\d/.test(key)) == false) {
+				files.push({
+					name: key,
+					file: data[key],
+					uri: data[key].path
+				})
+			}
+			
+		}
+		// let files = [
+		// 	{
+		// 		name: 'idFroPic',
+		// 		file: data.idFroPic,
+		// 		uri: data.idFroPic.path,
+		// 	},
+		// 	{
+		// 		name: 'idConPic',
+		// 		file: data.idConPic,
+		// 		uri: data.idConPic.path,
+		// 	},
+		// 	{
+		// 		name: 'cardFrontPic',
+		// 		file: data.cardFrontPic,
+		// 		uri: data.cardFrontPic.path,
+		// 	},
+		// 	{
+		// 		name: 'doorHeadPic',
+		// 		file: data.doorHeadPic,
+		// 		uri: data.doorHeadPic.path,
+		// 	},
+		// 	{
+		// 		name: 'cashierDeskPic',
+		// 		file: data.cashierDeskPic,
+		// 		uri: data.cashierDeskPic.path,
+		// 	},
+		// 	{
+		// 		name: 'indoorSettingPic',
+		// 		file: data.indoorSettingPic,
+		// 		uri: data.indoorSettingPic.path,
+		// 	},
+		// ]
+		console.log('files', files)
+		uni.uploadFile({
+			url: config.path + url,
+			formData: data1,
+			name: 'file',
+			method: method,
+			files: files,
+			timeout: 30000,
+			success: (res) => {
+				console.log('res', JSON.parse(res.data).respData)
+				uni.hideLoading()
+				if (JSON.parse(res.data).respMsg == '参数解密失败') {
+					this.utils.showToast('请重新登录')
+					localStorage.removeItem('userInfo')
+					uni.reLaunch({
+						url: '/pages/login/login'
+					})
+					return;
+				}
+				if (JSON.parse(res.data).respCode != '0000') {
+					this.utils.showToast(JSON.parse(res.data).respMsg)
+					resolve(JSON.parse(des_decrypt(JSON.parse(res.data).respData, _key.substr(0,
+						8))))
+					return;
+				}
+				resolve(JSON.parse(des_decrypt(JSON.parse(res.data).respData, _key.substr(0, 8))))
+			},
+			fail: (res) => {
+				console.log('error', res)
+				this.utils.showToast("网络连接错误")
+				reject(res)
+			},
+			complete: () => {
+				console.log('结束')
+			}
+		})
+	})
+}
+```
+
+`files`数组如下：
+
+```js
+[
+    {
+        "name": "idFroPic",
+        "file": {
+            "path": "file:///storage/emulated/0/Pictures/QQ/Image_1705484402858.jpg",
+            "size": 76899
+        },
+        "uri": "file:///storage/emulated/0/Pictures/QQ/Image_1705484402858.jpg"
+    },
+    {
+        "name": "idConPic",
+        "file": {
+            "path": "file:///storage/emulated/0/Pictures/QQ/Image_1705484407005.jpg",
+            "size": 80320
+        },
+        "uri": "file:///storage/emulated/0/Pictures/QQ/Image_1705484407005.jpg"
+    },
+    {
+        "name": "cardFrontPic",
+        "file": {
+            "path": "file:///storage/emulated/0/Pictures/QQ/Image_1705484397211.jpg",
+            "size": 65427
+        },
+        "uri": "file:///storage/emulated/0/Pictures/QQ/Image_1705484397211.jpg"
+    }
+]
+```
+
+### 108.uniapp仿微信红包打开动画效果
+
+[uniapp仿微信红包打开动画效果_uniapp 领红包特效-CSDN博客](https://blog.csdn.net/yezi20189/article/details/125663967)
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/19ab52f370f941e08fa3b64d86e8c50d.gif#pic_center)
+
+```vue
+<template>
+	<view class="index">
+		<uni-popup ref="popup">
+			<view v-if="packerState != 3" class="packer-box flex-column">
+				<view class="packer-bg anim-ease-in" :class="{ 'anim-fade-out': packerState == 2 }"></view>
+				<view class="packer-bottom-box anim-ease-in" :class="{ 'anim-out-bottom': packerState == 2 }">
+					<view class="arc-bottom-edge"></view>
+					<view class="packer-bottom-bg"></view>
+				</view>
+				<view class="packer-top-box anim-ease-in" :class="{ 'anim-out-top': packerState == 2 }">
+					<view class="flex-row sender-info">
+						<image class="sender-avatar"></image>
+						<view>{{'XXX'}}发出的红包</view>
+					</view>
+					<view class="packer-greeting double-text">{{'恭喜发财，大吉大利'}}</view>
+					<view class="arc-edge"></view>
+					<view v-if="packerState == 1" class="anim-rotate packer-btn-pos">
+						<view class="packer-btn" style="transform: translateZ(-4px);">開</view>
+						<view class="packer-btn-middle" v-for="(item, index) in 7" :key="index"
+							:style="{transform: `translateZ(${index - 3}px)`}"></view>
+						<view class="packer-btn packer-btn-front">開</view>
+					</view>
+					<view v-else class="packer-btn packer-btn-pos" @click="openPacker">開</view>
+				</view>
+			</view>
+			<view v-else class="packer-box flex-column">
+				<!-- 红包内容 -->
+			</view>
+		</uni-popup>
+	</view>
+</template>
+
+<script>
+	export default {
+		name: "redPacket",
+		data() {
+			return {
+				packerState: 0
+			};
+		},
+		methods: {
+			open() {
+				this.$refs.popup.open('center')
+			},
+			close() {
+				this.$refs.popup.close()
+			},
+			openPacker() {
+				// 加载数据，触发硬币旋转动画
+				this.packerState = 1;
+				this.request(() => {
+					// 调用抢红包接口成功，触发开红包动画
+					this.packerState = 2;
+					// 开红包动画结束后，移除相关节点，否则会阻挡其它下层节点
+					setTimeout(() => {
+						this.packerState = 3;
+					}, 500);
+				})
+
+			},
+			request(success) {
+				setTimeout(() => {
+					success()
+				}, 3000);
+			}
+		}
+	}
+</script>
+
+<style lang="less">
+	.flex-row {
+		display: flex;
+		flex-direction: row;
+		position: relative;
+	}
+
+	.flex-column {
+		display: flex;
+		flex-direction: column;
+		position: relative;
+	}
+
+	.packer-box {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 99;
+		color: rgb(235, 205, 153);
+		padding: 60rpx;
+	}
+
+	.packer-bg {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+	}
+
+	.packer-top-box {
+		width: 600rpx;
+		background-color: rgb(244, 94, 77);
+		text-align: center;
+		margin: auto;
+		transform: translateY(-160rpx);
+		border-top-left-radius: 30rpx;
+		border-top-right-radius: 30rpx;
+		position: relative;
+	}
+
+	.sender-info {
+		margin-top: 200rpx;
+		justify-content: center;
+		line-height: 60rpx;
+		font-size: 36rpx;
+	}
+
+	.sender-avatar {
+		width: 60rpx;
+		height: 60rpx;
+		border-radius: 10rpx;
+		background-color: #fff;
+		margin-right: 10rpx;
+	}
+
+	.packer-greeting {
+		font-size: 48rpx;
+		line-height: 60rpx;
+		height: 120rpx;
+		margin: 40rpx 30rpx 200rpx;
+	}
+
+	.arc-edge {
+		position: relative;
+	}
+
+	.arc-edge::after {
+		width: 100%;
+		height: 200rpx;
+		position: absolute;
+		left: 0;
+		top: -100rpx;
+		z-index: 9;
+		content: '';
+		border-radius: 50%;
+		background-color: rgb(244, 94, 77);
+		box-shadow: 0 6rpx 6rpx 0 rgba(0, 0, 0, 0.1);
+	}
+
+	.packer-bottom-box {
+		transform: translate(-50%, 0);
+		width: 600rpx;
+		height: 360rpx;
+		border-bottom-left-radius: 30rpx;
+		border-bottom-right-radius: 30rpx;
+		overflow: hidden;
+		position: absolute;
+		bottom: calc(50% - 440rpx);
+		left: 50%;
+	}
+
+	.anim-ease-in {
+		animation-duration: 0.5s;
+		animation-timing-function: ease-in;
+		animation-fill-mode: forwards;
+	}
+
+	.anim-out-top {
+		animation-name: slideOutTop;
+	}
+
+	.anim-out-bottom {
+		animation-name: slideOutBottom;
+	}
+
+	.anim-fade-out {
+		animation-name: fadeOut;
+	}
+
+	@keyframes fadeOut {
+		from {
+			opacity: 1;
+		}
+
+		to {
+			opacity: 0;
+		}
+	}
+
+	@keyframes slideOutTop {
+		from {
+			transform: translateY(-160rpx);
+		}
+
+		to {
+			transform: translateY(-200%);
+		}
+	}
+
+	@keyframes slideOutBottom {
+		from {
+			transform: translate(-50%, 0);
+		}
+
+		to {
+			transform: translate(-50%, 200%);
+		}
+	}
+
+	.arc-bottom-edge {
+		position: relative;
+	}
+
+	.arc-bottom-edge::after {
+		width: 120%;
+		height: 200rpx;
+		position: absolute;
+		left: -10%;
+		top: -100rpx;
+		z-index: 8;
+		content: '';
+		border-radius: 50%;
+		box-shadow: 0 60rpx 0 0 rgb(242, 85, 66);
+	}
+
+	.packer-bottom-bg {
+		background-color: rgb(242, 85, 66);
+		height: 280rpx;
+		margin-top: 100rpx;
+	}
+
+	.packer-btn {
+		border-radius: 50%;
+		width: 200rpx;
+		height: 200rpx;
+		line-height: 200rpx;
+		font-size: 80rpx;
+		text-align: center;
+		color: #333;
+		background-color: rgb(235, 205, 153);
+		box-shadow: 0 0 6rpx 0 rgba(0, 0, 0, 0.1);
+	}
+
+	.packer-btn-pos {
+		transform: translateX(-50%);
+		position: absolute;
+		left: 50%;
+		z-index: 10;
+		bottom: -200rpx;
+	}
+
+	.packer-btn-front {
+		position: absolute;
+		top: 0;
+		transform: translateZ(4px);
+	}
+
+	.packer-btn-middle {
+		position: absolute;
+		top: 0;
+		border-radius: 50%;
+		width: 200rpx;
+		height: 200rpx;
+		background-color: rgb(235, 180, 120);
+	}
+
+	.anim-rotate {
+		margin-left: -100rpx;
+		transform-style: preserve-3d;
+		animation: rotate 1s linear infinite;
+	}
+
+	@keyframes rotate {
+		0% {
+			transform: rotateY(0deg);
+		}
+
+		100% {
+			transform: rotateY(360deg);
+		}
+	}
+</style>
+```
+
+### 109.Promise.all 等待多个请求完成后进行操作
+
+```js
+Promise.all([
+    this.$http('post', this.APIURL.userCenter).then(res => {
+        console.log('res1', res)
+        this.userInfo = Object.assign(this.userInfo, res)
+    }),
+    this.$http('post', this.APIURL.userConfig).then(res => {
+        console.log('res2', res)
+        this.userInfo = Object.assign(this.userInfo, res)
+    }),
+]).then(() => {
+    uni.hideLoading()
+    console.log('promise all', this.userInfo)
+    uni.setStorageSync('userInfo', this.userInfo)	// 合并两个接口的用户信息
+})
+```
+
+需要使用遍历的情况
+
+```js
+modalList: [{
+        label: '支付宝',
+        val: 'ALI',
+        info: '',
+        iconUrl: require('@/static/my/withdraw/alipay.png'),
+        url: '/pages/my/withdrawSettings/alipay',
+        isActive: false,
+    },
+    {
+        label: '银行卡',
+        val: 'LG',
+        info: '',
+        iconUrl: require('@/static/my/withdraw/bankcard.png'),
+        url: '/pages/my/withdrawSettings/bankcard',
+        isActive: false,
+    },
+    {
+        label: '对公转账',
+        val: 'DG',
+        info: '',
+        iconUrl: require('@/static/my/withdraw/publicTransfer.png'),
+        url: '/pages/my/withdrawSettings/publicTransfer',
+        isActive: false,
+    },
+], // 渠道列表
+```
+
+```js
+// 渠道配置
+modalInit() {
+    var ps = []
+    this.modalList.forEach((item, index) => {
+        var channel = item.val
+        var p = this.cashConfig(item.val, (res) => {
+            console.log(item.label, res)
+            if (res) {
+                item.isActive = true
+                this.modalFlag = false
+                if (item.label == '支付宝') {
+                    item.info = this.userInfo.alipayAccount ? this.userInfo
+                        .alipayAccount : ''
+                } else if (item.label == '银行卡') {
+                    item.info = this.userInfo.bankName && this.userInfo.bankNo ?
+                        `${this.userInfo.bankName}(${this.userInfo.bankNo.slice(-4)})` :
+                        ''
+                } else if (item.label == '对公转账') {
+                    item.info = this.corporateAccount.name ? this.corporateAccount
+                        .name : ''
+                }
+            }
+        })
+        ps.push(p)
+    })
+    console.log('ps', ps)
+
+    Promise.all(ps).then(() => {
+        console.log('flag', this.modalFlag)
+        // 未开通任何渠道
+        if (this.modalFlag) {
+            this.utils.showToast('提现渠道未配置，请联系管理员进行配置！')
+            setTimeout(() => {
+                uni.navigateBack(1)
+            }, 2000)
+        }
+    })
+},
+// 提现规则
+cashConfig(channel, callback) {
+    // 这里需要return Promise
+    return this.$http('get', this.APIURL.cashConfig, {
+        type: this.type == 1 ? 'balance' : 'bounty',
+        channel: channel == 'ALI' ? 'ZFB' : channel
+    }).then(res => {
+        if (!res.success) {
+            this.utils.showToast(res.message);
+            return false;
+        }
+        if (res.data && res.data.cashStatus == 1) {
+            this.rule = res.data
+            this.modalType = channel
+        }
+        if (callback) {
+            callback(res.data.cashStatus == 1 ? true : false)
+        }
+    })
+},
+```
+
+### 110.flex: spsace-evenly兼容问题
+
+![image-20240228101430203](https://gitee.com/v876774538/my-img/raw/master/image-20240228101430203.png)
+
+bug说明：[【报Bug】justify-content: space-evenly在部分机型上无效 - DCloud问答](https://ask.dcloud.net.cn/question/99604)
+
+解决方案：利用伪元素在盒子前后都增加一个空的盒子。
+
+```css
+.container{  
+      display: flex;  
+      flex-flow: row nowrap;  
+      align-items: center;  
+      justify-content: space-between;  
+       //justify-content: space-evenly;  
+      &:before,  
+      &:after {  
+          content: '';  
+          display: block;  
+    }  
+}  
+```
+
+### 111.uniapp 安卓系统软键盘顶起页面
+
+#### 111.1 问题描述
+
+安卓系统软键盘顶起页面，视口宽度变化，导致通过`calc(100vh - 固定rpx)`控制最大高度的`scroll-view`高度被压缩。
+
+#### 111.2 解决方案
+
+[uniapp中软键盘弹起导致页面或元素挤压解决_uni-search-bar键盘会挤压页面-CSDN博客](https://blog.csdn.net/weixin_43109722/article/details/128207803)
+
+1. `page.json`中配置不允许软键盘顶起页面
+
+   ```js
+   {
+       "path" : "pages/login/login", 	//聊天页
+       "style" : {
+   		"app-plus": {  // 在pages.json文件里面中配置
+   		    "softinputMode": "adjustPan"
+   		}
+   	}
+   }
+   ```
+
+   试验不知道为什么不生效。
+
+2. `input`属性`:adjust-position="false"`
+
+   ```vue
+   <input type="text" placeholder="请输入终端SN" class="input" placeholder-class="input-placeholder" v-model="keyword" :adjust-position="false">
+   ```
+
+   试验不知道为什么不生效。
+
+3. 通过`uni.getSystemInfoSync()`获取屏幕高度，计算获得`scroll-view`的最大高度
+
+   ```js
+   function getScreenHeight() {
+   	// px转rpx
+   	function pxToRpx(px) {
+   		const screenWidth = uni.getSystemInfoSync().screenWidth
+   		return (750 * Number.parseInt(px)) / screenWidth
+   	}
+   
+   	return pxToRpx(uni.getSystemInfoSync().windowHeight)
+   }
+   ```
+   
+```vue
+   <scroll-view scroll-y="true" class="scroll-Y" :style="`max-height: ${(utils.getScreenHeight() - 560)}rpx`">
+   	...
+   </scroll-view>
+```
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/51607ffcf461ab4a57a60cd78e999877.jpg" alt="img" style="zoom:50%;" />
+
+<img src="https://gitee.com/v876774538/my-img/raw/master/750484508d0fa358d22e1e30e21b6625.jpg" alt="img" style="zoom:50%;" />
+
+### 112.日期格式化
+
+格式化前：
+
+![image-20240425174737849](https://gitee.com/v876774538/my-img/raw/master/image-20240425174737849.png)
+
+格式化后：
+
+![image-20240425174755489](https://gitee.com/v876774538/my-img/raw/master/image-20240425174755489.png)
+
+```js
+const formatDate = (data, type = "string") => {
+	console.log(data, "@@@@@@@@@");
+	let regex_list = [
+		// # 2013年8月15日 22:46:21
+		/\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}/g,
+		// # "2013年8月15日 22:46"
+		/\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}/g,
+		// # "2014年5月11日"
+		/\d{4}-\d{1,2}-\d{1,2}/g,
+		// # "2014年5月"
+		/\d{4}-\d{1,2}/g,
+	]
+	let text = data.replace(/年/g, "-").replace(/月/g, "-").replace(/日/g, " ").replace("/", "-").replace(/\./g, "-");
+	console.log(text, "！！！！！！！！！！")
+	let date = "";
+	for (let i of regex_list) {
+		date = text.match(i)
+		if (!validateNull(date)) {
+			break
+		}
+	}
+	if (type == "string") {
+		if (!validateNull(date)) {
+			return date[0]
+		} else {
+			return ""
+		}
+	} else {
+		console.log(data, '@@@@@');
+		if (!validateNull(date)) {
+			if (date.length == 1) {
+				date.push(date[0])
+			}
+			return date
+		} else {
+			return []
+		}
+	}
+}
+```
+
