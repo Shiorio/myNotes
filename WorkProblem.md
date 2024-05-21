@@ -8817,3 +8817,26 @@ function priceFilter(num) {
 
 ```
 
+### 81.uniapp 滚动监听
+
+```js
+// 滚动监听
+onPageScroll(e) {
+    var _this = this
+    var temptop;
+    const query = uni.createSelectorQuery();
+    query.select('.total').boundingClientRect();
+    query.selectViewport().scrollOffset();
+    // exec执行所有的请求。请求结果按请求次序构成数组，在callback的第一个参数中返回。
+    query.exec(function(res){
+        res[0].top       // 节点距离上边界的坐标
+        res[1].scrollTop // 显示区域的竖直滚动位置
+        temptop = res[0].top;
+        if (temptop<='2') {
+            _this.topfixed = true;  
+        } else{
+            _this.topfixed = false;  
+        }  
+    })
+}
+```
