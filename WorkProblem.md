@@ -15973,3 +15973,1265 @@ const formatDate = (data, type = "string") => {
 }
 ```
 
+### 113.图片上传裁剪
+
+#### 113.1 效果
+
+![image-20250102150029729](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20250102150029729.png)
+
+#### 113.2 实现
+
+```html
+<div class="shangmi-upload ui-upload" style="position: relative;">
+  <div class="upload-view upload-list" v-if="form.touXiang" v-bind:style="{backgroundImage:'url(' + form.touXiang + ')'}"></div>
+  <div class="upload-view upload-list empty" v-else ></div>
+  <a-button v-if="type !== 'check'" type="primary" class="ui-btn" @click="showModal">上传员工照片</a-button>
+</div>
+```
+
+```html
+<a-modal v-model="visible" title="更换头像" ok-text="确认" cancel-text="取消" @ok="confirmModal" :destroy-on-close='true' :mask-closable='false'>
+  <div>
+    <label title="上传本地照片" for="chooseImg" class="touxiang-upload">
+      <input type="file" accept="image/jpg,image/jpeg,image/png" name="file" id="chooseImg" class="hidden"
+        @change="selectImg($event)">
+      上传本地照片
+    </label>
+  </div>
+  <div style="width:470px;height:300px;margin: 10px auto;">
+    <img id="touxiangimage" :src="url" style="max-width: 100%;" crossOrigin="Anonymous">
+  </div>
+  <div class="dialog-ft shangmi-upload-btn">
+    <div class="dialog-button" v-if="url!==''">
+      <span @click="rotateFun(1)">↻</span>
+      <span @click="rotateFun(-1)">↺</span>
+      <span @click="zoom(0.1)">+</span>
+      <span @click="zoom(-0.1)">-</span>
+    </div>
+  </div>
+</a-modal>
+```
+
+```js
+showModal(){
+  this.visible = true;
+  this.url = '';
+  this.cropper = '';
+  this.picDeg = 0;
+  this.$nextTick(() => {
+    this.uploadTouXiang()
+  });
+},
+// 上传头像
+uploadTouXiang: function () {
+  //初始化这个裁剪框
+    let self = this;
+      let image = document.getElementById('touxiangimage');
+    // @ts-ignore
+    this.cropper = new Cropper(image, {
+      viewMode: 1,
+      aspectRatio: 5 / 7,
+      crop(event) {
+      },
+      ready: function () {
+        self.croppable = true;
+      }
+    });
+    if (this.bendipic !== '') {
+      self.cropper.replace(this.bendipic);
+    }
+},
+```
+
+#### 113.3 完整代码
+
+```vue
+<template>
+  <div class="page">
+    <a-row>
+      <a-col :span="16">
+        <a-form-model layout="inline" class="renyuanform" ref="ruleForm" :rules="rules" :model="form" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }">
+          <a-form-model-item label="姓名" class="form-item" prop="name">
+            <a-input type="text" id="name" v-model.trim="form.name" @change="zjmShow" :disabled="type==='check'" />
+          </a-form-model-item>
+          <a-form-model-item label="手机号" class="form-item" prop="phonenumber" :required="isAdmin">
+            <a-input  type="text" v-model.trim="form.phonenumber" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <a-form-model-item label="艺名" class="form-item" prop="stageName">
+            <a-input type="text" id="stageName" v-model.trim="form.stageName" @change="ymZjmShow" :disabled="type==='check'" />
+          </a-form-model-item>
+          <a-form-model-item label="证件号" class="form-item" prop="idCard">
+            <a-input type="text" v-model.trim="form.idCard" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <a-form-model-item label="助记码" class="form-item" prop="inputCode">
+            <a-input type="text" id="inputCode" v-model.trim="form.inputCode" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <a-form-model-item label="授权密码" class="form-item" v-if="type==='add'">
+            <a-input type="text" v-model.trim="form.shouQuanPassword" onkeyup="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')" @change="passWordChange" :disabled="type==='check'" />
+          </a-form-model-item>
+           <a-form-model-item label="授权密码" class="form-item" v-else>
+            <a-input type="text" v-model.trim="form.shouQuanPassword" onkeyup="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')" @change="passWordChange" :disabled="type==='check'" />
+          </a-form-model-item>
+          <a-form-model-item label="艺名助记码" class="form-item" prop="stageZhuJiMa">
+            <a-input type="text" id="stageZhuJiMa" v-model.trim="form.stageZhuJiMa" :disabled="type==='check'" />
+          </a-form-model-item>
+          <a-form-model-item label="工号" class="form-item" prop="clerkJobNum">
+            <a-input type="text" v-model.trim="form.clerkJobNum" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <a-form-model-item label="信息卡到期日" class="form-item" prop="xinXiKaDaoQiShiJian">
+            <a-config-provider :locale="zhCN">
+              <a-date-picker v-model="form.xinXiKaDaoQiShiJian" style="width: 100%" :disabled="type==='check'" :getCalendarContainer="triggerNode => { return triggerNode.parentNode || document.body; }"/>
+            </a-config-provider>
+          </a-form-model-item>
+          <a-form-model-item label="部门" class="form-item" prop="departmentID">
+            <a-tree-select
+              v-model="form.departmentID"
+              style="width: 100%"
+              :dropdown-style="{ maxHeight: '300px', overflow: 'auto' }"
+              :tree-data="treeData"
+              :replace-fields="replaceFields"
+              placeholder="请选择"
+              tree-default-expand-all
+              :getPopupContainer="triggerNode => { return triggerNode.parentNode || document.body; }"
+              :disabled="type==='check'"
+            >
+            </a-tree-select>
+          </a-form-model-item>
+          <a-form-model-item label="暂住证到期日" class="form-item" prop="zanZhuZhengDaoQiRi">
+            <a-config-provider :locale="zhCN">
+              <a-date-picker v-model="form.zanZhuZhengDaoQiRi" style="width: 100%" :disabled="type==='check'" :getCalendarContainer="triggerNode => { return triggerNode.parentNode || document.body; }"/>
+            </a-config-provider>
+          </a-form-model-item>
+          <a-form-model-item label="状态" class="form-item" prop="status">
+            <a-select v-model="form.status" :getPopupContainer="triggerNode => { return triggerNode.parentNode || document.body; }" disabled>
+              <a-select-option :value="1">在职</a-select-option>
+              <a-select-option :value="2">离职</a-select-option>
+              <a-select-option :value="4" v-if="isOnShangmi">停职</a-select-option>
+            </a-select>
+          </a-form-model-item>
+          <a-form-model-item label="员工卡号" class="form-item" prop="clerkCardNum">
+            <a-input type="text" v-model.trim="form.clerkCardNum" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <br>
+          <!-- <a-form-model-item label="指纹1" class="form-item-min" :label-col="{ span: 15 }" :wrapper-col="{ span: 5 }">
+            <a-button type="primary" :disabled="type==='check'">添加</a-button>
+          </a-form-model-item>
+          <a-form-model-item label="指纹2" class="form-item-min" :label-col="{ span: 15 }" :wrapper-col="{ span: 5 }">
+            <a-button type="primary" :disabled="type==='check'">添加</a-button>
+          </a-form-model-item>
+          <a-form-model-item label="指纹3" class="form-item-min" :label-col="{ span: 15 }" :wrapper-col="{ span: 5 }">
+            <a-button type="primary" :disabled="type==='check'">添加</a-button>
+          </a-form-model-item>
+          <br> -->
+          <a-form-model-item class="form-item" :wrapper-col="{ span: 8, offset: 2 }">
+            <a-checkbox :checked="isOnShangmi" @change="onChange('isOnShangmi',$event)" :disabled="type==='check'">添加为商秘</a-checkbox>
+          </a-form-model-item>
+          <br>
+          <template v-if="isOnShangmi">
+          <template v-for="(fangAnItem, index) in huaDangList" >
+            <a-form-model-item :label="fangAnItem.typeName + '方案'" :key="fangAnItem.typeId" class="form-item"
+            :rules="{ required: true, message: `${fangAnItem.typeName}方案不能为空！`, trigger: ['blur', 'change'] }">
+              <a-select placeholder="请选择" v-model="huaDangFangAnIdList[index]" :disabled="type==='check'" notFoundContent='暂无数据'
+              :getPopupContainer="triggerNode => { return triggerNode.parentNode || document.body; }">
+                <a-select-option v-for="item in fangAnItem.listData" :key="item.id" :value="item.id">
+                  {{ item.name }}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </template>
+          <a-form-model-item label="考勤方案" class="form-item" prop="kaoQinFangAnId">
+            <a-select placeholder="请选择" v-model="form.kaoQinFangAnId" :disabled="type==='check'" notFoundContent='暂无数据' :getPopupContainer="triggerNode => { return triggerNode.parentNode || document.body; }">
+              <a-select-option v-for="item in kaoQinAdminList" :key="item.id" :value="item.id">
+                {{ item.name }}
+              </a-select-option>
+            </a-select>
+          </a-form-model-item>
+          <a-form-model-item label="台票方案" class="form-item" prop="taiPiaoFangAnId">
+            <a-select placeholder="请选择" notFoundContent='暂无数据' v-model="form.taiPiaoFangAnId" :disabled="type==='check'" :getPopupContainer="triggerNode => { return triggerNode.parentNode || document.body; }">
+              <a-select-option v-for="item in taiPiaoAdminList" :key="item.id" :value="item.id">
+                {{ item.name }}
+              </a-select-option>
+            </a-select>
+          </a-form-model-item>
+          <!-- <a-form-model-item label="特饮方案" class="form-item" prop="teYinFangAnId">
+            <a-select placeholder="请选择" notFoundContent='暂无数据' v-model="form.teYinFangAnId" :disabled="type==='check'" :getPopupContainer="triggerNode => { return triggerNode.parentNode || document.body; }">
+              <a-select-option v-for="item in teYinAdminList" :key="item.id" :value="item.id">
+                {{ item.name }}
+              </a-select-option>
+            </a-select>
+          </a-form-model-item> -->
+          <a-form-model-item v-if="isOnShangmi" label="押金" class="form-item" prop="yaJin">
+            <a-input-number v-model.trim="form.yaJin" :min="0" style="width: 100%;" :disabled="type==='check'" />
+          </a-form-model-item>
+          <a-form-model-item v-else label="押金" class="form-item">
+            <a-input-number v-model.trim="form.yaJin" :min="0" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <a-form-model-item label="入职日期" class="form-item" prop="riZhiRiQi" :required="isOnShangmi">
+            <a-config-provider :locale="zhCN">
+              <a-date-picker v-model="form.riZhiRiQi" style="width: 100%" :allow-clear=false :disabled="type==='check'" :getCalendarContainer="triggerNode => { return triggerNode.parentNode || document.body; }"/>
+            </a-config-provider>
+          </a-form-model-item>
+          <br>
+         </template>
+          <a-form-model-item class="form-item" :wrapper-col="{ span: 24, offset: 2 }">
+            <a-checkbox :checked="platformNeedSync" @change="onChange('platformNeedSync',$event)" :disabled="type==='check'||isOnShangmi||(form.clerk&&!!form.clerk.platformUserId)">创建APP账号
+              <span class="s" v-if="form.clerk&&(form.clerk.platformUserId||form.clerk.platformUserReason)">平台id：{{!!form.clerk.platformUserId?form.clerk.platformUserId:form.clerk.platformUserReason}}</span>
+            </a-checkbox>
+          </a-form-model-item>
+          <br>
+          <a-form-model-item class="form-item" :wrapper-col="{ span: 10, offset: 2 }">
+            <a-checkbox :checked="isGuaZhang" @change="onChange('isGuaZhang', $event)" :disabled="type==='check'">
+              开启挂账权限
+            </a-checkbox>
+          </a-form-model-item>
+          <br>
+          <template v-if="isGuaZhang">
+          <a-form-model-item label="挂账月限额" class="form-item" prop="guaZhangYueXianE">
+            <a-input-number v-model.trim="form.guaZhangYueXianE" :min="0" style="width: 100%;" onkeyup="this.value=this.value.replace(/[^1-9]/D*$/,'')" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <a-form-model-item label="挂账日限额" class="form-item" prop="guaZhangRiXianE">
+            <a-input-number v-model.trim="form.guaZhangRiXianE" :min="0" style="width: 100%;" onkeyup="this.value=this.value.replace(/[^1-9]/D*$/,'')" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <a-form-model-item v-if="isPevGuaZhang" label="挂账月余额" class="form-item">
+            <a-input-number v-model="form.guaZhangYueXianEYuE" style="width: 100%;" disabled />
+          </a-form-model-item>
+          <a-form-model-item v-if="isPevGuaZhang" label="挂账日余额" class="form-item">
+            <a-input-number v-model="form.guaZhangRiXianEYuE" style="width: 100%;" disabled />
+          </a-form-model-item>
+          <br>
+          </template>
+          <a-form-model-item class="form-item" prop="openAdmin" :wrapper-col="{ span: 10, offset: 2 }">
+            <a-checkbox :checked="isAdmin" @change="onChange('isAdmin', $event)" :disabled="type==='check' || noDelete || isAdminDis">
+              添加为操作员
+            </a-checkbox>
+          </a-form-model-item>
+          <br>
+          <template v-if="isAdmin">
+          <a-form-model-item label="账号" class="form-item" prop="loginName">
+            <a-input type="text" v-model.trim="form.loginName" :disabled="type==='check' || noDelete || isAdminDis"/>
+          </a-form-model-item>
+          <a-form-model-item label="密码" class="form-item" v-if="type==='add'" prop="password">
+            <a-input type="text" v-model.trim="form.password" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <a-form-model-item label="密码" class="form-item" v-else>
+            <a-input type="text" v-model.trim="form.password" :disabled="type==='check'"/>
+          </a-form-model-item>
+          <br>
+          <a-form-model-item label="分配操作员角色" style="width: 800px;" :label-col="{ span: 5}" :wrapper-col="{ span: 19 }">
+            <a-transfer
+              :data-source="roleListL"
+              :titles="['可选角色', '已选角色']"
+              :target-keys="roleTargetKeys"
+              :render="item => item.title"
+              :locale="locale"
+              @change="handleRoleChange"
+              :disabled="type==='check' || noDelete"
+            />
+          </a-form-model-item>
+          <br>
+          </template>
+          <br>
+          <a-form-model-item label="手机APP角色" style="width: 800px;" :label-col="{ span: 5}" :wrapper-col="{ span: 19 }">
+            <a-transfer
+              :data-source="baseAppRoleList"
+              :titles="['可选角色', '已选角色']"
+              :target-keys="appRoleTargetKeys"
+              :render="item => item.title"
+              :locale="locale"
+              @change="handleAppRoleChange"
+              :disabled="type==='check'"
+            />
+          </a-form-model-item>
+          <br>
+
+          <a-form-model-item
+            label="分配授权权限"
+            style="width: 800px;margin-top: 20px;"
+            :label-col="{ span: 5}"
+            :wrapper-col="{ span: 19 }"
+          >
+            <a-transfer
+              :data-source="authorityList"
+              :titles="['可选权限', '已选权限']"
+              :target-keys="authorityTargetKeys"
+              :render="item => item.title"
+              :locale="locale"
+              @change="handleAuthorityChange"
+              :disabled="type==='check'"
+            />
+          </a-form-model-item>
+          <br>
+        </a-form-model>
+      </a-col>
+      <a-col :span="6" v-if="isOnShangmi">
+        <div class="shangmi-upload ui-upload" style="position: relative;">
+          <div class="upload-view upload-list" v-if="form.touXiang" v-bind:style="{backgroundImage:'url(' + form.touXiang + ')'}"></div>
+          <div class="upload-view upload-list empty" v-else ></div>
+          <a-button v-if="type !== 'check'" type="primary" class="ui-btn" @click="showModal">上传员工照片</a-button>
+        </div>
+        <div class="code" v-if="type!=='add'">
+          <img :src="qrCode"/>
+          <p>场所花单收款码</p>
+          <a-button type="primary" @click="daochu">导出商秘收款码</a-button>
+        </div>
+      </a-col>
+    </a-row>
+    <img id="noneimage">
+    <a-modal v-model="visible" title="更换头像" ok-text="确认" cancel-text="取消" @ok="confirmModal" :destroy-on-close='true' :mask-closable='false'>
+      <div>
+        <label title="上传本地照片" for="chooseImg" class="touxiang-upload">
+          <input type="file" accept="image/jpg,image/jpeg,image/png" name="file" id="chooseImg" class="hidden"
+            @change="selectImg($event)">
+          上传本地照片
+        </label>
+      </div>
+      <div style="width:470px;height:300px;margin: 10px auto;">
+        <img id="touxiangimage" :src="url" style="max-width: 100%;" crossOrigin="Anonymous">
+      </div>
+      <div class="dialog-ft shangmi-upload-btn">
+        <div class="dialog-button" v-if="url!==''">
+          <span @click="rotateFun(1)">↻</span>
+          <span @click="rotateFun(-1)">↺</span>
+          <span @click="zoom(0.1)">+</span>
+          <span @click="zoom(-0.1)">-</span>
+        </div>
+      </div>
+    </a-modal>
+    <div class="footer">
+      <a-button type="primary" v-if="type!== 'check'" @click="onSubmit('save')">保存</a-button>
+      <a-button type="primary" v-if="type=== 'add'" @click="onSubmit('saveAdd')">保存并新增</a-button>
+      <a-button @click="goBack">返回</a-button>
+    </div>
+  </div>
+</template>
+
+<script>
+import Vue from 'vue'
+import axios from 'axios'
+import { ACCESS_TOKEN } from '@/store/mutation-types'
+import { clerkInitData, addClerk, checkClerk, getDelTree, upload } from "@/api/clerk/index";
+import zhCN from 'ant-design-vue/es/locale-provider/zh_CN';
+import moment from 'moment';
+var pinyin = require("pinyin");
+var Cropper = require("cropperjs");
+const token = Vue.ls.get(ACCESS_TOKEN)
+export default {
+  data() {
+    var isPhoneNumber=(rule, value, callback)=>{
+      if (!this.isAdmin && !value) {
+        callback();
+      }else if(this.isAdmin && !value){
+        callback(new Error('手机号不能为空！'));
+      }
+      const re = /^((13|14|17|15|16|18|19)+\d{9})$/;
+      const rsCheck = re.test(value);
+      if (!rsCheck) {
+        callback(new Error('请输入正确的手机号格式！'));
+      } else {
+        callback();
+      }
+		}
+    return {
+      zhCN,
+      type:"add",
+      noDelete: false,
+      isAdminDis: false,
+      visible: false,
+      qrCode:'',
+      pic: '',
+      url: '',
+      cropper: '',
+      picDeg: 0,//裁剪旋转角度
+      bendipic:'',
+      form: {
+        status:1,
+        inputCode: '',
+        stageZhuJiMa: '',
+        touXiang: ''
+      },
+      roleListL: [],
+      roleTargetKeys: [],
+      baseAppRoleList:[],
+      appRoleTargetKeys:[],
+      authorityList: [],
+      authorityTargetKeys: [],
+      locale: {
+        itemUnit: "项",
+        itemsUnit: "项",
+        notFoundContent: "列表为空",
+        searchPlaceholder: "请输入搜索内容",
+      },
+      isOnShangmi: false,
+      pevStatus: '',
+      isAdmin: false,
+      isGuaZhang: false,
+      isPevGuaZhang: false,
+      platformNeedSync:false,
+      huaDangList:[],
+      huaDangFangAnIdList: [],
+      taiPiaoAdminList:[],
+      kaoQinAdminList: [],
+      teYinAdminList:[],
+      treeData: [], //部门树数据
+      replaceFields: {
+        children:'children',
+        title: 'name',
+        key: 'id',
+        value: 'id'
+      },
+      rules: {
+        name: [
+          { required: true, message: '姓名不能为空！', trigger: 'blur' },
+          { min: 2, max: 20, message: '限制长度为2-20个字', trigger: 'blur' },
+        ],
+        stageName: [
+          { required: true, message: '艺名不能为空！', trigger: 'blur' },
+          { min: 2, max: 20, message: '限制长度为2-20个字', trigger: 'blur' },
+        ],
+        inputCode: [
+          { required: true, message: '助记码不能为空！', trigger: ['blur', 'change'] },
+          { min: 2, max: 20, message: '限制长度为2-20个字', trigger: ['blur', 'change'] },
+        ],
+        stageZhuJiMa: [
+          { required: true, message: '艺名助记码不能为空！', trigger: ['blur', 'change'] },
+          { min: 2, max: 20, message: '限制长度为2-20个字', trigger: ['blur', 'change'] },
+        ],
+        departmentID: [
+          { required: true, message: '部门不能为空！', trigger: 'change' },
+        ],
+        clerkJobNum: [
+          { required: true, message: '工号不能为空！', trigger: 'blur' },
+        ],
+        status: [
+          { required: true, message: '状态不能为空！', trigger: 'change' },
+        ],
+        phonenumber: [
+          { validator: isPhoneNumber, trigger: 'blur' }
+        ],
+        kaoQinFangAnId: [
+          { required: true, message: '考勤方案不能为空！', trigger: 'blur' },
+        ],
+        taiPiaoFangAnId: [
+          { required: true, message: '台票方案不能为空！', trigger: 'blur' },
+        ],
+        // teYinFangAnId: [
+        //   { required: true, message: '特饮方案不能为空！', trigger: 'blur' },
+        // ],
+        yaJin: [
+          { required: true, message: '押金不能为空！', trigger: 'blur' },
+        ],
+        riZhiRiQi: [
+          { required: true, message: '入职日期不能为空！', trigger: 'change' },
+        ],
+        guaZhangRiXianE: [
+          { required: true, message: '挂账日限额不能为空！', trigger: 'blur' },
+        ],
+        guaZhangYueXianE: [
+          { required: true, message: '挂账月限额不能为空！', trigger: 'blur' },
+        ],
+        loginName: [
+          { required: true, message: '账号不能为空！', trigger: 'blur' },
+        ],
+        password: [
+          { required: true, message: '密码不能为空！', trigger: 'blur' },
+        ],
+      },
+    };
+  },
+  created() {
+    this.type = this.$route.query.type;
+    if(this.type === 'edit'){
+      this.noDelete = this.$route.query.noDelete==='1' ? true : false;
+    }
+    this.getPageData();
+    getDelTree().then((res) => {
+      if (res.errorCode === 1) {
+        this.handleData(res.result);
+      } else {
+        this.$message.error(res.errorMsg);
+      }
+    });
+  },
+  components: {},
+  methods: {
+    moment,
+    //自动生成助记码
+    zjmShow: function(){
+        let name = pinyin(this.form.name, {
+          style: pinyin.STYLE_FIRST_LETTER, // 设置拼音风格(首字母)
+          // heteronym: true
+        });
+        this.form.inputCode = name.join('');
+        document.getElementById('inputCode').focus();
+        document.getElementById('name').focus();
+    },
+    ymZjmShow() {
+      let ymname = pinyin(this.form.stageName, {
+        style: pinyin.STYLE_FIRST_LETTER, // 设置拼音风格(首字母)
+        // heteronym: true
+      });
+      this.form.stageZhuJiMa = ymname.join('');
+      document.getElementById('stageZhuJiMa').focus();
+      document.getElementById('stageName').focus();
+    },
+    passWordChange(){
+      this.form.shouQuanPassword =  this.form.shouQuanPassword .replace(/[^a-zA-Z0-9]/g,'')
+    },
+    //部门树数据重构
+    handleData(data) {
+      let result = [];
+      if (!Array.isArray(data)) {
+          return result
+      }
+      let map = {};
+      data.forEach(item => {
+          map = Object.assign({},item.department);
+          if (item.sub) {
+              map.children = [];
+              map.children = this.handleSub(item.sub);
+          }
+          result.push(map);
+      });
+      this.treeData = result;
+    },
+    //部门树子级数据重构
+    handleSub(sub, mapSub = []) {
+      sub.forEach((item,index) => {
+          mapSub.push(item.department);
+          if (item.sub) {
+              mapSub[index].children = [];
+              this.handleSub(item.sub, mapSub[index].children);
+          }
+      });
+      return mapSub;
+    },
+    callBcak(res){
+      return new Promise((resolve, reject) => {
+        res.result.baseRoleList.forEach((item) => {
+          item.title = item.name;
+          item.key = item.id.toString();
+        });
+
+        res.result.baseConfirmauthorityList.forEach((item) => {
+          item.title = item.name;
+          item.key = item.id.toString();
+        });
+        res.result.baseAppRoleList.forEach((item) => {
+          item.title = item.name;
+          item.key = item.id.toString();
+        });
+        this.roleListL = res.result.baseRoleList;
+        this.baseAppRoleList = res.result.baseAppRoleList;
+        this.authorityList = res.result.baseConfirmauthorityList;
+        this.huaDangList = res.result.huaDangList;
+        this.taiPiaoAdminList = res.result.taiPiaoAdminList;
+        this.teYinAdminList = res.result.teYinAdminList;
+        this.kaoQinAdminList = res.result.kaoQinAdminList;
+        resolve()
+      })
+    },
+    getPageData() {
+      let _this=this;
+        if(this.$route.query.id){
+          let paramData = {
+            data:{id: this.$route.query.id}
+          }
+          checkClerk(paramData).then((res) => {
+            _this.callBcak(res).then(()=>{
+              this.form = Object.assign({}, res.result,{
+                id: res.result.clerk.id,
+                name: res.result.clerk.name,
+                phonenumber: res.result.clerk.phonenumber,
+                stageName: res.result.clerk.stageName,
+                idCard: res.result.clerk.idCard,
+                inputCode: res.result.clerk.inputCode,
+                stageZhuJiMa: res.result.clerk.stageZhuJiMa,
+                clerkJobNum: res.result.clerk.clerkJobNum,
+                departmentID: res.result.clerk.departmentID,
+                xinXiKaDaoQiShiJian: res.result.clerk.xinXiKaDaoQiShiJian && this.moment(res.result.clerk.xinXiKaDaoQiShiJian).format("YYYY-MM-DD"),
+                zanZhuZhengDaoQiRi: res.result.clerk.zanZhuZhengDaoQiRi && this.moment(res.result.clerk.zanZhuZhengDaoQiRi).format("YYYY-MM-DD"),
+                clerkCardNum: res.result.clerk.clerkCardNum,
+                isShangMi: res.result.clerk.isShangMi,
+                status: res.result.clerk.status,
+                fingerprint1: res.result.clerk.fingerprint1,
+                fingerprint2: res.result.clerk.fingerprint2,
+                fingerprint3: res.result.clerk.fingerprint3,
+
+                //huaDangFangAnStr: huaDangFangAnStr.slice(1),
+                riZhiRiQi: res.result.riZhiRiQi && this.moment(res.result.riZhiRiQi).format("YYYY-MM-DD"),
+                kaoQinFangAnId: res.result.kaoQinFangAnId,
+                // teYinFangAnId: res.result.teYinFangAnId,
+                taiPiaoFangAnId: res.result.taiPiaoFangAnId,
+                touXiang: res.result.touXiang,
+                yaJin: res.result.yaJin,
+
+                canGuaZhangFlag: res.result.canGuaZhangFlag,
+                guaZhangRiXianE: res.result.guaZhangRiXianE,
+                guaZhangYueXianE: res.result.guaZhangYueXianE,
+                guaZhangRiXianEYuE: res.result.guaZhangRiXianEYuE,
+                guaZhangYueXianEYuE: res.result.guaZhangYueXianEYuE,
+
+                openAdmin: res.result.openAdmin,
+                hadAdminData: res.result.hadAdminData,
+                shouQuanPassword: res.result.shouQuanPassword,
+                loginName: res.result.loginName,
+                // password: res.result.clerk.password,
+
+              // roleIdList: res.result.selectRoleList,
+              // confirmAuthorityList: res.result.authorityTargetKeys
+              });
+              this.isOnShangmi = res.result.isShangMi ===1 ? true : false;
+              this.platformNeedSync= res.result.clerk.platformNeedSync ===1? true : false;
+              this.isGuaZhang = res.result.canGuaZhangFlag ===1 ? true : false;
+              this.isAdmin = res.result.openAdmin ===1 ? true : false;
+              this.appRoleTargetKeys=!!res.result.clerk.rolesid?res.result.clerk.rolesid.split(','):[];
+              _this.authorityTargetKeys=res.result.selectConfirmauthorityList.map(item =>item.id.toString())||[];
+              _this.roleTargetKeys=res.result.selectRoleList.map(item =>item.id.toString())||[];
+              this.huaDangFangAnIdList = [];
+              res.result.huaDangList.map(item =>
+                this.huaDangFangAnIdList.push(item.selectTypeValueId)
+              );
+              //原来开启添加商秘，则另存原状态
+              this.pevStatus = this.isOnShangmi ? res.result.clerk.status :'';
+              //原来有挂账权限，则另存原内容
+              this.isPevGuaZhang = this.isGuaZhang;
+              if(this.type==="edit" && res.result.openAdmin ===1){
+                this.isAdminDis = true
+              }
+              _this.qrCode= res.result.qrCode;
+            })
+          })
+        }else{
+          clerkInitData().then((res) => {
+            if (res.errorCode === 1) {
+              _this.callBcak(res)
+            } else {
+              this.$message.error(res.errorMsg);
+              this.goBack();
+            }
+          });
+        }
+    },
+    onChange(type,e){
+      if(type === 'isOnShangmi'){
+        this.isOnShangmi = e.target.checked;
+        if(e.target.checked){
+          this.platformNeedSync =true;
+          this.form.riZhiRiQi = null;
+           this.$nextTick(function () {
+             if(!this.appRoleTargetKeys.includes('-1')){
+               this.appRoleTargetKeys.push('-1')
+             }
+            this.form = Object.assign({},this.form,{
+              riZhiRiQi: this.moment().format("YYYY-MM-DD")
+            },)
+          });
+          if(this.pevStatus){
+            this.form.status = this.pevStatus;
+          }
+        }else{
+          this.platformNeedSync =false;
+          this.form.riZhiRiQi = '';
+          this.form.status = this.form.status===4 ? '' :this.form.status;
+        }
+      }else if(type === 'isGuaZhang'){
+        this.isGuaZhang = e.target.checked;
+      }else if(type === 'platformNeedSync'){
+        this.platformNeedSync = e.target.checked;
+      }else{
+        this.isAdmin = e.target.checked;
+      }
+    },
+    showModal(){
+      this.visible = true;
+      this.url = '';
+      this.cropper = '';
+      this.picDeg = 0;
+      this.$nextTick(() => {
+        this.uploadTouXiang()
+      });
+    },
+    // 上传头像
+    uploadTouXiang: function () {
+      //初始化这个裁剪框
+        let self = this;
+          let image = document.getElementById('touxiangimage');
+        // @ts-ignore
+        this.cropper = new Cropper(image, {
+          viewMode: 1,
+          aspectRatio: 5 / 7,
+          crop(event) {
+          },
+          ready: function () {
+            self.croppable = true;
+          }
+        });
+        if (this.bendipic !== '') {
+          self.cropper.replace(this.bendipic);
+        }
+    },
+    //图片旋转
+    rotateFun(num) {
+      num === 1 ? this.picDeg += 45 : this.picDeg -= 45
+      this.cropper.rotateTo(this.picDeg);
+    },
+    // 图片放大
+    zoom(num) {
+      this.cropper.zoom(num);
+    },
+    getObjectURL(file) {
+      var url = null;
+      if (window.createObjectURL != undefined) { // basic
+        url = window.createObjectURL(file);
+      } else if (window.URL != undefined) { // mozilla(firefox)
+        url = window.URL.createObjectURL(file);
+      } else if (window.webkitURL != undefined) { // webkit or chrome
+        url = window.webkitURL.createObjectURL(file);
+      }
+      return url;
+    },
+    selectImg: function (file) {
+      file = file.target.files;
+      if (file[0].size/1024/1024>1){
+        this.$message.info('文件上传过大,请选择小于1M得文件上传！');
+        return false;
+      }
+      if (!file.length) return
+      this.url = this.getObjectURL(file[0]);
+      this.bendipic = this.url;
+      //每次替换图片要重新得到新的url
+      if (this.cropper) {
+        this.cropper.replace(this.url);
+      }
+    },
+    getRoundedCanvas: function (sourceCanvas) {
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+      var width = sourceCanvas.width;
+      var height = sourceCanvas.height;
+      canvas.width = width;
+      canvas.height = height;
+      context.imageSmoothingEnabled = true;
+      context.drawImage(sourceCanvas, 0, 0, width, height);
+      context.globalCompositeOperation = 'destination-in';
+      context.beginPath();
+      // 下行代码改变图片变成圆形
+      // context.arc(width / 2, height / 2, Math.min(width, height) / 2, 0, 2 * Math.PI, true);
+      context.fill();
+      return canvas;
+    },
+    postImg: function (url) {
+      //这里对base64串进行操作，去掉url头，并转换为byte
+      let bytes = window.atob(url.split(',')[1]);
+      let array = [];
+      for (let i = 0; i < bytes.length; i++) {
+        array.push(bytes.charCodeAt(i));
+      }
+      let blob = new Blob([new Uint8Array(array)], { type: 'image/jpeg' });
+      let formData = new FormData();
+      formData.append('file', blob, Date.now() + '.jpg');
+      formData.append('session',token)
+      return new Promise((resolve, reject) => {
+        let config = {
+            headers: {'Content-Type': 'multipart/form-data'},
+        };  //添加请求头
+        axios.post(process.env.VUE_APP_API_BASE_URL+'base/file/upload', formData, config).then(res => {
+          resolve(res);
+          this.form.touXiang = res.data.result.thumbUrl;
+          this.pic = res.data.result.url;
+        })
+      });
+    },
+    confirmModal() {
+      let croppedCanvas;
+      let roundedCanvas;
+      if (!this.croppable) {
+        return;
+      }
+      // Crop
+      croppedCanvas = this.cropper.getCroppedCanvas();
+      console.log(this.cropper)
+      // Round
+      roundedCanvas = this.getRoundedCanvas(croppedCanvas);
+      this.headerImage = roundedCanvas.toDataURL();
+      this.postImg(this.headerImage);
+      this.hideModal();
+    },
+    hideModal() {
+      this.visible = false;
+    },
+    goBack() {
+      this.$router.go(-1);
+    },
+    handleAppRoleChange(nextTargetKeys, direction, moveKeys) {
+      this.appRoleTargetKeys = nextTargetKeys;
+    },
+    handleRoleChange(nextTargetKeys, direction, moveKeys) {
+      this.roleTargetKeys = nextTargetKeys;
+    },
+    handleAuthorityChange(nextTargetKeys, direction, moveKeys) {
+      this.authorityTargetKeys = nextTargetKeys;
+    },
+    onSubmit(type) {
+      this.$refs.ruleForm.validate(valid => {
+        if (!valid) {
+          return false;
+        }else{
+          let huaDangFangAnStr = '';
+          this.huaDangList.forEach((item,index)=>{
+            huaDangFangAnStr += ','+item.typeId+'-'+this.huaDangFangAnIdList[index];
+          })
+          this.huaDangFangAnIdList
+          const updata = {
+            data: Object.assign({},{
+              flag: this.type === 'add' ? 'add' : 'editor',
+              clerk: {
+                id: this.$route.query.id ||'',
+                platformNeedSync:this.platformNeedSync ? 1 : 0,
+                name: this.form.name,
+                phonenumber: this.form.phonenumber,
+                stageName: this.form.stageName,
+                idCard: this.form.idCard,
+                inputCode: this.form.inputCode,
+                stageZhuJiMa: this.form.stageZhuJiMa,
+                clerkJobNum: this.form.clerkJobNum,
+                departmentID: this.form.departmentID,
+                xinXiKaDaoQiShiJian: this.form.xinXiKaDaoQiShiJian && this.moment(this.form.xinXiKaDaoQiShiJian).format("YYYY-MM-DD"),
+                zanZhuZhengDaoQiRi: this.form.zanZhuZhengDaoQiRi && this.moment(this.form.zanZhuZhengDaoQiRi).format("YYYY-MM-DD"),
+                clerkCardNum: this.form.clerkCardNum,
+                isShangMi: this.isOnShangmi ? 1 : 0,
+                status: this.form.status,
+                fingerprint1: '',
+                fingerprint2: '',
+                fingerprint3: '',
+                rolesid:this.appRoleTargetKeys.toString()
+              },
+              shangMiParam: {
+                huaDangFangAnStr: this.isOnShangmi ? huaDangFangAnStr.slice(1) : '',
+                riZhiRiQi: this.isOnShangmi ? this.form.riZhiRiQi && this.moment(this.form.riZhiRiQi).format("YYYY-MM-DD") : '',
+                kaoQinFangAnId: this.isOnShangmi ? this.form.kaoQinFangAnId : '',
+                // teYinFangAnId: this.isOnShangmi ? this.form.teYinFangAnId : '',
+                taiPiaoFangAnId: this.isOnShangmi ? this.form.taiPiaoFangAnId : '',
+                touXiang: this.form.touXiang,
+                yaJin: this.isOnShangmi ? this.form.yaJin : '',
+              },
+              authorityInfo: {
+                canGuaZhangFlag: this.isGuaZhang ? 1 : 0,
+                guaZhangRiXianE: this.isGuaZhang ? this.form.guaZhangRiXianE : '',
+                guaZhangYueXianE: this.isGuaZhang ? this.form.guaZhangYueXianE : '',
+              },
+              authorityinfoParam: {
+                openAdmin: this.isAdmin ? 1 : 0,
+                hadAdminData: this.form.hadAdminData || 0,
+                shouQuanPassword: this.form.shouQuanPassword,
+              },
+              user: {
+                id: this.form.userId ||'',
+                loginName: this.isAdmin ? this.form.loginName : '',
+                password: this.isAdmin ? this.form.password : '',
+              },
+              roleIdList: this.isAdmin ? this.roleTargetKeys : [],
+              confirmAuthorityList: this.authorityTargetKeys
+            })
+          }
+          addClerk(updata).then((res) => {
+            if (res.errorCode === 1) {
+              this.$message.success('人员保存成功！');
+              if(type==='save'){
+                this.$router.go(-1);
+              }else{
+                this.$refs.ruleForm.resetFields();
+                this.form.touXiang = '';
+                this.isOnShangmi = false;
+                this.isGuaZhang = false;
+                this.isAdmin = false;
+                this.huaDangFangAnIdList = [];
+                this.roleTargetKeys = [];
+                this.authorityTargetKeys =[];
+              }
+            } else {
+              this.$message.error(res.errorMsg)
+            }
+          })
+        }
+      });
+    },
+    daochu(){
+      let image = new Image();
+      // 解决跨域 Canvas 污染问题
+      image.setAttribute("crossOrigin", "anonymous");
+      image.onload = function() {
+        let canvas = document.createElement("canvas");
+        canvas.width = image.width;
+        canvas.height = image.height;
+        let context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0, image.width, image.height);
+        let url = canvas.toDataURL("image/png"); //得到图片的base64编码数据
+        let a = document.createElement("a"); // 生成一个a元素
+        let event = new MouseEvent("click"); // 创建一个单击事件
+        a.download = name || "photo"; // 设置图片名称
+        a.href =url; // 将生成的URL设置为a.href属性
+        a.dispatchEvent(event); // 触发a的单击事件
+      };
+      image.src = this.form.qrCode;
+    },
+  }
+};
+</script>
+
+<style lang="scss">
+.ant-col-6 .code{text-align: center;}
+.s{margin-left: 5px;color: red;}
+.renyuanform {
+  max-width: 1200px;
+  min-width: 900px;
+  padding-left: 20px;
+  .form-item {
+    width: 40%;
+    margin-bottom: 15px;
+  }
+  .form-item-min{
+    width: 15%;
+    margin-bottom: 15px;
+  }
+}
+.footer {
+  margin-top: 30px;
+  text-align: center;
+  .ant-btn {
+    margin-right: 15px;
+  }
+}
+.shangmi-upload {
+  position: relative;
+}
+
+.shangmi-upload > input {
+  position: absolute;
+  top: -999em;
+  left: -999em;
+  opacity: 0;
+}
+
+.upload-view {
+    background: center no-repeat;
+    overflow: hidden;
+    width: 210px;
+    height: 300px;
+    background-color: #EBEBEB;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #AAAAAA;
+    background-size: cover;
+    background-position: center;
+    margin: 0 auto;
+}
+.upload-view.empty::after {
+  width: 98px;
+  height: 152px;
+  content: '';
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 98 152"><image width="98" height="152" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGIAAACYCAYAAAAfrDxxAAAACXBIWXMAAAsSAAALEgHS3X78AAAWGklEQVR4Xu2deXxU5bnHv+fMktkySxYgbEYJssiiVFS0QrUfoq1Le/3crvfaa23T6+1tb71ttXWpn9al/bj31lKVVuBTF1zSKotSUVBRDBABQUC2hIQEAmSdyUwyyZzl/jEMJjDJmTlzZknS758zz8yceX/nfZ73fd7nfY+gqiq5zp9/01AYCsjjWpsinlBAsne0SJaOVkmIhBWhJ6wAkGcXsdpE1VtkVr1Fll6n29RdPNba4XSbGm6+e7xf4yeyjpCLQtz1zf3iuLNt5zTV90zYtz3k7GiJCFqfGYyisVZlygXOYOEYS/3KZ07Ur22em3N/OqeEWPpAo/toXc/M7RsCvkCblFLjD0RRiVWddVl+S+Foy86KX0/o0rLPFDkhxPOPHvXu2hy8YMcHAZcUycz15NlELljg7pg+17Xtmz8pCWnZp5usCvHMfY2Wxprw3I/W+Qtjvj7TON0mLrzS06QqbLv7mUnZuQiyKMRTdx+eWPWPjplN9T2ilm0mOGe6Q76o3LP15rvGH9eyTQcZF+L+79UIiqJe/OGajmJFzuxva2GxClx2ja/xzsWTtmvZGk1GhVj6QGPejo2dC/ZUB/O0bLPJhVd4gtMudL5/4+3jJC1bo8iYEEseaHRtfL19fsOBsEnLNheYMscZueiLnvU33j6uV8vWCMxaBkaw5IFG1/sr2xccqQ3nRDxIhH3bQhZV4UogI2KkvWFeePyo7YPVQ0uEGPs/Dlm2rPNfuWFlW9p7cVob59mHjojVb/sXNB4ceiLE2LctZPn4/c7LtOxSJa0NVLO7+9LdW4JWLbtc5x8vNHs2v9UxWcsuFdImxKI76suq1rT7tOyGAlKvyvsr26cAbi1bvaRFiGW/PWLbsKJ9aoYGZBlhw8o2IdylzAHSkgNLixA1u7oubm9OLWOaa4S7FA7sCOUDZ2vZ6sFwIZbc3zhmy7qOtHXhbFK3txtgCmDTME0aw4XYtTk4S81a6iy9hAIyROdekzRMk8ZQIRbdUT9m16bOnE5fpILLc2o6UQoYOho0VIgjNT3TtWyGMqMnnrrHROCcQUyTxjAhnr6nwb5jY8CpZTdUMVsFZlyc3/elCRg4gjJMiM52aUqkdxiNV0/j8mt92J39mssGFA1gnjSGCVG/v3uMls1QRRDhaz8qiffW2Hgv6sEQIZ761WFLza4ui5bdUOW6746ibKYj3lvF8V7UgyFChLuUs6Rh6pbKZjmo+PWEgd62A4bERUOECAXkUVo2Q5GxpXnc++xk8myDNlPhYG8miiFCtBztNeSuyCXOnmbnkRVTKRqrOV3oN5TSizFCNEU0r3YoMf/6Av7vH9MTEQEMck2GLJW2Hu81RNBs4yk08+OHzmL+9QVapn1xaRkkQspCPPGLevtQD9R5NpEbbhnN139cgtOd9KpoQt1Gi5SFQE0tE2m2CvxLxWjWLm/B35ax6hUACsdYuO67o7j2plG4C3Q3he4P9iXlL5EiakpJvrlXeqj49QRuunM81W938O5rbVSv88cynYbjKTRz8UIvV9xQwAXz3YimlLMUAtFYm1LOOWUh7E4xpQu44obo6M9iFbj0yz4u/bIPWVL5dGuIXZs62bs1SM2ubo439Gh805mIJoExE61MnuVk2oUuZlziYvIsJ0IORrSUhejtUXXX/AgiXHjFmWtIJrPAjItdzLj4szjYHVI4friHE0d68bdE6OyQCQU+c2UWq4jVLuItNOMpNFM8zsrYUhtma8p3vBYqKfYGMEAIQST5W/Uk58524vImdgl2p0jpNDul0+xappnGkMCWcif98YNndZvM+u66WZcaMhfKNro9Ql9SFgKgqMSqq2tOnm3IXCjbBLUMEsEQIQrHWHTdFWWz4mY0hxqG7DYySoikL0YQYczElEa+uUKnlkEiGCJEvs98QsvmdIpKrJgt+mJLjtGqZZAIhggBHE52mOgtGhbrSN3kkmu69dHS3rKZjqTihI6cTi7SrGWQKIYIATD2bFtSmwAdLsN+Opsc0TJIFMNaw1tk3mvNS/zresJDO2MLhDEoPoCBQtxy38TwjEtcCe/k783SvmoDaSCa3jAEw4QAKJ1q361lE6OjJaJlksvIQK2WUTIYKsQt9088Nn2uK6xlB9B+YugKIUXUwxiU2ohhqBAA0+e6Pkkkxx/0y7QNQTG6gzLfuXDn6PLi6tFatslguBA/+M2EY3PmuwNadgCHdiccUnKGpb89QsvRXgdwUXlx9SXlxdWGZC4NFwLgnBmOzb5ii2Yg27XZkHxZxjj4SRerlvZLIhQDC8qLq2eUF1enNENNixDfv2d8eN7V3n1adtveS6jj5AQ93QoP/rAWWTrj/hKIbuf6YnlxdWl5cbW2X45DWoQAuPWx0gPzrva2DWazd2uQ5iOGxry08cTt9dRHt24NhAWYSbSHJF0TmzYhAMpmOqqmzHEO2NKqCuteMWxOlDbWPNfM2hdbtMxi5AOXlBdXzy0vrk54wSWtQtx4+zhlznz3exPPtQ9YkrFy6QlyuS7K39bDyqXHtMziMQb4Qnlx9fTy4mrN9eCMnE6jdSjKTx4p5Zr/SLo3p51IJEJnZyeKorL+5QAvPtZG0K8rI9AD7AUaBjrYMSNCQFSMqjUd8+v3dZ+RdvUUmlm6aWbChQSZICZC3/YJBRRefKyNdS8H0Llz1g/sXts89wx/nDEhAJ596Ih1+4bAgl2bg2dUB171rSJ+9oe07CVPmnA4TCg08DJD3Z4eltzbyoGPE0oixOMo8Ona5rmnJlIZFQLgxScOeVqOctnqpa2m04+Su+2PZ7PwG4ZtS0saVVUJhUL09CRWIbThtU5eeLgNf6uuqkQFqAEOrG2eK2dMiBXL6s15NuFzsy93jLLaBA7uiPD0nc001nx2V5ktAvcvP5c5CzJ/cIEkSQSDQWQ5uUbtDiq88kQ7a58LIOs7ozAsCMLejAjx2pL6qeddYptUMNrcL1hHelXeWBLk1adaOXW0tE3k7iWTuHihN+53GY2qqnR1dREO63YzADQe7GXpva3s2TLoXOMMBEEMOuxOIa1CvLTo0JjJ59vOP2uqddDpv79F4bWnArz9cjtSr4ogws13jedr/z3GiCLhuKiqSjgcpru7GyPboOqNIM892Ebbca0CQCFst9kliyXPBUTSIsTyPxxyjim1zJ05z56fTMFvoFXl7ReDrK/soLUpwtTPOfmfh0sH2tGpC1mW6enpIRwOGypAX3rCKq/+qZ3Xl/qJc7KzbLXkBW02u6fPfnljhXj20VpTwWjzBbMvt5fYU1iTVhX4dEsvH63rZus7nZTNdPCV74/m/M+7dVVyy7JMJBKhp6cHSdK6U43j2OEIy+5rZcf70cGRyWT2O+xOlyCIpw/hjRPilSfrJs+8zH5u8TizjqYanJajMrWfSHS2K5ScZaOoJA9PoRmX24y7IOr1VFVFVVUURUGWZRRFQZIkJElCUfQN+o1i+7u90qKf+iWTyTzQpp5IyjOo5x6vLZ4823bBlV/PT1vZXtFYE0Vj+95EvUAvERVaczhVZbFYcDqd2G2dZpMpNGhb6xZi2YM1tnGTrHPLv+326q0GH66YTCYcDgdWa3R73aq/aKf7kxZi8W8OCqMmWM6/4l/zx7m8aRrSDFEEQcBut2O3f7aHIxSIcHCHdqo/KSGW/+FQ6bxrXNPHnm0ZFmV6RpKXl4fD4UAU+4fInVWJLQcnJMRfH6ktOPs865zyf3Pn3HadbGM2m3E6nZjN8Zty9V8Se7zRoEKUF1eb5n3ZNeM/f1s8Mc/2Ty/UF1EUcTgc5OUNPEbpCkrs26rtlmAQIcqLq8cB06veCNqO1UX4zp2FTL0wpS3VwwJBELDZbNjtdgRh8Jtz9+bEC8XPmEeUF1d7gRlAv1OMBQEu+ZKLb/+8gKKxCXm0YYfVasXpdJ4RBwbinm81sGdzQpnczyZ05cXVNmAaMH6wT1htAtfe7OX6H3gZKe7KbDbjcDiwWBKvmAl3Sfz7jDotsxgRYWHRFpHoOaaTgYRHQwWjzXzr5wV8/jpDzgTJSURRxG63Y7Ml75K3bwjwwE0Jb6SKiPmKMg+YShIiALQdl1h02wnu+cYRanYm1P2GFDabDa/Xq0sEgNVLtCdxfRELFKVgvCQFraqqqzUP7OjhV984wpO/bKb9RHKLKrmIxWLB6/XidDo1g/FAhLsldmxIbn1DBDCBq0SW80bLst+k4zgDVY0uG/706gZee7qDSI8xicRMYjKZcLvduN1uTKaknMMZ7N+W3OIQnFbXZFNVz3hJUnyKEtBzL4S7FF56vI2fX9PA5jcTH7plE0EQcDqdeL3epILxYKz5a3JuCeIXmJndiuKeIEndTlXV1ZonGiV+/5Pj3HvjUer3JjahyQapxoF49IZlqt9KsUf0RQB7kSw7x0lSp1XVdwLNp9Vh7rihkT/f00ygLXfih8ViwePxJDUnSJR92xPLLZ2O5lWYIb9Eli2jZNkv6okfCqx/uZP/vaqB1Uv88aqpM4YoiuTn5+N2uwfMDaXKW8uTd0uQgBAnEeyq6pkgSbJXUXT9UlenwvMPtXLbtY1se0ffXaMXQRBwOBx4vd5TawTpINIr8+Hq5N0SJC5EDIvnZPxwqKqu1myqi/Dwfx3jd99vovGgLo+XFHl5eXi93oRyQ6lyYIeuJgGSFwIAEezFsuwYK8sBi6rq2gi384NufvmVIyy7v5VQIGmPp4nZbMbj8eByuQyPAwPx5nP6z0dJ6QotquoeK8um4mj8SNr5y7LKm8/5uXXhYd58PoBiQDwXRRGXy4XH40lbHIiHFFH4cHWGe8RpiI5o/Ih4dMaPoF9h2X0t/OIrjezcqM/HAtjtdrxe76BrBOmiZlcXqRTEGCFEDKs3Gj9CdlXV1ZqNB3v53feaeOSHxzhWn7jHs1qteL1eHA5H2uPAQLy1XL9bAjDNsX1vipZRMghgdaqqxaGqgbAgmBQh+ZKwpkMR1r3USTikUjY7D8sARxCZTCby8/Ox2+0ZiwPxkCIKj/3oRCo9Qknb1VtV1T1OlsUiWfYLOuKHFFFZ9UwHt17VwDuvdPb7k+lIS6RC3b5uUq1hS5sQJxGdJ+OHW1F09d1Aq8ziXzVzxw2N7Nsaxmaz4fP5DE1LpMq6F3X9tX6kWwgg6q58ipI/QZJCNlVNLj98ksN7I12P3BLoMol5WYsD8ZAlhXUvp75xPyNCxBDBOVqWbSXRdHui1cCRPKstkO/yOkQsjlXPtGvZZ5S6vd0oif6TQcioEDGs0XS7UKgo/kHubdVstvjzXV5TXp791BaiV37vJ9SZ+Igq3Wx4NXW3BFkS4iQml6J4JkhS2KUo/fq2KIqdLqc74rC7PMJpoy5Fgb//KTd6hSwrvPlc6m4JsisEAALYChXFNV6SgnnQabc7Qy6nJ18UTQNm51Y8HSDQnv48lRaH93cjGdQ5sy5EDBO4CkSzZDFbEzo2Yfmjgx7zkRHe+7sxvQFySIhkeeuFIO3NuuodDEFRVNY+/08hAFh2f/Z2qTTWdNNr4EmdQ1qIjau6aGnKTq9471XjegMMcSEAnr7LsMOIE0ZRVNYsM2bYGmPIC7H93TBH63Qle3XTVB821C3BMBAC4Ok7Ez7UyhDeX2Fsb4BhIsTuTT3U79O/OpYMqqLy+pJ/CjEgT/4yM72i6XCY7qCxbgmGkRAHd/RyYIeuwsSk2LQmPb8xbIQAePKOlrSdrwEQ6WhlxWJdy/KaDCshDu+N8OlHxo7vAZTeMPIbi2ld+iQhfWf6aTKshABYdFsrimJMr1AVBWn7OsSHb8T00Ro21c3S+ohuMlf4kyGOH5b45MMgsz+f2pHdUsM+TH9/FLM/OmFUTRZWvVem8Sn9DDshAJ74WQuLP3TpOnRLDrQhrHgC86GP+73e7JyBP5C+utlhKURHs8xH6wNctNCjZXoKJdKL+u6LmKpejfv+pvr0uSUYpkIALLq9lc9V52PSOD5KVVXkXR9gXvVHkOIvNqmimZXvnBv3PaMYtkKE/Aob3/Az//p++/b7IR2twfS3RzC3D37kdJtrGh1pdEswjIUAWHxnG5d+yYPZ0r9XyEE/wupFmPdXD/DJ/mxunK1lkjLDbvjal3CXyrpXPis0UKQI8rsvYXrsu4gJiqCKZla8M1XLLGWGdY8AWHZvB1/4aj6mwx9jfu1x6E2uvq3dNYXW9rRXl6vDXohIr8rau9dwnXeZlmlcth5L72gJaAL2DHshAJ5dNZ2FPxyPrbNRy7Q/osir66dpWeklAOyqrC1rhWEeI2IossCqmqu0zM6g3TWVEy2GH9rWC+wENsREgBEiBMAra6YQcif3WITtJ2ZqmSRD7HT89ZW1ZfWVtWX9EmIjRghFFfjbniR6hSCw4j3D3NJx4N3K2rI9lbVlcWsDR4wQACvfnkTAndgM2Z9/LkeaEio6HIxOYFNlbdmWytqyQVeURpQQAMu3JdYrtp1IaRIXAXYB71XWliVU7zMiRk19eeuDiXx9znR8gT2DWAm8vlGXW1KBemDvQC5oIEacEABLN17NT2cOLESnexJ1DUkfkdcM7K6sLdNV4jEihfhwawk3Xjqb4s4dcd//uPX8uK8PQAjYU1lbputhdTFGXIyIsXj91fR5kEYfBFZsOC/O62cgAXuIjoZSEgFGaI8A2L67iKNXzGVscEu/10Pu0kTc0mGiccCwCugR2yMAnl77RU5/RMvOjkHdUhvRGfEOI0WAEdwjAHbvL6Bu4TxKQxtPvTaAW+omGgeOxnvTCEZ0jwB46vUrUMXo/Rhyl3Kwrt86t0z0GaPvpFMEiPaIY0SfNDsiOVjn4aD1ciaH32FPoF/KuxH4tLK2LLkFDJ2If26fVw1sIjodH5E8uWo+qjmPVRtnALQDH1TWlm3PlAjQ57T8Cl+VAJxF9HjqrJw00mu1tYec+QOv9qeRm776ibzstZk7K2vLkly0MIYzHltQ4auyAFOAUuIPtNNGloQ49fDWytoyA85Q08eAz6Gr8FW5gPOAUXEN0kAWhDhKNA5kZpfLIGg+ELDCVzWaqCAp54S1yKAQfqJ5oeztDz4NTSEAKnxVIlFXdS5pjB8ZEOLUI+9PXyHLNgkJEaPCV2UlGswnkob4kUYhFOAQsL+ytsyAQ32MJykhYlT4qtxEn0NUqGWbDGkS4hjRWXF69lwZhC4hYlT4qkqA6YAhzzk2WIhOonEgoRWybJOSEHAqfkwCykgxd2WQEBGiceCMSolcJmUhYlT4qmxE48cELduBSFEIFagD9iW7TJkLGCZEjApfVdzn2CVCCkKktEyZCxguRIwKX9U4ovEj4XNBdQgRIirAcS3DXCdtQgBU+KpMRGNHGQmk3JMQQgL2AXWVtWXp2W+bYdIqRIwKX5Wd6FMfxw1ml4AQKtFlyn1Gr5Blm4wIEaPCV1VANH7E3WWoIUQr0erp9Gz9zzIZFQJOpdvHE+0h/XaADCBEF9EJWRPDmIwLEaPCV2Um+nzUczgZP04TQgYOADXDJQ4MRtaEiFHhq3IQze6O6SNEA9FylYytkGWbrAsRo8JXVdSTZy/pcrgaKmvLOrTshxv/D+QnT5d323nyAAAAAElFTkSuQmCC" style="opacity:0.30000001192092896;isolation:isolate"/></svg>') no-repeat center;
+  background-size: contain;
+  margin-right: 10px;
+}
+
+.shangmi-upload > button {
+  margin: 30px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.upload-button::before{
+  content: '';
+  width: 17px;
+  height: 14px;
+  display: inline-block;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 17 14"><path d="M15.3,2A1.72,1.72,0,0,1,17,3.77v8.5A1.72,1.72,0,0,1,15.3,14H1.7A1.72,1.72,0,0,1,0,12.27V3.77A1.72,1.72,0,0,1,1.7,2H3.5A1.93,1.93,0,0,1,5.2,0h6.6a1.93,1.93,0,0,1,1.7,2ZM5.2.89A1.08,1.08,0,0,0,4.37,2h8.25A1.07,1.07,0,0,0,11.79.89ZM16.12,12.27V3.77a.84.84,0,0,0-.83-.84H1.7a.84.84,0,0,0-.83.84h0v8.5a.84.84,0,0,0,.83.84H15.3a.84.84,0,0,0,.83-.84h0ZM12.31,7.89A3.81,3.81,0,1,1,8.5,4a3.85,3.85,0,0,1,3.81,3.88Zm-3.81,3a3,3,0,1,0-2.94-3v0a3,3,0,0,0,2.94,3Z" style="fill:#fff"/></svg>') no-repeat center;
+  background-size: contain;
+  margin-right: 10px;
+}
+.shangmi-upload-btn { border-left: none; border-right: none; border-bottom: none; }
+.shangmi-upload-btn span { border: 1px solid #96c; font-size: 18px; margin: .0 1rem 0 0; color: #96c; width: 2rem; text-align: center; height: 2rem; line-height: 2rem; display: inline-block; cursor: pointer; }
+.touxiang-upload { background-color: #9966cc; border-color: #714998; color: #fff; padding:6px 10px; margin-bottom: 10rem;}
+.touxiang-upload input { opacity: 0; position: absolute; width: inherit;left: 0;}
+/* 头像上传 */
+.cropper-container {
+  direction: ltr;
+  font-size: 0;
+  line-height: 0;
+  position: relative;
+  -ms-touch-action: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.cropper-container img {
+  display: block;
+  height: 100%;
+  image-orientation: 0deg;
+  max-height: none !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  width: 100%;
+}
+
+.cropper-wrap-box,
+.cropper-canvas,
+.cropper-drag-box,
+.cropper-crop-box,
+.cropper-modal {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.cropper-wrap-box,
+.cropper-canvas {
+  overflow: hidden;
+}
+
+.cropper-drag-box {
+  background-color: #fff;
+  opacity: 0;
+}
+
+.cropper-modal {
+  background-color: #000;
+  opacity: 0.5;
+}
+
+.cropper-view-box {
+  display: block;
+  height: 100%;
+  outline: 1px solid #39f;
+  outline-color: rgba(51, 153, 255, 0.75);
+  overflow: hidden;
+  width: 100%;
+}
+
+.cropper-dashed {
+  border: 0 dashed #eee;
+  display: block;
+  opacity: 0.5;
+  position: absolute;
+}
+
+.cropper-dashed.dashed-h {
+  border-bottom-width: 1px;
+  border-top-width: 1px;
+  height: calc(100% / 3);
+  left: 0;
+  top: calc(100% / 3);
+  width: 100%;
+}
+
+.cropper-dashed.dashed-v {
+  border-left-width: 1px;
+  border-right-width: 1px;
+  height: 100%;
+  left: calc(100% / 3);
+  top: 0;
+  width: calc(100% / 3);
+}
+
+.cropper-center {
+  display: block;
+  height: 0;
+  left: 50%;
+  opacity: 0.75;
+  position: absolute;
+  top: 50%;
+  width: 0;
+}
+
+.cropper-center::before,
+.cropper-center::after {
+  background-color: #eee;
+  content: ' ';
+  display: block;
+  position: absolute;
+}
+
+.cropper-center::before {
+  height: 1px;
+  left: -3px;
+  top: 0;
+  width: 7px;
+}
+
+.cropper-center::after {
+  height: 7px;
+  left: 0;
+  top: -3px;
+  width: 1px;
+}
+
+.cropper-face,
+.cropper-line,
+.cropper-point {
+  display: block;
+  height: 100%;
+  opacity: 0.1;
+  position: absolute;
+  width: 100%;
+}
+
+.cropper-face {
+  background-color: #fff;
+  left: 0;
+  top: 0;
+}
+
+.cropper-line {
+  background-color: #39f;
+}
+
+.cropper-line.line-e {
+  cursor: ew-resize;
+  right: -3px;
+  top: 0;
+  width: 5px;
+}
+
+.cropper-line.line-n {
+  cursor: ns-resize;
+  height: 5px;
+  left: 0;
+  top: -3px;
+}
+
+.cropper-line.line-w {
+  cursor: ew-resize;
+  left: -3px;
+  top: 0;
+  width: 5px;
+}
+
+.cropper-line.line-s {
+  bottom: -3px;
+  cursor: ns-resize;
+  height: 5px;
+  left: 0;
+}
+
+.cropper-point {
+  background-color: #39f;
+  height: 5px;
+  opacity: 0.75;
+  width: 5px;
+}
+
+.cropper-point.point-e {
+  cursor: ew-resize;
+  margin-top: -3px;
+  right: -3px;
+  top: 50%;
+}
+
+.cropper-point.point-n {
+  cursor: ns-resize;
+  left: 50%;
+  margin-left: -3px;
+  top: -3px;
+}
+
+.cropper-point.point-w {
+  cursor: ew-resize;
+  left: -3px;
+  margin-top: -3px;
+  top: 50%;
+}
+
+.cropper-point.point-s {
+  bottom: -3px;
+  cursor: s-resize;
+  left: 50%;
+  margin-left: -3px;
+}
+
+.cropper-point.point-ne {
+  cursor: nesw-resize;
+  right: -3px;
+  top: -3px;
+}
+
+.cropper-point.point-nw {
+  cursor: nwse-resize;
+  left: -3px;
+  top: -3px;
+}
+
+.cropper-point.point-sw {
+  bottom: -3px;
+  cursor: nesw-resize;
+  left: -3px;
+}
+
+.cropper-point.point-se {
+  bottom: -3px;
+  cursor: nwse-resize;
+  height: 20px;
+  opacity: 1;
+  right: -3px;
+  width: 20px;
+}
+
+@media (min-width: 768px) {
+  .cropper-point.point-se {
+    height: 15px;
+    width: 15px;
+  }
+}
+
+@media (min-width: 992px) {
+  .cropper-point.point-se {
+    height: 10px;
+    width: 10px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .cropper-point.point-se {
+    height: 5px;
+    opacity: 0.75;
+    width: 5px;
+  }
+}
+
+.cropper-point.point-se::before {
+  background-color: #39f;
+  bottom: -50%;
+  content: ' ';
+  display: block;
+  height: 200%;
+  opacity: 0;
+  position: absolute;
+  right: -50%;
+  width: 200%;
+}
+
+.cropper-invisible {opacity: 0;}
+.cropper-bg {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAAA3NCSVQICAjb4U/gAAAABlBMVEXMzMz////TjRV2AAAACXBIWXMAAArrAAAK6wGCiw1aAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAABFJREFUCJlj+M/AgBVhF/0PAH6/D/HkDxOGAAAAAElFTkSuQmCC');
+}
+.cropper-hide {display: block;height: 0;position: absolute;width: 0;}
+.cropper-hidden {display: none !important;}
+.cropper-move {cursor: move;}
+.cropper-crop {cursor: crosshair;}
+.cropper-disabled .cropper-drag-box,
+.cropper-disabled .cropper-face,
+.cropper-disabled .cropper-line,
+.cropper-disabled .cropper-point {
+  cursor: not-allowed;
+}
+</style>
+
+```
+
