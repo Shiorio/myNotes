@@ -7393,131 +7393,158 @@ module.exports = {
 
 ### 9.自定义hook函数
 
-1. 概念
+#### 9.1 概念
 
-   > 本质是一个函数，**把setup函数中使用的Composition API进行封装**。
+> 本质是一个函数，**把setup函数中使用的Composition API进行封装**。
 
-2. 实现单击屏幕输出当前点击坐标
+#### 9.2 使用场景
 
-   - 普通实现
+- 逻辑复用：当多个组件需要共享相同的逻辑时，我们可以将这些逻辑封装成一个Hook，然后在需要的组件中导入并使用，这样可以避免代码重复，提高代码的复用性；
+- 逻辑拆分：对于复杂的组件，我们可以使用Hooks将组件的逻辑拆分成多个独立的函数，每个函数负责处理一部分的逻辑，这样可以使组件的代码更加清晰、易于维护；
+- 副作用管理：Hooks中的函数可以访问组件的响应式数据，并且可以在组件的生命周期中执行副作用操作（如定时器、事件监听等）。通过使用Hooks，我们可以更好地管理这些副作用操作，确保它们在组件卸载时得到正确的清理。
 
-     ```vue
-     <template>
-     
-     </template>
-     
-     <script>
-     import { onBeforeUnmount, onMounted } from '@vue/runtime-core'
-     import { reactive } from 'vue'
-     export default {
-         name: 'Demo2',
-         setup() {
-             let point = reactive({
-                 x: 0,
-                 y: 0,
-             })
-     
-             function savePoint(event) {
-                 point.x = event.pageX
-                 point.y = event.pageY
-                 console.log(point.x, point.y)
-             }
-     
-             // 挂载
-             onMounted(() => {
-                 window.addEventListener('click', savePoint)
-             })
-     
-             // 销毁之前
-             onBeforeUnmount(() => {
-                 window.removeEventListener('click', savePoint)
-             })
-     
-             return {
-                 point,
-             }
-         },
-     }
-     </script>
-     
-     <style>
-     </style>
-     ```
+#### 9.3 书写规范
 
-   - hook实现
+> - 命名规范：自定义Hooks应该**以“use”为前缀**，以区分其他函数和变量。例如：`useUserInfo`、`useMousePosition`等。同时，命名应清晰明了，准确描述Hooks的功能。
+> - 参数与返回值：自定义Hooks应该接收明确的参数，并返回需要在组件中使用的响应式数据、方法、计算属性等。返回的对象应该具有清晰的属性名和结构。
+> - 副作用管理：如果自定义Hooks包含副作用操作（如定时器、事件监听等），应确保在组件卸载时正确清理这些副作用。可以使用`onMounted`、`onUnmounted`等生命周期钩子来管理副作用的添加和移除。
+> - 文档注释：为自定义Hooks编写清晰的文档注释是非常重要的，说明其用途、参数、返回值和使用示例。这将有助于其他开发者理解和使用你的自定义Hooks。
+> - 类型定义（如果使用TypeScript）：为自定义Hooks提供类型定义可以确保更好的类型安全性和编辑器支持。使用TypeScript的泛型功能可以增加Hooks的灵活性和可复用性。
+> - 测试：为自定义Hooks编写单元测试是确保其正确性和稳定性的重要手段。测试应该覆盖各种使用场景和边界情况。
 
-     **Demo2.vue**
+#### 9.4 注意
 
-     ```js
-     <template>
-     
-     </template>
-     
-     <script>
-     // 引入hook
-     import usePoint from '../hooks/userPoint.js'
-     export default {
-         name: 'Demo2',
-         setup() {
-             const point = usePoint()
-             return {
-                 point,
-             }
-         },
-     }
-     </script>
-     
-     <style>
-     </style>
-     ```
+hook本质上就是函数，utils和vue自定义hooks的区别：
 
-     **userPoint.js**
+- utils：不涉及响应式的函数
+- hooks：涉及Vue的一些响应式API，如`ref/reactive/computed/watch/onMounted`
 
-     ```js
-     /*
-      * @Description: 
-      * @Version: 1.0
-      * @Author: sjy
-      * @Date: 2023-02-08 09:50:34
-      * @LastEditors: sjy
-      * @LastEditTime: 2023-02-08 09:58:41
-      */
-     import { reactive } from "vue"
-     import { onBeforeUnmount, onMounted } from '@vue/runtime-core'
-     
-     export default function () {
-         // 实现鼠标打点的数据
-         let point = reactive({
-             x: 0,
-             y: 0,
-         })
-     
-         // 方法
-         function savePoint (event) {
-             point.x = event.pageX
-             point.y = event.pageY
-             console.log(point.x, point.y)
-         }
-     
-         // 钩子
-         // 挂载
-         onMounted(() => {
-             window.addEventListener('click', savePoint)
-         })
-     
-         // 销毁之前
-         onBeforeUnmount(() => {
-             window.removeEventListener('click', savePoint)
-         })
-     
-         return point
-     }
-     
-     ```
+类似于vue2中的mixin
 
-3. 类似于vue2.x中的mixin
+#### 9.5 示例
 
-4. 自定义hook的优势：**代码复用**，让setup中的逻辑更加清晰易懂
+**实现单击屏幕输出当前点击坐标**
+
+- 普通实现
+
+  ```vue
+  <template>
+  
+  </template>
+  
+  <script>
+  import { onBeforeUnmount, onMounted } from '@vue/runtime-core'
+  import { reactive } from 'vue'
+  export default {
+      name: 'Demo2',
+      setup() {
+          let point = reactive({
+              x: 0,
+              y: 0,
+          })
+  
+          function savePoint(event) {
+              point.x = event.pageX
+              point.y = event.pageY
+              console.log(point.x, point.y)
+          }
+  
+          // 挂载
+          onMounted(() => {
+              window.addEventListener('click', savePoint)
+          })
+  
+          // 销毁之前
+          onBeforeUnmount(() => {
+              window.removeEventListener('click', savePoint)
+          })
+  
+          return {
+              point,
+          }
+      },
+  }
+  </script>
+  
+  <style>
+  </style>
+  ```
+
+- hook实现
+
+  **Demo2.vue**在组件中使用
+
+  ```js
+  <template>
+  
+  </template>
+  
+  <script>
+  // 引入hook
+  import usePoint from '../hooks/userPoint.js'
+  export default {
+      name: 'Demo2',
+      setup() {
+          const point = usePoint()
+          return {
+              point,
+          }
+      },
+  }
+  </script>
+  
+  <style>
+  </style>
+  ```
+
+  **userPoint.js**
+
+  ```js
+  /*
+   * @Description: 
+   * @Version: 1.0
+   * @Author: sjy
+   * @Date: 2023-02-08 09:50:34
+   * @LastEditors: sjy
+   * @LastEditTime: 2023-02-08 09:58:41
+   */
+  import { reactive } from "vue"
+  import { onBeforeUnmount, onMounted } from '@vue/runtime-core'
+  
+  export default function () {
+      // 实现鼠标打点的数据
+      let point = reactive({
+          x: 0,
+          y: 0,
+      })
+  
+      // 方法
+      function savePoint (event) {
+          point.x = event.pageX
+          point.y = event.pageY
+          console.log(point.x, point.y)
+      }
+  
+      // 钩子
+      // 挂载
+      onMounted(() => {
+          window.addEventListener('click', savePoint)
+      })
+  
+      // 销毁之前
+      onBeforeUnmount(() => {
+          window.removeEventListener('click', savePoint)
+      })
+  
+      return point
+  }
+  
+  ```
+
+#### 9.6 常用第三方Hooks推荐
+
+1. **Vueuse**：Vueuse是一个基于Vue3 Composition API的实用函数集合，包含了大量有用的自定义Hooks，如`useMouse`、`useKeyboardJs`、`useLocalStorage`等。它是Vue3生态中最受欢迎的第三方Hooks库之一。
+2. **@vue/reactivity**：这是Vue官方提供的响应式库，虽然它不是一个Hooks库，但其中的函数和工具可以与Composition API结合使用，帮助我们创建自定义的Hooks来处理响应式数据和副作用。例如，我们可以使用`reactive`、`ref`、`computed`等函数来创建响应式数据和计算属性。
 
 ### 10.toRefs
 
@@ -7756,9 +7783,17 @@ export default {
 
 ### 1.Fragment
 
+Fragment（**碎片化节点**）
+
+在Vue2中，组件只能有一个根元素。当我们新建一个Vue页面时，通常会有多个不同的元素节点。我们会在最外层包裹一个`<div></div>`来使其成为这个页面的根节点，但这并不友好，有时候我们并不需要这个`<div></div>`元素。
+
+vue3中新增了一个类似DOM的标签元素`<Fragment></Fragment>`。如果在vue页面中有多个元素节点，那么在编译时vue就会在这些元素节点上添加一个`<Fragment></Fragment>`标签，并且这个标签不会出现在DOM树中
+
 - 在Vue2中，组件必须有一个根标签；
 - 在Vue3中，**组件可以没有根标签，内部会将多个标签包裹在一个Fragment虚拟元素中**。
 - 好处：减少标签层级，减小内存占用。
+
+![image.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2775d41052494e11a532195eec67b656~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?)
 
 ### 2.Teleport
 

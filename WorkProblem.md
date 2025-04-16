@@ -3550,7 +3550,9 @@ const isProd = process.env.NODE_ENV === 'production'
 
    使用Promise类方法resolve()直接返回Promise成功对象
 
-### 41.富文本编辑器 QuillEditor使用
+### 41.富文本编辑器 QuillEditor使用（vue2 antd）
+
+> 新版本？QuillEditor 官方文档地址：[Modules | VueQuill (vueup.github.io)](https://vueup.github.io/vue-quill/guide/modules.html)适配vue3使用
 
 #### 41.1 组件
 
@@ -8840,6 +8842,7 @@ onPageScroll(e) {
     })
 }
 ```
+
 ### 81.js原生请求及封装
 
 #### 81.1 使用XMLHttpRequest
@@ -10468,15 +10471,15 @@ ondragstart="return false"
    ```
 
    ### 87.uni-app自定义选项卡 tab栏
-   
+
    ![image-20230823141037098](https://gitee.com/v876774538/my-img/raw/master/image-20230823141037098.png)
-   
+
    ```html
    <scroll-view class="tabBar" :scroll-x="true" :scroll-with-animation="true">
        <view class="tab" v-for="(item, index) in tabsList" :key="index" :class="index == selectIndex ? 'tabActive' : ''" @tap="handleTabChange(index)"><text>{{ item.label }}</text></view>
    </scroll-view>
    ```
-   
+
    ```js
    tabsList: [
        {
@@ -10497,7 +10500,7 @@ ondragstart="return false"
    ],	// 分类
    selectIndex: 0,
    ```
-   
+
    ```css
    .tabBar {
        width: 100%;
@@ -10539,17 +10542,17 @@ ondragstart="return false"
        }
    }
    ```
-   
+
    ### 87.uniapp 排序tab栏 升降序
-   
+
    #### 87.1 效果展示
-   
+
    ![image-20230901115540463](https://gitee.com/v876774538/my-img/raw/master/image-20230901115540463.png)
-   
+
    #### 87.2 代码实现
-   
+
    ![image-20230901115510846](https://gitee.com/v876774538/my-img/raw/master/image-20230901115510846.png)
-   
+
    ```html
    <view class="sorts" v-else>
        <view class="sort" v-for="(item, index) in sortTypeList" :key="index" @tap="handleSortTypeChange(item, index)" :class="item.checked ? 'sortActive' : ''">
@@ -10562,7 +10565,7 @@ ondragstart="return false"
        </view>
    </view>
    ```
-   
+
    ```css
    .sort {
        display: flex;
@@ -10591,7 +10594,7 @@ ondragstart="return false"
        font-weight: 500;
    }
    ```
-   
+
    ```js
    sortTypeList: [
        {
@@ -10630,7 +10633,7 @@ ondragstart="return false"
        },
    ],//排序 1-销量高到低 2-销量低到高 3-米币高到低 4-米币低到高 5-最新上架
    ```
-   
+
    ```js
    handleSortTypeChange(item, index) {
        if (Object.keys(item.valMap).length > 1 && item.checked) {
@@ -10649,7 +10652,6 @@ ondragstart="return false"
        this.hmGiftInfoPage()
    },
    ```
-   
 
 ### 87.APP应用更新（应用外更新、热更新）
 
@@ -15910,7 +15912,7 @@ bug说明：[【报Bug】justify-content: space-evenly在部分机型上无效 -
    	return pxToRpx(uni.getSystemInfoSync().windowHeight)
    }
    ```
-   
+
 ```vue
    <scroll-view scroll-y="true" class="scroll-Y" :style="`max-height: ${(utils.getScreenHeight() - 560)}rpx`">
    	...
@@ -15977,7 +15979,7 @@ const formatDate = (data, type = "string") => {
 
 #### 113.1 效果
 
-![image-20250102150029729](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20250102150029729.png)
+![image-20250102150029729](https://gitee.com/v876774538/my-img/raw/master/image-20250102150029729.png)
 
 #### 113.2 实现
 
@@ -17235,3 +17237,1361 @@ export default {
 
 ```
 
+### 114.flex布局 space-between 一行三个 不足三个补齐
+
+![image-20250220105127308](https://gitee.com/v876774538/my-img/raw/master/image-20250220105127308.png)
+
+![image-20250220105359968](https://gitee.com/v876774538/my-img/raw/master/image-20250220105359968.png)
+
+效果：
+
+![image-20250220105447007](https://gitee.com/v876774538/my-img/raw/master/image-20250220105447007.png)
+
+完整代码：
+
+```vue
+<!-- 选择续费方式 -->
+<cmp-popup show="{{ isShowRecharge }}" locked="{{ locked }}" content-align="bottom">
+  <view class="equity-popup-container">
+    <view class="equity-header">
+      <text>选择续费方式</text>
+      <view class="icon cuIcon-close" bind:tap="closeRechargePopup"></view>
+    </view>
+    <view class="equity-content">
+      <view class="equity-box" wx:for="{{ currentRightInfo.payment_set.sub }}" wx:key="index" wx:for-item="item" bind:tap="handleMemberLevelPay" data-type="{{ item.type}}">
+        <view class="equity-border">
+          <view class="price">
+            <text>￥</text>
+            <text class="em">
+              {{ currentRightInfo.pay_type == '1' ? item.open_fee : item.renew_fee }}
+            </text>
+          </view>
+          <view class="name">{{ tools.subTypeFilter(item.type) }}卡</view>
+          <view class="btn">{{ currentRightInfo.pay_type == '1' ? '去开通' : '去续费' }}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</cmp-popup>
+```
+
+```less
+.equity-popup-container {
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  overflow: hidden;
+
+  .equity-header {
+    height: 120rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: PingFangSC, PingFang SC;
+    font-weight: 500;
+    font-size: 32rpx;
+    color: #333333;
+    line-height: 32rpx;
+    position: relative;
+
+    .icon {
+      font-size: 32rpx;
+      color: #333;
+      position: absolute;
+      right: 24rpx;
+    }
+  }
+
+  .equity-content {
+    padding: 0 32rpx 99rpx;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    .equity-box {
+      width: 210rpx;
+      height: 240rpx;
+      background: linear-gradient(46deg, #e2a964 0%, #f1cd98 49%, #e1a662 100%);
+      border-radius: 10rpx;
+      padding: 5rpx;
+      box-sizing: border-box;
+
+      .equity-border {
+        height: 100%;
+        border: 1px solid #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 34rpx;
+        border-radius: 10rpx;
+
+        .price {
+          font-family: PingFangSC, PingFang SC;
+          font-weight: 600;
+          font-size: 24rpx;
+          line-height: 23rpx;
+          color: #513327;
+          margin-bottom: 12rpx;
+
+          .em {
+            font-size: 54rpx;
+            display: inline-block;
+          }
+        }
+
+        .name {
+          font-family: PingFangSC, PingFang SC;
+          font-weight: 400;
+          font-size: 32rpx;
+          color: #513327;
+          line-height: 48rpx;
+          margin-bottom: 21rpx;
+        }
+
+        .btn {
+          width: 130rpx;
+          height: 44rpx;
+          line-height: 44rpx;
+          text-align: center;
+          background: linear-gradient(142deg, #613b28 0%, #2f1e17 100%);
+          border-radius: 10rpx;
+          font-family: PingFangSC, PingFang SC;
+          font-weight: 600;
+          font-size: 28rpx;
+          color: #eabc8e;
+        }
+      }
+    }
+
+    &:after {
+      content:"";
+      width:210rpx; // 这里的宽度，更改为自己子元素的宽度
+    }
+  }
+}
+```
+
+### 115.微信小程序使用canvas
+
+在微信小程序中，**Canvas**组件提供了一个强大的绘图界面，可以在其上进行任意绘制。Canvas组件支持两种类型：**2D**和**WebGL**。以下是如何在微信小程序中使用Canvas的详细步骤。
+
+基础使用
+
+#### 115.1 在WXML中添加Canvas组件
+
+首先需要在WXML文件中添加Canvas组件，并指定其类型和唯一标识符。例如：
+
+```html
+<canvas id="myCanvas" type="2d" style="border: 1px solid; width: 300px; height: 150px;"></canvas>
+```
+
+在这里，我们指定了id为*myCanvas*，类型为*2d*。
+
+#### 115.2 获取Canvas对象和渲染上下文
+
+在JavaScript文件中，通过*wx.createSelectorQuery()*选择Canvas组件，并获取Canvas对象和渲染上下文：
+
+```js
+wx.createSelectorQuery()
+.select('#myCanvas')
+.fields({ node: true, size: true })
+.exec((res) => {
+	const canvas = res[0].node;
+	const ctx = canvas.getContext('2d');
+});
+```
+
+通过*Canvas.getContext*方法，我们可以获取到渲染上下文*RenderingContext*。
+
+#### 115.3 初始化Canvas
+
+初始化Canvas的宽高，并根据设备的像素比进行缩放：
+
+```js
+wx.createSelectorQuery()
+.select('#myCanvas')
+.fields({ node: true, size: true })
+.exec((res) => {
+    const canvas = res[0].node;
+    const ctx = canvas.getContext('2d');
+    const dpr = wx.getSystemInfoSync().pixelRatio;
+    canvas.width = res[0].width * dpr;
+    canvas.height = res[0].height * dpr;
+    ctx.scale(dpr, dpr);
+});
+```
+
+#### 115.4 进行绘制
+
+在Canvas上进行绘制操作，例如绘制一个红色的矩形：
+
+```js
+ctx.clearRect(0, 0, width, height);
+ctx.fillStyle = 'rgb(200, 0, 0)';
+ctx.fillRect(10, 10, 50, 50);
+```
+
+**进阶使用**
+
+绘制图片
+
+可以通过*Canvas.createImage*方法创建图片对象，并在图片加载完成后将其绘制到Canvas上：
+
+```js
+const image = canvas.createImage();
+image.onload = () => {
+	ctx.drawImage(image, 0, 0);
+};
+image.src = 'https://example.com/image.png';
+```
+
+生成图片
+
+通过*wx.canvasToTempFilePath*接口，可以将Canvas上的内容生成图片临时文件：
+
+```js
+wx.canvasToTempFilePath({
+	canvas,
+	success: res => {
+		const tempFilePath = res.tempFilePath;
+	},
+});
+```
+
+帧动画
+
+通过*Canvas.requestAnimationFrame*方法，可以注册动画帧回调，在回调内进行动画的逐帧绘制：
+
+```js
+const startTime = Date.now();
+	const draw = () => {
+	const time = Date.now();
+	const elapsed = time - startTime;
+	const x = (width - 50) * (elapsed % 2000) / 2000;	
+	ctx.clearRect(0, 0, width, height);
+	ctx.fillStyle = 'rgb(200, 0, 0)';
+	ctx.fillRect(x, height / 2 - 25, 50, 50);
+	canvas.requestAnimationFrame(draw);
+};
+
+draw();
+```
+
+#### 115.6 项目应用
+
+![image-20250225110242151](https://gitee.com/v876774538/my-img/raw/master/image-20250225110242151.png)
+
+```js
+// 重新生成二维码 覆盖门店logo到二维码中央
+createQrcode() {
+  this.getRoomInfo(); // 获取房间信息
+
+  const storeLogo = this.data.roomInfo.store_logo
+    ? this.data.roomInfo.store_logo
+    : ""; // 门店logourl
+  const qrcode = this.data.qrcodeData.qrcode; // 原二维码
+
+  wx.createSelectorQuery()
+    .in(this)
+    .select("#myCanvas")
+    .fields({ node: true, size: true })
+    .exec((res) => {
+      // 初始化canvas
+      const canvas = res[0].node;
+      const ctx = canvas.getContext("2d");
+
+      // 设置canvas宽高
+      canvas.width = 430;
+      canvas.height = 430;
+
+      // 绘制
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+
+      // 加载背景
+      const bg = canvas.createImage();
+      bg.src = qrcode;
+      bg.onload = () => {
+        ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+
+        // 加载logo
+        const logo = canvas.createImage();
+        logo.src = storeLogo;
+        logo.onload = () => {
+          ctx.drawImage(logo, 167, 167, 100, 100);
+
+          // canvas转图片
+          wx.canvasToTempFilePath(
+            {
+              canvas,
+              fileType: "png",
+              quality: 1,
+              success: (res) => {
+                this.setData({
+                  qrcodeUrl: res.tempFilePath,
+                });
+              },
+            },
+            this
+          );
+        };
+      };
+    });
+},
+```
+
+完整代码：
+
+`index.wxml`
+
+```html
+<!-- components/enterpriseWechat/index.wxml -->
+<cmp-popup show="{{ show }}" locked="{{ true }}" content-align="center">
+    <view class="enterprise-wechat-container">
+        <view class="enterprise-wechat-main" wx:if="{{ qrcodeData.qrcode_bg }}" style="{{ qrcodeData.qrcode_bg ? 'background: url(' + qrcodeData.qrcode_bg + ') no-repeat; background-size: 100% 100%;' : ''}}">
+            <view class="enterprise-wechat-title"></view>
+            <!-- <image class="enterprise-wechat-qrcode" src="{{ qrcodeData.qrcode }}" show-menu-by-longpress="{{ true }}"></image> -->
+            <image class="enterprise-wechat-qrcode" src="{{ qrcodeUrl }}" show-menu-by-longpress="{{ true }}"></image>
+            <view class="enterprise-wechat-desc"></view>
+        </view>
+        <view class="enterprise-wechat-main" wx:else>
+            <view class="enterprise-wechat-title">
+                <span>长按识别二维码</span>
+            </view>
+            <image class="enterprise-wechat-qrcode" src="{{ qrcodeData.qrcode }}" show-menu-by-longpress="{{ true }}"></image>
+            <view class="enterprise-wechat-desc">
+                <span>①添加好友</span>
+                <span>②点击链接下单</span>
+            </view>
+        </view>
+        <view class="enterprise-wechat-close">
+            <image class="close-icon" catch:tap="handleClose" src="{{ iconClose }}" />
+        </view>
+    </view>
+    <canvas type="2d" id="myCanvas" class="myCanvas"></canvas>
+</cmp-popup>
+```
+
+`index.js`
+
+```index.js
+// components/enterpriseWechat/index.js
+import { getQrcodeContactMe } from "../../http/api/roomServe";
+
+let app = getApp();
+
+Component({
+  /**
+   * 组件的属性列表
+   */
+  properties: {
+    roomId: {
+      type: String,
+      value: "",
+    },
+  },
+
+  /**
+   * 组件的初始数据
+   */
+  data: {
+    show: false,
+    iconClose: "",
+    qrcodeData: {},
+    roomInfo: {},
+
+    qrcodeUrl: "", // 生成qrcode
+  },
+  lifetimes: {
+    attached: function () {
+      this.setData({
+        iconClose: app.getIconUrl("wx-channel/icon_close_w@2x"),
+      });
+    },
+  },
+
+  /**
+   * 组件的方法列表
+   */
+  methods: {
+    // 获取房台信息
+    getRoomInfo() {
+      if (wx.getStorageSync("roomInfo")) {
+        this.setData({
+          roomInfo: wx.getStorageSync("roomInfo"),
+        });
+      }
+    },
+    getContactMeQrcode() {
+      getQrcodeContactMe({ roomId: this.data.roomId })
+        .then((res) => {
+          if (res.code == 0) {
+            this.setData({
+              qrcodeData: res.data,
+            });
+            this.handleOpen();
+            // 生成二维码
+            this.createQrcode();
+          } else {
+            this.handleTriggerEvent("continue");
+          }
+        })
+        .catch((err) => {
+          this.handleTriggerEvent("continue");
+        });
+    },
+    // 重新生成二维码 覆盖门店logo到二维码中央
+    createQrcode() {
+      this.getRoomInfo(); // 获取房间信息
+
+      const storeLogo = this.data.roomInfo.store_logo
+        ? this.data.roomInfo.store_logo
+        : ""; // 门店logourl
+      const qrcode = this.data.qrcodeData.qrcode; // 原二维码
+
+      wx.createSelectorQuery()
+        .in(this)
+        .select("#myCanvas")
+        .fields({ node: true, size: true })
+        .exec((res) => {
+          // 初始化canvas
+          const canvas = res[0].node;
+          const ctx = canvas.getContext("2d");
+
+          // 设置canvas宽高
+          canvas.width = 430;
+          canvas.height = 430;
+
+          // 绘制
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.beginPath();
+
+          // 加载背景
+          const bg = canvas.createImage();
+          bg.src = qrcode;
+          bg.onload = () => {
+            ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+
+            // 加载logo
+            const logo = canvas.createImage();
+            logo.src = storeLogo;
+            logo.onload = () => {
+              ctx.drawImage(logo, 167, 167, 100, 100);
+
+              // canvas转图片
+              wx.canvasToTempFilePath(
+                {
+                  canvas,
+                  fileType: "png",
+                  quality: 1,
+                  success: (res) => {
+                    this.setData({
+                      qrcodeUrl: res.tempFilePath,
+                    });
+                  },
+                },
+                this
+              );
+            };
+          };
+        });
+    },
+    handleOpen() {
+      this.setData({ show: true });
+    },
+    handleClose() {
+      this.setData({ show: false });
+    },
+    handleTriggerEvent(event, data) {
+      this.triggerEvent(event, data);
+    },
+  },
+});
+
+```
+
+`index.less`
+
+```less
+.enterprise-wechat-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .enterprise-wechat-main {
+    width: 600rpx;
+    height: 720rpx;
+    background: url("data:image/png;base64,................")
+      no-repeat;
+    background-size: 100% 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40rpx 0 45rpx;
+    box-sizing: border-box;
+    border-radius: 45rpx;
+    overflow: hidden;
+
+    .enterprise-wechat-title {
+      font-family: PingFangSC, PingFang SC;
+      font-weight: 500;
+      font-size: 45rpx;
+      color: #351400;
+      line-height: 63rpx;
+      min-height: 63rpx;
+      margin-bottom: 47rpx;
+    }
+
+    .enterprise-wechat-qrcode {
+      width: 430rpx;
+      height: 430rpx;
+      margin-bottom: 50rpx;
+    }
+
+    .enterprise-wechat-desc {
+      font-family: PingFangSC, PingFang SC;
+      font-weight: 600;
+      font-size: 32rpx;
+      color: #ffffff;
+      line-height: 45rpx;
+      min-height: 45rpx;
+      width: 430rpx;
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  .enterprise-wechat-close {
+    margin-top: 70rpx;
+
+    .close-icon {
+      width: 48rpx;
+      height: 48rpx;
+    }
+  }
+}
+
+.myCanvas {
+  position: absolute;
+  top: 0;
+  width: 430rpx;
+  height: 430rpx;
+  overflow:hidden;
+  opacity: 0;
+  visibility: hidden;
+  display: none;
+  z-index: -1000;
+  transform: scaleY(0)
+}
+
+```
+
+### 116.vue后台 前端根据文本生成二维码
+
+```vue
+<template>
+    <div class="qrcode-main">
+        <!-- 生成二维码 -->
+        <div class="qrcode-box" v-show="showCode">
+            <img src="@/assets/logo.png" alt="" v-show="false" ref="logoImg">
+            <div class="qrcode-canvas">
+                <canvas ref="qrcodeCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import QRCode from "qrcode"
+
+export default {
+    data() {
+        return {
+            showCode: false,    //是否显示二维码
+            link:'', // 存放小程序二维码信息
+        }
+    },
+    created() {
+        this.generateQrcode();
+    },
+    methods: {
+        // 图片转canvas,
+        imgToCanvas() {
+            const canvas = document.createElement('canvas');
+            const { logoImg } = this.$refs;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, 80, 80);		//先画一个80*80的正方形，颜色#ffffff，此处因为logo图片四周没有留白
+            ctx.drawImage(logoImg, 4, 4, 64, 64);		//将 64*64 的 logoImg 画到 canvas 上
+            return canvas;
+        },
+        // 生成的logo canvas与二维码canvas合并
+        mergeCanvas(generateCanvas) {		//生成的二维码 canvas	
+            const { qrcodeCanvas } = this.$refs;
+            const logoCavans = this.imgToCanvas();		//第2步里面的转换后的canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = generateCanvas.width;
+            canvas.height = generateCanvas.height;
+            canvas.getContext('2d').drawImage(generateCanvas, 0, 0);	//将 generateCanvas 画到 canvas 上，坐标 0，0
+            canvas.getContext('2d').drawImage(logoCavans, 160, 160);	//将 logoCavans 画到 canvas 上，坐标 80，80
+            qrcodeCanvas.width = canvas.width;
+            qrcodeCanvas.height = canvas.height;
+            qrcodeCanvas.getContext('2d').drawImage(canvas, 0, 0);
+        },
+        // 生成二维码
+        generateQrcode() {
+            const options = {
+                width: 400,
+                height: 400,
+            };
+            QRCode.toCanvas(this.link, options)
+                .then((el) => {
+                    this.showCode = true;		//showCode 决定是否显示二维码
+                    this.mergeCanvas(el);		//生成二维码后，合并二维码
+                })
+                .catch((err) => {
+                    this.showCode = false;
+                });
+        },
+        // 保存生成的二维码
+        handleDownloadCode() {
+            const { qrcodeCanvas } = this.$refs;
+            const url = qrcodeCanvas.toDataURL('image/png');
+
+            var aEle = document.createElement('a');
+            aEle.download = '门店小程序码'
+            aEle.href = url;
+            document.body.appendChild(aEle);
+            aEle.click();
+            document.body.removeChild(aEle);
+        },
+        // 复制链接
+        handleCopy(copy) {
+            var input = document.createElement('input');
+            input.value = copy;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand("copy")
+            document.body.removeChild(input)
+            this.$message.success("链接已复制到剪贴板！");
+        }
+    }
+}
+</script>
+
+<style lang="less" scoped>
+.qrcode-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .qrcode {
+        width: 250px;
+        height: 250px;
+    }
+}
+</style>
+```
+
+### 117.微信小程序API兼容性处理
+
+> ### Object wx.getSystemInfoSync()
+>
+> 从基础库 [2.20.1](https://developers.weixin.qq.com/miniprogram/analysis/experience/compatibility.html) 开始，本接口停止维护，请使用 [wx.getSystemSetting](https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getSystemSetting.html)、[wx.getAppAuthorizeSetting](https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getAppAuthorizeSetting.html)、[wx.getDeviceInfo](https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getDeviceInfo.html)、[wx.getWindowInfo](https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getWindowInfo.html)、[wx.getAppBaseInfo](https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getAppBaseInfo.html) 代替
+
+```js
+let systemInfo = {}
+
+if (wx.canIUse('getSystemInfoSync')) {
+    systemInfo = wx.getSystemInfoSync();
+}
+else {
+    systemInfo = Object.assign(wx.getDeviceInfo(), wx.getWindowInfo())
+}
+```
+
+### 118.微信小程序获取图片主色
+
+`utils/colorThief.js`
+
+```js
+const colorThief = {
+  makeRGB: function (name) {
+    return ["rgb(", name, ")"].join("");
+  },
+
+  mapPalette: function (palette) {
+    var arr = [];
+    for (var prop in palette) {
+      arr.push(this.frmtPobj(prop, palette[prop]));
+    }
+    arr.sort(function (a, b) {
+      return b.count - a.count;
+    });
+    return arr;
+  },
+
+  fitPalette: function (arr, fitSize) {
+    if (arr.length > fitSize) {
+      return arr.slice(0, fitSize);
+    } else {
+      for (var i = arr.length - 1; i < fitSize - 1; i++) {
+        arr.push(this.frmtPobj("0,0,0", 0));
+      }
+      return arr;
+    }
+  },
+
+  frmtPobj: function (a, b) {
+    return { name: this.makeRGB(a), count: b };
+  },
+
+  PALETTESIZE: 10,
+  RGBaster: {},
+  canvasId: "",
+  imagePath: "",
+  options: {},
+  retrySum: 100, // enough? too much? It needs more experiences.
+
+  /**
+   * 获取主色调
+   * @imagePath 路径
+   * @canvasId canvas ID
+   * @opts {success: 成功回调, width: 宽, height: 高}
+   */
+  colors: function (imagePath, canvasId, opts) {
+    this.canvasId = canvasId;
+    this.imagePath = imagePath;
+    this.options = opts;
+
+    var data,
+      width = opts.width || 150,
+      height = opts.height || 100;
+    const ctx = wx.createCanvasContext(canvasId);
+    ctx.drawImage(imagePath, 0, 0, width, height);
+    ctx.draw();
+
+    setTimeout(
+      function () {
+        const u = this;
+        wx.canvasGetImageData({
+          canvasId: canvasId,
+          x: 0,
+          y: 0,
+          width: width,
+          height: height,
+          success(res) {
+            // console.log(res.width);
+            // console.log(res.height);
+            // console.log(res.data instanceof Uint8ClampedArray);
+            // console.log(res.data.length); // res.width * res.height * 4
+            u.calculate(res.data, opts);
+          },
+          fail() {
+            console.log("fail");
+          },
+        });
+      }.bind(this),
+      50
+    );
+  },
+
+  calculate: function (data, opts) {
+    opts = opts || {};
+    var exclude = opts.exclude || [],
+      paletteSize = opts.paletteSize || this.PALETTESIZE;
+    // for example, to exclude white and black:  [ '0,0,0', '255,255,255' ]
+    var colorCounts = {},
+      rgbString = "",
+      rgb = [],
+      colors = {
+        dominant: { name: "", count: 0 },
+        palette: [],
+      };
+
+    var i = 0;
+    for (; i < data.length; i += 4) {
+      rgb[0] = data[i];
+      rgb[1] = data[i + 1];
+      rgb[2] = data[i + 2];
+      rgbString = rgb.join(",");
+
+      // skip undefined data and transparent pixels
+      if (rgb.indexOf(undefined) !== -1 || data[i + 3] === 0) {
+        continue;
+      }
+
+      // Ignore those colors in the exclude list.
+      if (exclude.indexOf(this.makeRGB(rgbString)) === -1) {
+        if (rgbString in colorCounts) {
+          colorCounts[rgbString] = colorCounts[rgbString] + 1;
+        } else {
+          colorCounts[rgbString] = 1;
+        }
+      }
+    }
+
+    if (opts.success) {
+      var palette = this.fitPalette(
+        this.mapPalette(colorCounts),
+        paletteSize + 1
+      );
+
+      //图片未加载完
+      //合理？
+      if (
+        palette[0].name == palette[1].name &&
+        palette[1].name == "rgb(0,0,0)"
+      ) {
+        if (this.retrySum-- <= 0) {
+          console.log("retrySum: " + this.retrySum);
+          palette.length = 0;
+          palette.push(this.frmtPobj("0,0,0", 0));
+          palette.push(this.frmtPobj("0,0,0", 1));
+        } else {
+          this.colors(this.imagePath, this.canvasId, this.options);
+          return;
+        }
+      }
+
+      opts.success({
+        dominant: palette[0].name,
+        secondary: palette[1].name,
+        palette: palette
+          .map(function (c) {
+            return c.name;
+          })
+          .slice(1),
+      });
+    }
+  },
+
+  /**
+   * invert color
+   * @oldColor rgb(0,0,0)
+   */
+  invertColor: function (oldColor) {
+    const tempArr = oldColor.slice(4, oldColor.length - 1).split(",");
+    return (
+      "rgb(" +
+      (255 - tempArr[0]) +
+      "," +
+      (255 - tempArr[1]) +
+      "," +
+      (255 - tempArr[2]) +
+      ")"
+    );
+  },
+
+  /**
+   * rgb转16进制
+   */
+  rgbToHex: function (rgb) {
+    // rgb(x, y, z)
+    var color = rgb.toString().match(/\d+/g); // 把 x,y,z 推送到 color 数组里
+    var hex = "#";
+
+    for (var i = 0; i < 3; i++) {
+      // 'Number.toString(16)' 是JS默认能实现转换成16进制数的方法.
+      // 'color[i]' 是数组，要转换成字符串.
+      // 如果结果是一位数，就在前面补零。例如： A变成0A
+      hex += ("0" + Number(color[i]).toString(16)).slice(-2);
+    }
+    return hex;
+  },
+
+  /**
+   * 明暗色调
+   */
+  isLight: function (rgb) {
+    var color = rgb.toString().match(/\d+/g);
+    console.log("color: " + color);
+    return 0.213 * color[0] + 0.715 * color[1] + 0.072 * color[2] > 255 / 2;
+  },
+
+  /**
+   * hex转rgb
+   * @param {string} str  色值，如：#409EFF
+   * @returns rgb数组[64, 158, 255]
+   */
+  hexToRgb: function (str) {
+    let hexs = null;
+    let reg = /^\#?[0-9A-Fa-f]{6}$/;
+    if (!reg.test(str)) {
+      console.log("色值不正确");
+      return false;
+    }
+    str = str.replace("#", ""); // 去掉#
+    hexs = str.match(/../g); // 切割成数组 409EFF => ['40','9E','FF']
+    // 将切割的色值转换为16进制
+    for (let i = 0; i < hexs.length; i++) hexs[i] = parseInt(hexs[i], 16);
+    return hexs; // 返回rgb色值[64, 158, 255]
+  },
+
+  /**
+   * 颜色减淡
+   * @param {string} color  色值，如：##409EFF
+   * @param {number} level 调整幅度，0~1之间
+   * @returns {array} 最终颜色减淡的rgb数组
+   */
+  getLightColor: function (color, level) {
+    let reg = /^\#?[0-9A-Fa-f]{6}$/;
+    if (!reg.test(color)) {
+      console.log("色值不正确");
+      return false;
+    }
+    let rgb = colorThief.hexToRgb(color);
+    // 循环对色值进行调整
+    for (let i = 0; i < 3; i++) {
+      rgb[i] = Math.floor((255 - rgb[i]) * level + rgb[i]); // 始终保持在0-255之间
+    }
+    return rgb; // [159, 206, 255]
+  },
+};
+
+module.exports.colorThief = colorThief;
+```
+
+使用：`home.js`片段
+
+```js
+import { colorThief } from "../../utils/colorThief.js";
+
+// 获取图片主色
+getImageColor(src) {
+const canvasId = "myCanvas";
+let that = this
+wx.getImageInfo({
+  src,
+  success: (imgInfo) => {
+    const { path, height, width } = imgInfo;
+    colorThief.colors(path, canvasId, {
+      success: function (res) {
+        console.log("dominant: " + res.dominant);
+
+        that.setData({
+          dominant: colorThief.rgbToHex(res.dominant),
+          lightDominant: colorThief.rgbToHex(colorThief.getLightColor(colorThief.rgbToHex(res.dominant), 0.6))
+        })
+      },
+      width: width,
+      height: height,
+    });
+  }
+})
+},
+```
+
+使用：`home.wxml`片段
+
+```html
+<!-- 会员模块 -->
+<canvas canvas-id="myCanvas" style="position: absolute; left: -1000px;"></canvas>
+<view class="member-card-wrap" wx:if="{{ memberInfo && memberInfo.nickname != '' }}">
+    <view class="member-card-content">
+        <image src="{{ memberInfo.avatar }}" class="avatar" mode="widthFix" catch:tap="goUserInfo" style="border: 3rpx solid {{ dominant }};"/>
+        <view class="info">
+            <!-- 会员昵称 -->
+            <view class="title">
+                {{ memberInfo.nickname ? memberInfo.nickname : '' }}
+            </view>
+            <!-- 会员等级 -->
+            <view class="date" style="background: {{ lightDominant }};">
+                <image src="{{ memberInfo.level_logo ? memberInfo.level_logo : levelIcon }}" class="logo" mode="widthFix" />
+                <text class="ellipsis">{{ memberInfo.level_name }}</text>
+            </view>
+        </view>
+    </view>
+    <!-- 缴费升级 -->
+    <!-- operate 0-不显示 1-立即升级 2-去缴费 3-查看 -->
+    <button class="btn" bind:tap="goMember" wx:if="{{ memberInfo.operate && memberInfo.operate != '0'}}">
+        <view>
+            {{ memberInfo.operate == '1' ? '立即升级' : (memberInfo.operate == '2' ? '立即续费' : '查看') }}
+        </view>
+        <image src="{{ baseUrl }}upfile/icon/wx/home/buttonArrow.png" class="arrow" />
+    </button>
+</view>
+```
+
+![image-20250318135544243](https://gitee.com/v876774538/my-img/raw/master/image-20250318135544243.png)
+
+参考地址：[javascript - hex和rgb色值转换-色彩加深减淡 - 兔子先森的博客 - SegmentFault 思否](https://segmentfault.com/a/1190000044493429)
+
+### 119.富文本编辑器 WangEditor使用（vue3 element-ui）
+
+#### 119.1 使用
+
+**子组件封装**：
+
+![image-20250331115554567](https://gitee.com/v876774538/my-img/raw/master/image-20250331115554567.png)
+
+```vue
+<template>
+  <div style="border: 1px solid #ccc">
+    <Toolbar style="border-bottom: 1px solid #ccc" :editor="editorRef" :defaultConfig="toolbarConfig" mode="default" />
+    <Editor
+      style="height: 200px; overflow-y: hidden"
+      v-model="valueHtml"
+      :defaultConfig="editorConfig"
+      mode="default"
+      @onCreated="handleCreated"
+      @customPaste="customPaste"
+      @onChange="handleChanged"
+    />
+  </div>
+</template>
+<script setup>
+// 富文本编辑器文档链接: https://www.wangeditor.com/v5/getting-started.html
+// 引入富文本编辑器CSS
+import "@wangeditor/editor/dist/css/style.css"
+import { onBeforeUnmount, ref, shallowRef } from "vue"
+// 导入富文本编辑器的组件
+import { Editor, Toolbar } from "@wangeditor/editor-for-vue"
+import { uploadImg } from "@/api/public"
+import { ElMessage } from "element-plus"
+
+const emit = defineEmits(["change"])
+
+// 编辑器实例，必须用 shallowRef
+const editorRef = shallowRef()
+
+// 内容 HTML
+// const valueHtml = ref("<p>hello <strong>hello world</strong></p>")
+const valueHtml = ref("")
+const toolbarConfig = {}
+const editorConfig = ref({ placeholder: "请输入内容...", MENU_CONF: {} })
+
+// // 自定义图片上传
+// editorConfig.value.MENU_CONF["uploadImage"] = {
+//   async customUpload(file, insertFn) {
+//     console.log("上传图片", file)
+//     // 将上传的file图片转换为base64
+//     const base64 = URL.createObjectURL(file)
+
+//     // 这里的file为上传的图片对象,insertFn传入
+//     insertFn(base64, "img")
+//   }
+// }
+
+// 图片上传限制
+const handleBeforeUpload = (uploadFile, limit) => {
+  if (limit && limit.size) {
+    if (uploadFile.size / 1024 > limit.size) {
+      ElMessage.error(`图片大小不能超过${limit.size}K`)
+      return false
+    } else if (limit.type && !uploadFile.raw.type.includes(limit.type)) {
+      ElMessage.error(`图片格式不正确，请上传${limit.type}格式图片`)
+      return false
+    }
+  }
+  return true
+}
+
+// 自定义图片上传
+editorConfig.value.MENU_CONF["uploadImage"] = {
+  async customUpload(file, insertFn) {
+    if (handleBeforeUpload(file)) {
+      uploadImg({ file })
+        .then((res) => {
+          if (res.code == 0) {
+            insertFn(res.data.domain + res.data.image, "img")
+          } else {
+            ElMessage.error(res.msg)
+          }
+        })
+        .catch((err) => {
+          ElMessage.error(err.msg)
+        })
+    }
+  }
+}
+
+// 自定义视频上传
+editorConfig.value.MENU_CONF["uploadVideo"] = {
+  async customUpload(file, insertFn) {
+    console.log("上传视频", file)
+  }
+}
+
+// 富文本编辑器生成后触发
+const handleCreated = (editor) => {
+  editorRef.value = editor // 记录 editor 实例，重要！
+  console.log(editorConfig.value.MENU_CONF, "editorConfig.value")
+}
+
+// 监听富文本编辑器粘贴行为
+const customPaste = (editor, event, callback) => {
+  // 获取粘贴的纯文本
+  const text = event.clipboardData.getData("text/plain")
+  if (text) {
+    editor.insertText(text)
+    event.preventDefault()
+    callback(false)
+  }
+}
+
+// 获取富文本html内容
+// const getEditorHTML = () => {
+//   console.log(editorRef.value.getHtml())
+// }
+
+// 富文本编辑器内容改变时触发
+const handleChanged = (editor) => {
+  console.log(editor.getHtml())
+  // 通知父组件
+  emit("change", editor.getHtml())
+}
+
+// 组件销毁时，也及时销毁编辑器
+onBeforeUnmount(() => {
+  const editor = editorRef.value
+  if (editor == null) return
+  editor.destroy()
+})
+</script>
+```
+
+**父组件**：
+
+```vue
+  <wang-editor ref="wangEditor" @change="handleEditorChanged" />
+```
+
+```js
+// 富文本 活动详情
+const handleEditorChanged = (e) => {
+  editForm.value.activity_detail = e	// 赋值
+}
+```
+
+### 120.关闭commitlint配置
+
+![image-20250402120810626](https://gitee.com/v876774538/my-img/raw/master/image-20250402120810626.png)
+
+### 121.uniapp vue3 自适应scroll-view组件
+
+组件：`components/m-scroll-view/index.vue`
+
+```vue
+<route lang="json5" type="page">
+{
+  layout: 'default',
+  style: {
+    navigationBarTitleText: '',
+  },
+}
+</route>
+
+<template>
+  <view id="top" />
+  <scroll-view :style="{ height: scrollH + 'px' }" scroll-y>
+    <slot></slot>
+  </scroll-view>
+</template>
+
+<script lang="ts" setup>
+import { ref, getCurrentInstance, watchEffect } from 'vue'
+
+defineOptions({
+  name: 'mScrollView',
+})
+
+const props = defineProps({
+  offset: {
+    type: Number,
+    default: 0,
+  }, // 偏移量
+})
+
+/** Hooks 动态计算scrollList滑动区域高度
+ * @param {Number} offset 可选 -offset偏移量 手动微调scroll高度
+ * */
+const useScrollHeight = (offset?: number): any => {
+  const scrollHeight = ref<number>(0) // scroll组件高度
+  const topHeight = ref<number>(0) // 组件上方占用高度
+  const currentInstance = getCurrentInstance() // vue3绑定this
+  const safeAreaInsets = uni.getSystemInfoSync().safeAreaInsets // 屏幕边界到安全区域距离
+  const height = uni.getSystemInfoSync().windowHeight // 获取页面高度
+  const topEl = uni.createSelectorQuery().in(currentInstance).select('#top') // 获取#top元素
+  topEl
+    .boundingClientRect((data) => {
+      // 获取顶部高度
+      topHeight.value = (data as any).top
+      scrollHeight.value = height - safeAreaInsets?.top - topHeight.value - (offset || 0) // 计算剩余高度 offset 偏移量
+    })
+    .exec()
+  return scrollHeight
+}
+
+const scrollH = ref(0) // scroll-view组件高度
+
+onReady(() => {
+  const scrollHeight = useScrollHeight(props.offset)
+  watchEffect(() => {
+    scrollH.value = scrollHeight.value
+  })
+})
+</script>
+
+<style lang="less" scoped></style>
+
+```
+
+使用：
+
+```vue
+<m-scroll-view class="card-content">
+  <view class="card-item" v-for="(item, index) in list" :key="index">
+    <view class="left">
+      <view class="label">日期</view>
+      <view class="value">{{ item.date }}</view>
+    </view>
+    <view class="right">
+      <view class="label">收益</view>
+      <view class="value ellipsis">￥{{ formatPrice(item.earnings) }}</view>
+    </view>
+  </view>
+  // 填充内容...
+</m-scroll-view>
+```
+
+![image-20250403140836872](https://gitee.com/v876774538/my-img/raw/master/image-20250403140836872.png)
+
+### 122.uniapp vue3 微信小程序使用qiun图表
+
+`total-chart.vue`组件
+
+```vue
+<template>
+  <view class="charts-box">
+    <qiun-data-charts
+      type="column"
+      :chartData="chartData"
+      :opts="options"
+      :ontouch="true"
+      canvasId="myCanvasId"
+      :canvas2d="true"
+      :tooltipShow="false"
+      :disableScroll="true"
+    />
+    <!-- canvas2d=true canvasId 解决渲染层级过高问题（开启后模拟器异常无需理会） -->
+  </view>
+</template>
+
+<script setup lang="ts">
+const props = defineProps({
+    // 图表数据
+  data: {
+    type: Object,
+    default: () => {},
+  },
+})
+
+const options = reactive({
+  color: ['#3376ff'], // 主题颜色
+  padding: [20, 0, 0, 0], // 画布填充边距，顺序为上右下左，例如[10,15,25,15]
+  enableScroll: true, // 开启滚动条，X轴配置里需要配置itemCount单屏幕数据点数量
+  // scrollPosition: 'right', // 连续更新数据时，滚动条的位置。可选值："current"当前位置,"left"左对齐,"right"右对齐
+  // update: true, // 开启连续更新数据的方法
+  legend: {
+    show: false, // 不显示图例
+  },
+  dataLabel: true, // 是否显示图表区域内数据点上方的数据文案
+  fontSize: 10, // 全局默认字体大小
+  fontColor: '#999999', // 全局默认字体颜色
+  xAxis: {
+    disableGrid: true,
+    itemCount: 8,
+    axisLineColor: '#ECEDEE', // 坐标轴线颜色
+    scrollColor: '#ECECEC', // 滚动条颜色
+    scrollBackgroundColor: '#FFFFFF', // 滚动条背景颜色
+    fontSize: 10, // 字体大小
+    fontColor: '#999999', // 字体颜色
+    scrollShow: true, // 滚动条显示
+    scrollAlign: 'right', // 滚动条初始位置
+  },
+  yAxis: {
+    data: [
+      {
+        min: 0,
+        formatter: (value) => {
+          if (value) {
+            return `￥${value}`
+          } else {
+            return '0'
+          }
+        },
+      },
+    ],
+    gridColor: '#ECEDEE',
+  },
+  extra: {
+    column: {
+      type: 'group',
+      width: 10,
+      activeBgColor: '#000000',
+      activeBgOpacity: 0.08,
+      linearType: 'custom',
+      seriesGap: 5,
+      //   linearOpacity: 0.5,
+      barBorderCircle: true,
+      customColor: ['#3376ff'],
+    },
+  },
+})
+const chartData = ref({})
+
+const getServerData = (data) => {
+  if (data) {
+    const res = {
+      categories: [],
+      series: [
+        {
+          name: '收益',
+          data: [],
+          color: '#3376FF',
+        },
+      ],
+    }
+    data.forEach((item, index) => {
+      // 截掉年份部分，只保留月份和日期
+      const dateParts = item.date.split('-')
+      const monthDay = `${dateParts[1]}-${dateParts[2]}`
+      res.categories.push(monthDay)
+      res.series[0].data.push(item.profit ? item.profit : '') // 0值为''不显示dataLabel
+      // res.series[0].data.push(index ? item.profit + index * 100 : '') // 假数据
+    })
+    chartData.value = JSON.parse(JSON.stringify(res))
+  }
+}
+
+watch(
+  () => props.data,
+  (newVal) => {
+    getServerData(newVal)
+  },
+)
+</script>
+
+<style lang="less" scoped>
+.charts-box {
+  width: 629rpx;
+  height: 100%;
+  z-index: 0;
+  // position: relative;
+}
+</style>
+```
+
+使用：
+
+```vue
+<view class="chart-main">
+  <total-chart :data="summaryData.list"></total-chart>
+</view>
+```
+
+效果：
+
+![image-20250415093852030](https://gitee.com/v876774538/my-img/raw/master/image-20250415093852030.png)

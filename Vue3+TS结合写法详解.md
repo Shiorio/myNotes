@@ -165,6 +165,61 @@ book.year = 2022
 
 **注意：**官方不推荐使用 `reactive()` 的泛型参数，因为底层和 `ref()` 实现不一样。
 
+
+
+### 4.3 `ref`和`reactive`的区别
+
+1. ref
+
+   - 基本用法：`ref`用于创建一个包含单一值的响应式引用；
+
+   - 适用场景：适合处理**基本类型**（如字符串、数字、布尔值）和**对象**；
+
+   - 访问方式**：通过`.value`属性来访问**或修改值
+
+   - 示例：
+
+     ```ts
+     import { ref } from 'vue'
+     
+     const count = ref(0)
+     console.log(count.value)	// 0
+     
+     count.value++
+     console.log(count.value)	// 1
+     ```
+
+2. reactive
+
+   - 基本用法：`reactive`用于创建一个深层次的响应式对象（只能接受对象作为参数）；
+
+   - 适用场景：适合处理**复杂的嵌套对象**和**数组**；
+
+   - 访问方式：直接通过属性访问和修改，**无需`.value`**；
+
+   - 示例：
+
+     ```ts
+     import { reactive } from 'vue'
+     
+     const state = reactive({
+     	count: 0,
+     	user: {
+     		name: 'Alice',
+     		age: 25
+     	}
+     })
+     
+     console.log(state.count)	// 0
+     
+     state.count++
+     console.log(state.count)	// 1
+     
+     console.log(state.user.name)	// Alice
+     state.user.age++
+     console.log(state.user.age)	// 26
+     ```
+
 ## 5.`computed`
 
 ### 5.1 基本使用
@@ -437,5 +492,3 @@ TypeScript给JS运行时可用的所有标准化内置 API 都提供了声明文
    add(3, 10)
    point({x: 100, y: 200})
    ```
-
-   
